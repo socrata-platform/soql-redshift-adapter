@@ -1,7 +1,7 @@
-package com.socrata
+package com.socrata.impl
 
-import jakarta.ws.rs.{GET, Path, Produces}
 import jakarta.ws.rs.core.MediaType
+import jakarta.ws.rs.{GET, Path, Produces}
 
 @Path("/hello")
 class GreetingResource {
