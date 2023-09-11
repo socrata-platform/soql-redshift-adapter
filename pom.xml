@@ -17,6 +17,10 @@
     <scala.version>2.13.8</scala.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
+    <openapi-generator.version>7.0.0</openapi-generator.version>
+    <build-helper.version>3.4.0</build-helper.version>
+    <lombok.version>1.18.28</lombok.version>
+    <lombok-plugin.version>1.18.20.0</lombok-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -77,7 +81,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.28</version>
+      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -111,7 +115,7 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
-              <version>1.18.28</version>
+              <version>${lombok.version}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>
@@ -180,7 +184,7 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>7.0.0</version>
+        <version>${openapi-generator.version}</version>
         <executions>
           <execution>
             <goals>
@@ -218,7 +222,7 @@
       <plugin>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-maven-plugin</artifactId>
-        <version>1.18.20.0</version>
+        <version>${lombok-plugin.version}</version>
         <configuration>
           <sourceDirectory>${project.build.directory}/generated-sources/openapi/src/gen/java</sourceDirectory>
         </configuration>
@@ -234,7 +238,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>${build-helper.version}</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
