@@ -1,6 +1,7 @@
 package com.socrata.impl
 
 import com.socrata.api.PetsApi
+import com.socrata.beans
 import com.socrata.beans.{NewPet, Pet}
 import jakarta.enterprise.context.ApplicationScoped
 
@@ -32,7 +33,9 @@ class Pets extends PetsApi{
         .tag("something")
         .build(),
       new Pet("Ari","something tag",2),
-      pet
+      pet,
+      pet.withId(4).name("Alex"),
+      new Pet().id(5).name("Dexter").tag("something")
     )
   }
 }

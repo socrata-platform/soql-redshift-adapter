@@ -200,8 +200,11 @@
                 <interfaceOnly>true</interfaceOnly>
                 <useJakartaEe>true</useJakartaEe>
                 <asyncNative>true</asyncNative>
+                <library>quarkus</library>
+                <serializationLibrary>jackson</serializationLibrary>
                 <additionalModelTypeAnnotations>
                   @lombok.Data
+                  @lombok.With
                   @lombok.AllArgsConstructor
                   @lombok.NoArgsConstructor
                   @lombok.Builder
