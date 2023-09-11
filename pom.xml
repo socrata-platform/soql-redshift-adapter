@@ -74,6 +74,12 @@
       <artifactId>scala-reflect</artifactId>
       <version>${scala.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.28</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
@@ -101,6 +107,13 @@
           <compilerArgs>
             <arg>-parameters</arg>
           </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.28</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>
@@ -182,6 +195,13 @@
                 <useSwaggerAnnotations>false</useSwaggerAnnotations>
                 <interfaceOnly>true</interfaceOnly>
                 <useJakartaEe>true</useJakartaEe>
+                <asyncNative>true</asyncNative>
+                <additionalModelTypeAnnotations>
+                  @lombok.Data
+                  @lombok.AllArgsConstructor
+                  @lombok.NoArgsConstructor
+                  @lombok.Builder
+                </additionalModelTypeAnnotations>
               </configOptions>
               <apiPackage>com.socrata.api</apiPackage>
               <modelPackage>com.socrata.beans</modelPackage>
@@ -192,6 +212,22 @@
               <generateApiDocumentation>false</generateApiDocumentation>
               <auth>false</auth>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+        <version>1.18.20.0</version>
+        <configuration>
+          <sourceDirectory>${project.build.directory}/generated-sources/openapi/src/gen/java</sourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>delombok</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
@@ -207,7 +243,7 @@
             </goals>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
+                <source>${project.build.directory}/generated-sources/delombok</source>
               </sources>
             </configuration>
           </execution>

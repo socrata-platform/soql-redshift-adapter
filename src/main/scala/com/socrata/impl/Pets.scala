@@ -12,7 +12,27 @@ class Pets extends PetsApi{
 
   override def deletePet(id: lang.Long): Unit = ???
 
-  override def findPetById(id: lang.Long): Pet = ???
+  override def findPetById(id: lang.Long): Pet = {
+    Pet.builder()
+      .id(1)
+      .name("Jackson")
+      .tag("something")
+      .build()
+  }
 
-  override def findPets(tags: util.List[String], limit: Integer): util.List[Pet] = ???
+  override def findPets(tags: util.List[String], limit: Integer): util.List[Pet] = {
+    val pet = new Pet();
+    pet.name("Rex");
+    pet.id(3);
+    pet.tag("something");
+    util.List.of(
+      Pet.builder()
+        .id(1)
+        .name("Jackson")
+        .tag("something")
+        .build(),
+      new Pet("Ari","something tag",2),
+      pet
+    )
+  }
 }
