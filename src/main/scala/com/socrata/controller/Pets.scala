@@ -1,22 +1,22 @@
-package com.socrata.impl
+package com.socrata.controller
 
 import com.socrata.api.PetsApi
-import com.socrata.beans
 import com.socrata.beans.{NewPet, Pet}
 import jakarta.enterprise.context.ApplicationScoped
 
 import java.{lang, util}
 
 @ApplicationScoped
-class Pets extends PetsApi{
+class Pets extends PetsApi {
   override def addPet(newPet: NewPet): Pet = ???
 
   override def deletePet(id: lang.Long): Unit = ???
 
   override def findPetById(id: lang.Long): Pet = {
+
     Pet.builder()
       .id(1)
-      .name("Jackson")
+      .name("Jackson%s".format(id))
       .tag("something")
       .build()
   }
@@ -32,7 +32,7 @@ class Pets extends PetsApi{
         .name("Jackson")
         .tag("something")
         .build(),
-      new Pet("Ari","something tag",2),
+      new Pet("Ari", "something tag", 2),
       pet,
       pet.withId(4).name("Alex"),
       new Pet().id(5).name("Dexter").tag("something")

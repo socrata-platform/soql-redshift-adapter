@@ -6,21 +6,21 @@
   <artifactId>soql-redshift-adapter</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
+    <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
+    <lombok-plugin.version>1.18.20.0</lombok-plugin.version>
+    <lombok.version>1.18.28</lombok.version>
     <maven.compiler.release>17</maven.compiler.release>
+    <openapi-generator.version>7.0.0</openapi-generator.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.3.2</quarkus.platform.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
-    <scala.version>2.13.8</scala.version>
+    <scala.version>2.12.18</scala.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
-    <openapi-generator.version>7.0.0</openapi-generator.version>
-    <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
-    <lombok.version>1.18.28</lombok.version>
-    <lombok-plugin.version>1.18.20.0</lombok-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -60,6 +60,10 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-config-yaml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
@@ -84,7 +88,30 @@
       <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>coordinatorlib_2.12</artifactId>
+      <version>4.2.13</version>
+    </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-stdlib_2.12</artifactId>
+      <version>4.14.9</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_2.12</artifactId>
+      <version>2.15.2</version>
+    </dependency>
+
   </dependencies>
+  <repositories>
+    <repository>
+      <id>socrata</id>
+      <name>socrata</name>
+      <url>https://repo.socrata.com/artifactory/libs-release</url>
+    </repository>
+  </repositories>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -202,13 +229,11 @@
                 <asyncNative>true</asyncNative>
                 <library>quarkus</library>
                 <serializationLibrary>jackson</serializationLibrary>
-                <additionalModelTypeAnnotations>
-                  @lombok.Data
+                <additionalModelTypeAnnotations>@lombok.Data
                   @lombok.With
                   @lombok.AllArgsConstructor
                   @lombok.NoArgsConstructor
-                  @lombok.Builder
-                </additionalModelTypeAnnotations>
+                  @lombok.Builder</additionalModelTypeAnnotations>
               </configOptions>
               <apiPackage>com.socrata.api</apiPackage>
               <modelPackage>com.socrata.beans</modelPackage>
@@ -226,9 +251,6 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok-maven-plugin</artifactId>
         <version>${lombok-plugin.version}</version>
-        <configuration>
-          <sourceDirectory>${project.build.directory}/generated-sources/openapi/src/gen/java</sourceDirectory>
-        </configuration>
         <executions>
           <execution>
             <phase>generate-sources</phase>
@@ -237,6 +259,9 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <sourceDirectory>${project.build.directory}/generated-sources/openapi/src/gen/java</sourceDirectory>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
