@@ -30,6 +30,11 @@ public class QueryController implements QueryApi {
                     public ColumnValue getColumnValue() {
                         return new ColumnTextValue() {
                             @Override
+                            public String getColumnType() {
+                                return "Text";
+                            }
+
+                            @Override
                             public String getValue() {
                                 return "test";
                             }

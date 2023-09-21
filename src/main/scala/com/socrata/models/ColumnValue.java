@@ -9,7 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Schema(
         type = SchemaType.OBJECT,
         title = "ColumnValue",
-        anyOf = {ColumnTextValue.class, ColumnNumberValue.class},
+        oneOf = {ColumnTextValue.class, ColumnNumberValue.class},
         discriminatorProperty = "columnType",
         discriminatorMapping = {
                 @DiscriminatorMapping(value = "Text", schema = ColumnTextValue.class),
