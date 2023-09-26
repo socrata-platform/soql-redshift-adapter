@@ -8,8 +8,6 @@
   <properties>
     <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
-    <lombok-plugin.version>1.18.20.0</lombok-plugin.version>
-    <lombok.version>1.18.28</lombok.version>
     <maven.compiler.release>17</maven.compiler.release>
     <openapi-generator.version>7.0.0</openapi-generator.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -83,12 +81,6 @@
       <version>${scala.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.socrata</groupId>
       <artifactId>coordinatorlib_2.12</artifactId>
       <version>4.2.13</version>
@@ -142,13 +134,6 @@
           <compilerArgs>
             <arg>-parameters</arg>
           </compilerArgs>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.projectlombok</groupId>
-              <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>
-            </path>
-          </annotationProcessorPaths>
         </configuration>
       </plugin>
       <plugin>
