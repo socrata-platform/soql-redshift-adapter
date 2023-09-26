@@ -3,6 +3,17 @@ info:
   title: "SOQL Query API"
   version: "1.0.0"
 paths:
+  /version:
+    get:
+      summary: "Get Version Information"
+      description: "Retrieve the version information of the application."
+      responses:
+        200:
+          description: "Successful response containing the version information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionInfo"
   /new-query:
     post:
       summary: "Create a new query"
@@ -326,6 +337,18 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
+    VersionInfo:
+      type: "object"
+      properties:
+        version:
+          type: "string"
+          description: "The version of the application."
+        gitSHA:
+          type: "string"
+          description: "The Git SHA of the application's current commit."
+      required:
+        - version
+      description: "Object containing the version and Git SHA information of the application."
     NewQueryRequest:
       type: object
       description: "Object representing the request to create a new query."
