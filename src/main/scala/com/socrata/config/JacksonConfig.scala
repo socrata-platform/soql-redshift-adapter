@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModul
 import io.quarkus.jackson.ObjectMapperCustomizer
 import jakarta.inject.Singleton
 
+//This class is used to configure the applications ObjectMapper, the jackson serde, to be friendlier with scala.
 @Singleton
 class JacksonConfig extends ObjectMapperCustomizer {
   override def customize(objectMapper: ObjectMapper): Unit = {
