@@ -240,13 +240,6 @@
                 <asyncNative>true</asyncNative>
                 <library>quarkus</library>
                 <serializationLibrary>jackson</serializationLibrary>
-                <!--                <additionalModelTypeAnnotations>-->
-                <!--                  @lombok.Data-->
-                <!--                  @lombok.With-->
-                <!--                  @lombok.AllArgsConstructor-->
-                <!--                  @lombok.NoArgsConstructor-->
-                <!--                  @lombok.Builder-->
-                <!--                </additionalModelTypeAnnotations>-->
               </configOptions>
               <apiPackage>com.socrata.api</apiPackage>
               <modelPackage>com.socrata.model</modelPackage>
