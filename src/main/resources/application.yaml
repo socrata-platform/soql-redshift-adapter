@@ -3,3 +3,7 @@ version:
 quarkus:
   log:
     level: DEBUG
+mp:
+  openapi:
+    scan:
+      disable: true

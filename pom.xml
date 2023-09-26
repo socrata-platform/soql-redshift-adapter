@@ -222,7 +222,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <inputSpec>${project.basedir}/src/main/resources/petstore.openapi.json</inputSpec>
+              <inputSpec>${project.basedir}/src/main/resources/META-INF/openapi.yaml</inputSpec>
               <generatorName>jaxrs-spec</generatorName>
               <configHelp>false</configHelp>
               <configOptions>
