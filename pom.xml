@@ -1,20 +1,22 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
+    <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
+    <openapi-generator.version>7.0.0</openapi-generator.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.3.2</quarkus.platform.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
-    <scala.version>2.13.8</scala.version>
+    <scala.version>2.12.18</scala.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
   </properties>
@@ -48,6 +50,18 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-config-yaml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
@@ -66,7 +80,34 @@
       <artifactId>scala-reflect</artifactId>
       <version>${scala.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>coordinatorlib_2.12</artifactId>
+      <version>4.2.13</version>
+    </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-stdlib_2.12</artifactId>
+      <version>4.14.9</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_2.12</artifactId>
+      <version>2.15.2</version>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <version>1.6.11</version>
+    </dependency>
   </dependencies>
+  <repositories>
+    <repository>
+      <id>socrata</id>
+      <name>socrata</name>
+      <url>https://repo.socrata.com/artifactory/libs-release</url>
+    </repository>
+  </repositories>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -155,6 +196,65 @@
             <arg>-target:jvm-11</arg>
           </args>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${openapi-generator.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/META-INF/openapi.yaml</inputSpec>
+              <generatorName>jaxrs-spec</generatorName>
+              <configHelp>false</configHelp>
+              <configOptions>
+                <dateLibrary>java8</dateLibrary>
+                <generateBuilders>true</generateBuilders>
+                <openApiNullable>true</openApiNullable>
+                <serializableModel>true</serializableModel>
+                <supportAsync>false</supportAsync>
+                <useMicroProfileOpenAPIAnnotations>true</useMicroProfileOpenAPIAnnotations>
+                <useBeanValidation>true</useBeanValidation>
+                <useOneOfInterfaces>true</useOneOfInterfaces>
+                <useSwaggerAnnotations>true</useSwaggerAnnotations>
+                <interfaceOnly>true</interfaceOnly>
+                <useJakartaEe>true</useJakartaEe>
+                <asyncNative>true</asyncNative>
+                <library>quarkus</library>
+                <serializationLibrary>jackson</serializationLibrary>
+              </configOptions>
+              <apiPackage>com.socrata.api</apiPackage>
+              <modelPackage>com.socrata.model</modelPackage>
+              <generateModelTests>false</generateModelTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateSupportingFiles>false</generateSupportingFiles>
+              <generateApiTests>false</generateApiTests>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <auth>false</auth>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
