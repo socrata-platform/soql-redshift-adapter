@@ -26,6 +26,9 @@
         <scala.version>2.12.18</scala.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.1.2</surefire-plugin.version>
+        <soql.std.version>4.14.9</soql.std.version>
+        <aws.sdk.version>1.12.565</aws.sdk.version>
+        <redshift.jdbc.version>2.1.0.19</redshift.jdbc.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -91,6 +94,37 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-scala_2.12</artifactId>
             <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.socrata</groupId>
+            <artifactId>soql-stdlib_2.12</artifactId>
+            <version>${soql.std.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazon.redshift</groupId>
+            <artifactId>redshift-jdbc42</artifactId>
+            <version>${redshift.jdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-redshift</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sts</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>runtime</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
     <repositories>
