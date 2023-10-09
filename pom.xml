@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.socrata</groupId>
     <artifactId>soql-redshift-adapter</artifactId>
-    <version>${redshift-adapter.version}</version>
+    <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>server-redshift</module>
         <module>store-redshift</module>

@@ -7,3 +7,5 @@ mp:
   openapi:
     scan:
       disable: true
+
+redshift:
