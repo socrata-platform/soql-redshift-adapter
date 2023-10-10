@@ -7,10 +7,10 @@ import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.truth.metadata.IndexDirective
 import com.socrata.datacoordinator.util.collection.ColumnIdMap
 import com.socrata.soql.types.{SoQLType, SoQLValue}
+import db.meta.service.MetaService
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
-import meta.service.MetaService
 
 
 @ApplicationScoped
@@ -24,7 +24,9 @@ class RedshiftSecondary(
                        ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
-  override def dropDataset(datasetInternalName: String, cookie: Cookie): Unit = ???
+  override def dropDataset(datasetInternalName: String, cookie: Cookie): Unit = {
+
+  }
 
   override def currentVersion(datasetInternalName: String, cookie: Cookie): Long = ???
 

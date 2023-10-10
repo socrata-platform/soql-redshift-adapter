@@ -1,7 +1,7 @@
-package meta.service
+package db.meta.service
 
+import db.meta.repository.{DatasetInternalNameRepository, DatasetRepository}
 import jakarta.enterprise.context.ApplicationScoped
-import meta.repository.{DatasetInternalNameRepository, DatasetRepository}
 
 @ApplicationScoped
 class MetaService

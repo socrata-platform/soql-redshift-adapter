@@ -1,5 +1,5 @@
 @PersistenceUnit("meta")
-package meta;
+package db.meta;
 
 import io.quarkus.hibernate.orm.PersistenceUnit;
 

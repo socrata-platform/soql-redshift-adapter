@@ -1,4 +1,4 @@
-package meta.entity
+package db.meta.entity
 
 import jakarta.persistence.{Entity, GeneratedValue, Id, PersistenceUnit}
 

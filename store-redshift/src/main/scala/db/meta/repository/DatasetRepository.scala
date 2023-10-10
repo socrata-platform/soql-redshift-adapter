@@ -1,11 +1,11 @@
-package meta.repository
+package db.meta.repository
 
+import db.meta.entity.Dataset
 import io.quarkus.agroal.DataSource
 import io.quarkus.hibernate.orm.panache.PanacheRepository
 import jakarta.enterprise.context.ApplicationScoped
-import meta.entity.DatasetInternalName
 
 @ApplicationScoped
-class DatasetInternalNameRepository extends PanacheRepository[DatasetInternalName] {
+class DatasetRepository extends PanacheRepository[Dataset]{
 
 }

@@ -1,5 +1,5 @@
 @PersistenceUnit("store")
-package store;
+package db.store;
 
 import io.quarkus.hibernate.orm.PersistenceUnit;
 
