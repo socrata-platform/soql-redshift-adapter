@@ -1,4 +1,4 @@
-import beans.RedshiftSecondary
+import service.RedshiftSecondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp
 import io.quarkus.runtime.QuarkusApplication
 import io.quarkus.runtime.annotations.QuarkusMain
