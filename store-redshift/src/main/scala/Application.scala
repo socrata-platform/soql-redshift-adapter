@@ -8,6 +8,6 @@ import jakarta.enterprise.context.ApplicationScoped
 class Application(secondary:RedshiftSecondary) extends QuarkusApplication {
   override def run(args: String*): Int = {
     SecondaryWatcherApp(config => secondary)
-    return 0
+    0
   }
 }

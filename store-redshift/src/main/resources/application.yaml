@@ -3,7 +3,7 @@ version:
 redshift:
 quarkus:
   log:
-    level: DEBUG
+    level: INFO
   datasource:
 #   meta is our metadata store, our postgres
     meta:
@@ -14,8 +14,9 @@ quarkus:
         max-size: 11
 #   store is our data store, our redshift
     store:
-      db-kind: h2
-      username: store
+      db-kind: other
+      username: masteruser
+      password: #redacted
       jdbc:
-        url: jdbc:h2:mem:store
-        max-size: 11
+        driver: com.amazon.redshift.jdbc.Driver
+        url: jdbc:redshift://redshiftinstance-wtckbqvktove.ck5lkhdheomu.us-west-2.redshift.amazonaws.com:5439/dev

@@ -11,6 +11,7 @@ import db.meta.service.MetaService
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
+import jakarta.transaction.Transactional
 
 
 @ApplicationScoped
@@ -24,9 +25,7 @@ class RedshiftSecondary(
                        ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
-  override def dropDataset(datasetInternalName: String, cookie: Cookie): Unit = {
-
-  }
+  override def dropDataset(datasetInternalName: String, cookie: Cookie): Unit = ???
 
   override def currentVersion(datasetInternalName: String, cookie: Cookie): Long = ???
 

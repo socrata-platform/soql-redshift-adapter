@@ -1,4 +1,4 @@
-@PersistenceUnit("meta")
+@PersistenceUnit("db/meta")
 package db.meta;
 
 import io.quarkus.hibernate.orm.PersistenceUnit;
