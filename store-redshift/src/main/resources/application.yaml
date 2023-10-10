@@ -16,7 +16,13 @@ quarkus:
     store:
       db-kind: other
       username: masteruser
-      password: #redacted
+      password: ${REDSHIFT_PASSWORD}
       jdbc:
         driver: com.amazon.redshift.jdbc.Driver
         url: jdbc:redshift://redshiftinstance-wtckbqvktove.ck5lkhdheomu.us-west-2.redshift.amazonaws.com:5439/dev
+com:
+  socrata:
+    coordinator:
+      secondary-watcher:
+        database:
+          host: localhost

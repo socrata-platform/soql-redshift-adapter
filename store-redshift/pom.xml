@@ -19,6 +19,11 @@
       <artifactId>secondarylib_2.12</artifactId>
       <version>${secondarylib.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>19.0</version>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
