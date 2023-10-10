@@ -20,9 +20,3 @@ quarkus:
       jdbc:
         driver: com.amazon.redshift.jdbc.Driver
         url: jdbc:redshift://redshiftinstance-wtckbqvktove.ck5lkhdheomu.us-west-2.redshift.amazonaws.com:5439/dev
-com:
-  socrata:
-    coordinator:
-      secondary-watcher:
-        database:
-          host: localhost
