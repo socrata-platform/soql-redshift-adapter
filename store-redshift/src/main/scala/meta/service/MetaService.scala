@@ -6,8 +6,8 @@ import meta.repository.{DatasetInternalNameRepository, DatasetRepository}
 @ApplicationScoped
 class MetaService
 (
-  datasetService: DatasetService,
-  datasetInternalNameService: DatasetInternalNameService
+  val datasetService: DatasetService,
+  val datasetInternalNameService: DatasetInternalNameService
 ) {
 
 }
