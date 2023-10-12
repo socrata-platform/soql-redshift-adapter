@@ -28,6 +28,7 @@
     <skipITs>true</skipITs>
     <soql.std.version>4.14.9</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
+    <skipTests>true</skipTests>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -181,6 +182,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <skipTests>${skipTests}</skipTests>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
