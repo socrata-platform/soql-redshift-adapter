@@ -9,45 +9,19 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <groupId>com.socrata</groupId>
-    <artifactId>soql-redshift-adapter-store</artifactId>
+    <artifactId>soql-redshift-adapter-common</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <properties>
-        <secondarylib.version>4.2.15</secondarylib.version>
+        <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
+        <openapi-generator.version>7.0.0</openapi-generator.version>
     </properties>
     <dependencies>
-        <dependency>
-            <artifactId>soql-redshift-adapter-common</artifactId>
-            <groupId>com.socrata</groupId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.socrata</groupId>
-            <artifactId>secondarylib_2.12</artifactId>
-            <version>${secondarylib.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.liquibase</groupId>
-                    <artifactId>liquibase-plugin</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.tototoshi</groupId>
-            <artifactId>scala-csv_2.12</artifactId>
-            <version>1.3.10</version>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
-
         </plugins>
     </build>
     <profiles>

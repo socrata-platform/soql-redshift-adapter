@@ -10,6 +10,7 @@
     <modules>
         <module>server-redshift</module>
         <module>store-redshift</module>
+        <module>common-redshift</module>
     </modules>
     <properties>
         <aws.sdk.version>1.12.565</aws.sdk.version>
