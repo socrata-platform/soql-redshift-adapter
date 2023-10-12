@@ -88,7 +88,7 @@ class InsertTest {
 
       }
     } { elapsed =>
-      println(s"Inserting via JDBC sequential took $elapsed")
+      println(s"100k rows via 10k batch, JDBC took $elapsed")
     }
   }
 
@@ -117,7 +117,7 @@ class InsertTest {
 
       }
     } { elapsed =>
-      println(s"Inserting via JDBC sequential took $elapsed")
+      println(s"100k rows all batched, JDBC took $elapsed")
     }
   }
 
