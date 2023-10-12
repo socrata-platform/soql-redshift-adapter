@@ -2,6 +2,8 @@ version:
   version: 5.2
 redshift:
 quarkus:
+  test:
+    hang-detection-timeout:
   log:
     level: INFO
   datasource:
