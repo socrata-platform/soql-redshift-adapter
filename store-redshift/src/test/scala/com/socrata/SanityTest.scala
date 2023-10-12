@@ -18,11 +18,11 @@ class SanityTest() {
   @DisplayName("Connect to redshift jdbc")
   @Test
   def connectToRedshiftJdbc() = {
-    Using(dataSource.getConnection) { conn =>
+    Using.resource(dataSource.getConnection) { conn =>
       val databaseName = conn.getMetaData.getDatabaseProductName;
       println(s"Database name: '$databaseName'")
       assert(databaseName=="Redshift")
-    }.get
+    }
   }
 
 }
