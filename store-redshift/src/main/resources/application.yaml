@@ -5,14 +5,14 @@ quarkus:
   log:
     level: INFO
   datasource:
-#   meta is our metadata store, our postgres
+    #   meta is our metadata store, our postgres
     meta:
       db-kind: h2
       username: meta
       jdbc:
         url: jdbc:h2:mem:meta
         max-size: 11
-#   store is our data store, our redshift
+    #   store is our data store, our redshift
     store:
       db-kind: other
       username: masteruser

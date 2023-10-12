@@ -11,7 +11,6 @@ import db.meta.service.MetaService
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
-import jakarta.transaction.Transactional
 
 
 @ApplicationScoped

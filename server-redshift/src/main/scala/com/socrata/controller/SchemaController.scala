@@ -7,6 +7,6 @@ import jakarta.enterprise.context.ApplicationScoped
 import java.lang
 
 @ApplicationScoped
-class SchemaController extends SchemaApi{
+class SchemaController extends SchemaApi {
   override def schemaGet(copy: String, fieldName: lang.Boolean, ds: String, rn: String): DatasetSchema = ???
 }

@@ -5,6 +5,6 @@ import com.socrata.model.VersionInfo
 import jakarta.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
-class VersionController extends VersionApi{
+class VersionController extends VersionApi {
   override def versionGet(): VersionInfo = ???
 }

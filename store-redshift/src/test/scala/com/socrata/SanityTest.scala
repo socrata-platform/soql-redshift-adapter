@@ -21,7 +21,7 @@ class SanityTest() {
     Using.resource(dataSource.getConnection) { conn =>
       val databaseName = conn.getMetaData.getDatabaseProductName;
       println(s"Database name: '$databaseName'")
-      assert(databaseName=="Redshift")
+      assert(databaseName == "Redshift")
     }
   }
 

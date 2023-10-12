@@ -1,6 +1,6 @@
 package db.meta.service
 
-import db.meta.repository.{DatasetInternalNameRepository, DatasetRepository}
+import db.meta.repository.DatasetRepository
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.transaction.Transactional
 

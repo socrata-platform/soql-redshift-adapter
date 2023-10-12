@@ -1,16 +1,16 @@
 package db.meta.entity
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity
-import jakarta.persistence.{Entity, GeneratedValue, Id, PersistenceUnit}
+import jakarta.persistence.Entity
 
-import java.time.{LocalDateTime, ZonedDateTime}
+import java.time.ZonedDateTime
 
 @Entity
 class DatasetInternalName
 (
-  val dataset:Dataset,
+  val dataset: Dataset,
   val name: String,
-  val disabled:ZonedDateTime
+  val disabled: ZonedDateTime
 
 ) extends PanacheEntity {
 

@@ -7,6 +7,6 @@ import jakarta.enterprise.context.ApplicationScoped
 import java.{lang, util}
 
 @ApplicationScoped
-class RollupsController extends RollupsApi{
+class RollupsController extends RollupsApi {
   override def rollupsGet(ds: String, rn: String, copy: String, includeUnmaterialized: lang.Boolean): util.List[RollupInfo] = ???
 }
