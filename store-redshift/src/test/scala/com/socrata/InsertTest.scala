@@ -1,7 +1,7 @@
 package com.socrata
 
-import scala.collection.JavaConversions._
-import com.opencsv.{CSVParserBuilder, CSVReader, CSVReaderBuilder}
+import com.amazonaws.services.s3.AmazonS3
+import com.opencsv.{CSVParserBuilder, CSVReaderBuilder}
 import com.socrata.util.Timing
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
@@ -10,18 +10,18 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.{BeforeEach, DisplayName, Test, Timeout}
 
 import java.util.concurrent.TimeUnit
-import scala.io.{BufferedSource, Source}
+import scala.collection.JavaConversions._
+import scala.io.Source
 import scala.util.Using
 
 @DisplayName("Redshift insert tests")
-@QuarkusTest
-class InsertTest {
+@QuarkusTest class InsertTest {
   @DataSource("store")
-  @Inject
-  var dataSource: AgroalDataSource = _
+  @Inject var dataSource: AgroalDataSource = _
 
-  @BeforeEach
-  def beforeEach(): Unit = {
+  @Inject var s3: AmazonS3 = _
+
+  @BeforeEach def beforeEach(): Unit = {
     Using.resource(dataSource.getConnection) { conn =>
       Using.resource(conn.createStatement()) { stmt =>
         stmt.executeUpdate(
@@ -42,26 +42,8 @@ class InsertTest {
     }
   }
 
-  def readTestData(path:String)={
-    val reader = Source.fromURL(getClass.getResource(path))
-
-    val parser = new CSVParserBuilder()
-      .withSeparator(',')
-      .withIgnoreQuotations(false)
-      .withIgnoreLeadingWhiteSpace(true)
-      .withStrictQuotes(false)
-      .build();
-
-    val csvReader = new CSVReaderBuilder(reader.reader())
-      .withSkipLines(1)
-      .withCSVParser(parser)
-      .build();
-    csvReader
-  }
-
   @DisplayName("100k rows via 10k batch, JDBC")
-  @Test
-  def jdbcSequential():Unit = {
+  @Test def insertJdbc100k10k(): Unit = {
     val data = readTestData("/data/hdyn-4f6y/data.csv")
     val batchSize = 10000
     Timing.Timed {
@@ -78,8 +60,8 @@ class InsertTest {
             stmt.setLong(7, elem(6).trim.toLong)
             stmt.setString(8, elem(7).trim)
             stmt.addBatch()
-            count+=1
-            if (count%batchSize==0){
+            count += 1
+            if (count % batchSize == 0) {
               stmt.executeUpdate()
             }
           }
@@ -92,10 +74,18 @@ class InsertTest {
     }
   }
 
+  def readTestData(path: String) = {
+    val reader = Source.fromURL(getClass.getResource(path))
+
+    val parser = new CSVParserBuilder().withSeparator(',').withIgnoreQuotations(false).withIgnoreLeadingWhiteSpace(true).withStrictQuotes(false).build();
+
+    val csvReader = new CSVReaderBuilder(reader.reader()).withSkipLines(1).withCSVParser(parser).build();
+    csvReader
+  }
+
   @Timeout(value = 10, unit = TimeUnit.SECONDS)
   @DisplayName("100k rows all batched, JDBC")
-  @Test
-  def jdbcBatch(): Unit = {
+  @Test def insertJdbc100k100k(): Unit = {
     val data = readTestData("/data/hdyn-4f6y/data.csv")
 
     Timing.Timed {
@@ -122,8 +112,10 @@ class InsertTest {
   }
 
   @DisplayName("via S3")
-  @Test
-  def s3() = {
+  @Test def insertS3100k():Unit = {
+    val filename = "hdyn-4f6y.csv"
+    s3.putObject("staging-redshift-adapter",filename,getClass.getResource("/data/hdyn-4f6y/data.csv").getPath);
+    
 
   }
 
