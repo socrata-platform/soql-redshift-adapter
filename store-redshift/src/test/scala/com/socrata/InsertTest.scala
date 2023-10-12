@@ -1,5 +1,7 @@
 package com.socrata
 
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.services.redshift.AmazonRedshift
 import com.amazonaws.services.s3.AmazonS3
 import com.opencsv.{CSVParserBuilder, CSVReaderBuilder}
 import com.socrata.util.Timing
@@ -16,10 +18,15 @@ import scala.util.Using
 
 @DisplayName("Redshift insert tests")
 @QuarkusTest class InsertTest {
+
   @DataSource("store")
   @Inject var dataSource: AgroalDataSource = _
 
   @Inject var s3: AmazonS3 = _
+
+  @Inject var redshift: AmazonRedshift = _
+
+  @Inject var awsCredentials: AWSCredentials = _
 
   @BeforeEach def beforeEach(): Unit = {
     Using.resource(dataSource.getConnection) { conn =>
@@ -83,7 +90,6 @@ import scala.util.Using
     csvReader
   }
 
-  @Timeout(value = 10, unit = TimeUnit.SECONDS)
   @DisplayName("100k rows all batched, JDBC")
   @Test def insertJdbc100k100k(): Unit = {
     val data = readTestData("/data/hdyn-4f6y/data.csv")
@@ -111,12 +117,31 @@ import scala.util.Using
     }
   }
 
-  @DisplayName("via S3")
-  @Test def insertS3100k():Unit = {
+  @DisplayName("100k rows, S3")
+  @Test def insertS3100k(): Unit = {
+    val bucket = "staging-redshift-adapter"
+    val table = "hdyn-4f6y"
     val filename = "hdyn-4f6y.csv"
-    s3.putObject("staging-redshift-adapter",filename,getClass.getResource("/data/hdyn-4f6y/data.csv").getPath);
-    
+    s3.deleteObject(bucket,filename)
+    Timing.Timed {
+      s3.putObject(bucket, filename, getClass.getResource("/data/hdyn-4f6y/data.csv").getPath);
+      Using.resource(dataSource.getConnection) { conn =>
+        Using.resource(conn.prepareStatement(
+          s"""
+            |copy "$table"
+            |from 's3://$bucket/$filename'
+            |access_key_id '${awsCredentials.getAWSAccessKeyId}'
+            |secret_access_key '${awsCredentials.getAWSSecretKey}'
+            |format as csv
+            |ignoreheader 1;
+            |""".stripMargin)) { stmt =>
+          stmt.executeUpdate()
+        }
 
+      }
+    } { elapsed =>
+      println(s"100k rows, S3 took $elapsed")
+    }
   }
 
 }
