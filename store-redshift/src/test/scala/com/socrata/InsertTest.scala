@@ -64,7 +64,8 @@ import scala.util.Using
 
 
   @DisplayName("100k rows via 1k batch, JDBC")
-  @Test def insertJdbc100k1k(): Unit = {
+  @Test
+  def insertJdbc100k1k(): Unit = {
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -78,7 +79,8 @@ import scala.util.Using
   }
 
   @DisplayName("100k rows via 10k batch, JDBC")
-  @Test def insertJdbc100k10k(): Unit = {
+  @Test
+  def insertJdbc100k10k(): Unit = {
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -92,7 +94,8 @@ import scala.util.Using
   }
 
   @DisplayName("100k rows via 100k batch, JDBC")
-  @Test def insertJdbc100k100k(): Unit = {
+  @Test
+  def insertJdbc100k100k(): Unit = {
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
