@@ -65,9 +65,25 @@ class InsertTest {
   }
 
 
-  @DisplayName("100k rows via 1k batch, JDBC")
+  @DisplayName("10k rows via 100 batch, JDBC")
   @Test
-  def insertJdbc100k1k(): Unit = {
+  def insertJdbc10k100(): Unit = {
+    Timing.Timed {
+      insertService.insertJdbc(
+        "hdyn-4f6y",
+        Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
+        100,
+        readTestData("/data/hdyn-4f6y/data.csv").iterator()
+      )
+    } { elapsed =>
+      println(s"10k rows via 100 batch, JDBC took $elapsed")
+    }
+    assert(insertService.getTableRowCount("hdyn-4f6y") == 10000L)
+  }
+
+  @DisplayName("10k rows via 1k batch, JDBC")
+  @Test
+  def insertJdbc10k1k(): Unit = {
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -76,13 +92,14 @@ class InsertTest {
         readTestData("/data/hdyn-4f6y/data.csv").iterator()
       )
     } { elapsed =>
-      println(s"100k rows via 1k batch, JDBC took $elapsed")
+      println(s"10k rows via 1k batch, JDBC took $elapsed")
     }
+    assert(insertService.getTableRowCount("hdyn-4f6y") == 10000L)
   }
 
-  @DisplayName("100k rows via 10k batch, JDBC")
+  @DisplayName("10k rows via 10k batch, JDBC")
   @Test
-  def insertJdbc100k10k(): Unit = {
+  def insertJdbc10k10k(): Unit = {
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -91,33 +108,20 @@ class InsertTest {
         readTestData("/data/hdyn-4f6y/data.csv").iterator()
       )
     } { elapsed =>
-      println(s"100k rows via 10k batch, JDBC took $elapsed")
+      println(s"10k rows via 10k batch, JDBC took $elapsed")
     }
+    assert(insertService.getTableRowCount("hdyn-4f6y") == 10000L)
   }
 
-  @DisplayName("100k rows via 100k batch, JDBC")
+  @DisplayName("10k rows via S3")
   @Test
-  def insertJdbc100k100k(): Unit = {
-    Timing.Timed {
-      insertService.insertJdbc(
-        "hdyn-4f6y",
-        Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
-        100000,
-        readTestData("/data/hdyn-4f6y/data.csv").iterator()
-      )
-    } { elapsed =>
-      println(s"100k rows via 100k batch, JDBC took $elapsed")
-    }
-  }
-
-  @DisplayName("100k rows via S3")
-  @Test
-  def insertS3100k(): Unit = {
+  def insertS310k(): Unit = {
     Timing.Timed {
       insertService.insertS3("staging-redshift-adapter","hdyn-4f6y",new File(getClass.getResource("/data/hdyn-4f6y/data.csv").toURI))
     } { elapsed =>
-      println(s"100k rows via S3 took $elapsed")
+      println(s"10k rows via S3 took $elapsed")
     }
+    assert(insertService.getTableRowCount("hdyn-4f6y") == 10000L)
   }
 
 }
