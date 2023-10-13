@@ -21,7 +21,7 @@ class InsertService
   awsCredentials: AWSCredentials
 ) {
 
-  def results[T](resultSet: ResultSet)(f: ResultSet => T) = {
+  def extract[T](resultSet: ResultSet)(f: ResultSet => T) = {
     if (resultSet.next()){
       new Iterator[T] {
         def hasNext = resultSet.next()
@@ -37,7 +37,7 @@ class InsertService
     Using.resource(dataSource.getConnection) { conn =>
       Using.resource(conn.prepareStatement(s"""select count(*) from "$tableName";""")) { stmt =>
         val resultset = stmt.executeQuery();
-        val rowcount = results(resultset)(rs => rs.getLong(1)).next()
+        val rowcount = extract(resultset)(rs => rs.getLong(1)).next()
         println(s"Table $tableName has $rowcount records")
         rowcount
       }
