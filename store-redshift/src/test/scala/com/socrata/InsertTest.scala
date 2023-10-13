@@ -58,7 +58,7 @@ class InsertTest {
     } { elapsed =>
       println(s"100k rows via 1k batch, JDBC took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 10000L)
+    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
 
   @DisplayName("100k rows via 10k batch, JDBC")
@@ -74,7 +74,7 @@ class InsertTest {
     } { elapsed =>
       println(s"100k rows via 10k batch, JDBC took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 10000L)
+    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
 
   @DisplayName("100k rows via 100k batch, JDBC")
@@ -90,7 +90,7 @@ class InsertTest {
     } { elapsed =>
       println(s"100k rows via 100k batch, JDBC took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 10000L)
+    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
 
   @DisplayName("100k rows via S3")
@@ -101,7 +101,7 @@ class InsertTest {
     } { elapsed =>
       println(s"100k rows via S3 took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 10000L)
+    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
 
 }
