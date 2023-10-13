@@ -21,24 +21,23 @@ class InsertService
   awsCredentials: AWSCredentials
 ) {
 
-  def extract[T](resultSet: ResultSet)(f: ResultSet => T) = {
-    if (resultSet.next()){
-      new Iterator[T] {
-        def hasNext = resultSet.next()
+  def extract[T](res: ResultSet)(f: ResultSet => T): Stream[T] = {
+    new Iterator[T] {
+      def hasNext = res.next()
 
-        def next() = f(resultSet)
-      }
-    }else{
-      Iterator.empty
-    }
+      def next() = f(res)
+    }.toStream
   }
 
-  def getTableRowCount(tableName:String):Long={
+  def getTableRowCount(tableName:String):Option[Long]={
     Using.resource(dataSource.getConnection) { conn =>
       Using.resource(conn.prepareStatement(s"""select count(*) from "$tableName";""")) { stmt =>
         val resultset = stmt.executeQuery();
-        val rowcount = extract(resultset)(rs => rs.getLong(1)).next()
-        println(s"Table $tableName has $rowcount records")
+        val rowcount:Option[Long] = extract(resultset)(rs => rs.getLong(1)).headOption;
+        rowcount match{
+          case Some(count)=> println(s"Table $tableName has $count records")
+          case _=> println(s"Unable to get record count for table $tableName")
+        }
         rowcount
       }
     }
