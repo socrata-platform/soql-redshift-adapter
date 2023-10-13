@@ -6,7 +6,6 @@ import com.amazonaws.services.redshift.{AmazonRedshift, AmazonRedshiftClientBuil
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
-import jakarta.inject.Named
 import org.eclipse.microprofile.config.inject.ConfigProperty
 
 @ApplicationScoped
@@ -17,7 +16,7 @@ class AwsConfig {
   (
     @ConfigProperty(name = "aws.accessKey") accessKey: String,
     @ConfigProperty(name = "aws.secretKey") secretKey: String
-  ): AWSCredentials={
+  ): AWSCredentials = {
     new BasicAWSCredentials(accessKey, secretKey)
   }
 
@@ -46,7 +45,7 @@ class AwsConfig {
   (
     credentialsProvider: AWSCredentialsProvider,
     @ConfigProperty(name = "aws.region") region: String
-  ):AmazonRedshift={
+  ): AmazonRedshift = {
     AmazonRedshiftClientBuilder.standard()
       .withCredentials(credentialsProvider)
       .withRegion(region)

@@ -8,7 +8,6 @@ import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
 
 import java.io.File
-import java.sql.ResultSet
 import java.util.UUID
 import scala.util.Using
 
@@ -20,29 +19,6 @@ class InsertService
   s3: AmazonS3,
   awsCredentials: AWSCredentials
 ) {
-
-  def extract[T](res: ResultSet)(f: ResultSet => T): Stream[T] = {
-    new Iterator[T] {
-      def hasNext = res.next()
-
-      def next() = f(res)
-    }.toStream
-  }
-
-  def getTableRowCount(tableName:String):Option[Long]={
-    Using.resource(dataSource.getConnection) { conn =>
-      Using.resource(conn.prepareStatement(s"""select count(*) from "$tableName";""")) { stmt =>
-        Using.resource(stmt.executeQuery()){resultSet=>
-          val rowcount: Option[Long] = extract(resultSet)(rs => rs.getLong(1)).headOption;
-          rowcount match {
-            case Some(count) => println(s"Table $tableName has $count records")
-            case _ => println(s"Unable to get record count for table $tableName")
-          }
-          rowcount
-        }
-      }
-    }
-  }
 
   def insertJdbc[T](tableName: String, columnNames: Array[String], batchSize: Long, iterator: Iterator[Array[T]]): Unit = {
     assert(batchSize >= 1)
@@ -62,26 +38,24 @@ class InsertService
           count += 1
           if (count % batchSize == 0) {
             currentBatch = count / batchSize
-            println(s"Executing batch #$currentBatch, total: $count")
             Timing.Timed {
               stmt.executeLargeBatch()
               stmt.clearParameters()
               stmt.clearBatch()
             } { elapsed =>
-              println(s"Batch #$currentBatch took $elapsed")
+              println(s"Batch #$currentBatch, total: $count, took: $elapsed")
             }
           } else {
             currentBatch = (count / batchSize) + 1
           }
         }
-        if(count % batchSize!=0){
-          println(s"Executing final batch #$currentBatch, total: $count")
+        if (count % batchSize != 0) {
           Timing.Timed {
             stmt.executeLargeBatch()
             stmt.clearParameters()
             stmt.clearBatch()
           } { elapsed =>
-            println(s"Batch #$currentBatch took $elapsed")
+            println(s"Batch #$currentBatch, total: $count, took: $elapsed")
           }
         }
       }
