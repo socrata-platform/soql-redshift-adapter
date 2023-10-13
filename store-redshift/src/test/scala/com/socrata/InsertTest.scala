@@ -12,7 +12,8 @@ import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.{BeforeEach, DisplayName, Test, Timeout}
 
-import java.io.File
+import java.io.{File, FileInputStream, FileReader}
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import scala.collection.JavaConversions._
 import scala.io.Source
@@ -48,7 +49,7 @@ class InsertTest {
   }
 
   def readTestData(path: String) = {
-    val reader = Source.fromURL(getClass.getResource(path))
+    val reader = new FileReader(new File(getClass.getResource(path).toURI))
 
     val parser = new CSVParserBuilder().withSeparator(',')
       .withIgnoreQuotations(false)
@@ -56,7 +57,7 @@ class InsertTest {
       .withStrictQuotes(false)
       .build();
 
-    val csvReader = new CSVReaderBuilder(reader.reader())
+    val csvReader = new CSVReaderBuilder(reader)
       .withSkipLines(1)
       .withCSVParser(parser)
       .build();
