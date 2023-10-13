@@ -19,7 +19,8 @@ import scala.io.Source
 import scala.util.Using
 
 @DisplayName("Redshift insert tests")
-@QuarkusTest class InsertTest {
+@QuarkusTest
+class InsertTest {
 
   @DataSource("store")
   @Inject var dataSource: AgroalDataSource = _
