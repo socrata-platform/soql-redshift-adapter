@@ -49,6 +49,7 @@ class InsertTest {
   @DisplayName("100k rows via 1k batch, JDBC")
   @Test
   def insertJdbc100k1k(): Unit = {
+    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -65,6 +66,7 @@ class InsertTest {
   @DisplayName("100k rows via 10k batch, JDBC")
   @Test
   def insertJdbc100k10k(): Unit = {
+    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -81,6 +83,7 @@ class InsertTest {
   @DisplayName("100k rows via 100k batch, JDBC")
   @Test
   def insertJdbc100k100k(): Unit = {
+    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
     Timing.Timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
@@ -97,6 +100,7 @@ class InsertTest {
   @DisplayName("100k rows via S3")
   @Test
   def insertS3100k(): Unit = {
+    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
     Timing.Timed {
       insertService.insertS3("staging-redshift-adapter", "hdyn-4f6y", new File(getClass.getResource("/data/hdyn-4f6y/data.csv").toURI))
     } { elapsed =>

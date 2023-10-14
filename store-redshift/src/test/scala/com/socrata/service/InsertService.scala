@@ -68,25 +68,35 @@ class InsertService
   def insertS3(bucketName: String, tableName: String, file: File): Unit = {
     val uuid = UUID.randomUUID()
     val fileName = s"upload/$uuid"
-    Log.info(s"Uploading file ${file.getAbsolutePath} to $bucketName/$fileName")
-    s3.putObject(bucketName, fileName, file);
+    Timing.Timed{
+      s3.putObject(bucketName, fileName, file);
+    }{elapsed=>
+      Log.info(s"Uploading file ${file.getAbsolutePath} to $bucketName/$fileName took $elapsed")
+    }
     try {
-      Using.resource(dataSource.getConnection) { conn =>
-        Using.resource(conn.prepareStatement(
-          s"""
-             |copy "$tableName"
-             |from 's3://$bucketName/$fileName'
-             |access_key_id '${awsCredentials.getAWSAccessKeyId}'
-             |secret_access_key '${awsCredentials.getAWSSecretKey}'
-             |format as csv
-             |ignoreheader 1;
-             |""".stripMargin)) { stmt =>
-          stmt.executeUpdate()
+      Timing.Timed{
+        Using.resource(dataSource.getConnection) { conn =>
+          Using.resource(conn.prepareStatement(
+            s"""
+               |copy "$tableName"
+               |from 's3://$bucketName/$fileName'
+               |access_key_id '${awsCredentials.getAWSAccessKeyId}'
+               |secret_access_key '${awsCredentials.getAWSSecretKey}'
+               |format as csv
+               |ignoreheader 1;
+               |""".stripMargin)) { stmt =>
+            stmt.executeUpdate()
+          }
         }
+      }{elapsed=>
+        Log.info(s"""Coping $bucketName/$fileName to table "$tableName" took $elapsed""")
       }
     } finally {
-      Log.info(s"Deleting file $bucketName/$fileName")
-      s3.deleteObject(bucketName, fileName);
+      Timing.Timed{
+        s3.deleteObject(bucketName, fileName);
+      }{elapsed=>
+        Log.info(s"Deleting $bucketName/$fileName took $elapsed")
+      }
     }
 
   }
