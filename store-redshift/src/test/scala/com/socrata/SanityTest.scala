@@ -1,5 +1,6 @@
 package com.socrata
 
+import io.quarkus.logging.Log
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.test.junit.QuarkusTest
@@ -20,7 +21,7 @@ class SanityTest() {
   def connectToRedshiftJdbc() = {
     Using.resource(dataSource.getConnection) { conn =>
       val databaseName = conn.getMetaData.getDatabaseProductName;
-      println(s"Database name: '$databaseName'")
+      Log.info(s"Database name: '$databaseName'")
       assert(databaseName == "Redshift")
     }
   }

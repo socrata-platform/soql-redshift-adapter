@@ -1,5 +1,6 @@
 package com.socrata
 
+import io.quarkus.logging.Log
 import com.socrata.service.{InsertService, QueryService}
 import com.socrata.util.TestData.readTestData
 import com.socrata.util.Timing
@@ -56,7 +57,7 @@ class InsertTest {
         readTestData("/data/hdyn-4f6y/data.csv").iterator()
       )
     } { elapsed =>
-      println(s"100k rows via 1k batch, JDBC took $elapsed")
+      Log.info(s"100k rows via 1k batch, JDBC took $elapsed")
     }
     assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
@@ -72,7 +73,7 @@ class InsertTest {
         readTestData("/data/hdyn-4f6y/data.csv").iterator()
       )
     } { elapsed =>
-      println(s"100k rows via 10k batch, JDBC took $elapsed")
+      Log.info(s"100k rows via 10k batch, JDBC took $elapsed")
     }
     assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
@@ -88,7 +89,7 @@ class InsertTest {
         readTestData("/data/hdyn-4f6y/data.csv").iterator()
       )
     } { elapsed =>
-      println(s"100k rows via 100k batch, JDBC took $elapsed")
+      Log.info(s"100k rows via 100k batch, JDBC took $elapsed")
     }
     assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
@@ -99,7 +100,7 @@ class InsertTest {
     Timing.Timed {
       insertService.insertS3("staging-redshift-adapter", "hdyn-4f6y", new File(getClass.getResource("/data/hdyn-4f6y/data.csv").toURI))
     } { elapsed =>
-      println(s"100k rows via S3 took $elapsed")
+      Log.info(s"100k rows via S3 took $elapsed")
     }
     assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
   }
