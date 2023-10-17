@@ -12,7 +12,9 @@
     <artifactId>soql-redshift-adapter-store</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <properties>
-        <secondarylib.version>4.2.15</secondarylib.version>
+        <secondarylib.version>4.2.16</secondarylib.version>
+        <guava.version>19.0</guava.version>
+        <aws-java-sdk-redshift.version>1.12.565</aws-java-sdk-redshift.version>
     </properties>
     <dependencies>
         <dependency>
@@ -34,18 +36,18 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-redshift</artifactId>
-            <version>1.12.565</version>
+            <version>${aws-java-sdk-redshift.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.12.565</version>
+            <version>${aws-java-sdk-redshift.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
