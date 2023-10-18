@@ -39,7 +39,7 @@ class InsertService
           count += 1
           if (count % batchSize == 0) {
             currentBatch = count / batchSize
-            Timing.Timed {
+            Timing.timed {
               stmt.executeLargeBatch()
               stmt.clearParameters()
               stmt.clearBatch()
@@ -51,7 +51,7 @@ class InsertService
           }
         }
         if (count % batchSize != 0) {
-          Timing.Timed {
+          Timing.timed {
             stmt.executeLargeBatch()
             stmt.clearParameters()
             stmt.clearBatch()
@@ -68,13 +68,13 @@ class InsertService
   def insertS3(bucketName: String, tableName: String, file: File): Unit = {
     val uuid = UUID.randomUUID()
     val fileName = s"upload/$uuid"
-    Timing.Timed{
+    Timing.timed{
       s3.putObject(bucketName, fileName, file);
     }{elapsed=>
       Log.info(s"Uploading file ${file.getAbsolutePath} to $bucketName/$fileName took $elapsed")
     }
     try {
-      Timing.Timed{
+      Timing.timed{
         Using.resource(dataSource.getConnection) { conn =>
           Using.resource(conn.prepareStatement(
             s"""
@@ -92,7 +92,7 @@ class InsertService
         Log.info(s"""Coping $bucketName/$fileName to table "$tableName" took $elapsed""")
       }
     } finally {
-      Timing.Timed{
+      Timing.timed{
         s3.deleteObject(bucketName, fileName);
       }{elapsed=>
         Log.info(s"Deleting $bucketName/$fileName took $elapsed")

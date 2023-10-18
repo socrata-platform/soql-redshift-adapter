@@ -50,7 +50,7 @@ class InsertTest {
   @Test
   def insertJdbc100k1k(): Unit = {
     assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
-    Timing.Timed {
+    Timing.timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
@@ -67,7 +67,7 @@ class InsertTest {
   @Test
   def insertJdbc100k10k(): Unit = {
     assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
-    Timing.Timed {
+    Timing.timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
@@ -84,7 +84,7 @@ class InsertTest {
   @Test
   def insertJdbc100k100k(): Unit = {
     assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
-    Timing.Timed {
+    Timing.timed {
       insertService.insertJdbc(
         "hdyn-4f6y",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
@@ -101,7 +101,7 @@ class InsertTest {
   @Test
   def insertS3100k(): Unit = {
     assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
-    Timing.Timed {
+    Timing.timed {
       insertService.insertS3("staging-redshift-adapter", "hdyn-4f6y", new File(getClass.getResource("/data/hdyn-4f6y/data.csv").toURI))
     } { elapsed =>
       Log.info(s"100k rows via S3 took $elapsed")
