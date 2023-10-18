@@ -11,7 +11,9 @@ import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
-import org.apache.curator.framework.{CuratorFrameworkFactory, CuratorFramework}
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
+import org.apache.curator.retry.BoundedExponentialBackoffRetry
+import service.RedshiftSecondary
 
 import java.io.OutputStream
 import java.sql.Connection
@@ -65,12 +67,14 @@ object RedshiftCopyIn extends ((Connection, String, OutputStream => Unit) => Lon
 
   @Produces
   def curator(zkConfig: ZookeeperConfig): CuratorFramework = {
-    CuratorFrameworkFactory.newClient(
+    val curator = CuratorFrameworkFactory.newClient(
       zkConfig.ensemble,
       new BoundedExponentialBackoffRetry(
         zkConfig.baseSleepTimeMs,
         zkConfig.maxSleepTimeMs,
-        zkConfig.maxRetries)).start()
+        zkConfig.maxRetries))
+    curator.start()
+    curator
   }
 
   @Produces
@@ -84,6 +88,6 @@ object RedshiftCopyIn extends ((Connection, String, OutputStream => Unit) => Lon
   //TODO: Map keys will need to be dynamic
 
   @Produces
-  def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> secondary)
+  def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> (secondary,1))
 
 }
