@@ -28,6 +28,7 @@
             <version>${secondarylib.version}</version>
             <exclusions>
                 <exclusion>
+<!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
                     <groupId>org.liquibase</groupId>
                     <artifactId>liquibase-plugin</artifactId>
                 </exclusion>
