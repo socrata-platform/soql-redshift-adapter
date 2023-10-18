@@ -32,6 +32,10 @@
                     <groupId>org.liquibase</groupId>
                     <artifactId>liquibase-plugin</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.jsuereth</groupId>
+                    <artifactId>sbt-pgp</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
