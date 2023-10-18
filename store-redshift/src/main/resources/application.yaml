@@ -5,6 +5,11 @@ aws:
   region: ${AWS_DEFAULT_REGION}
   accessKey: ${AWS_ACCESS_KEY_ID}
   secretKey: ${AWS_SECRET_ACCESS_KEY}
+zookeeper:
+  ensemble: ${ZK_ENSEMBLE}
+  baseSleepTimeMs: ${ZK_BASE_SLEEP_TIME_MS}
+  maxSleepTimeMs: ${ZK_MAX_SLEEP_TIME_MS}
+  maxRetries: ${ZK_MAX_RETRIES}
 quarkus:
   test:
     hang-detection-timeout:

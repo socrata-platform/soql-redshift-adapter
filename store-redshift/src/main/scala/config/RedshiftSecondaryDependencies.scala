@@ -11,7 +11,7 @@ import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
-import org.apache.curator.framework.CuratorFramework
+import org.apache.curator.framework.{CuratorFrameworkFactory, CuratorFramework}
 
 import java.io.OutputStream
 import java.sql.Connection
@@ -26,6 +26,11 @@ object RedshiftSecondaryDependencies{
 @ApplicationScoped
 class RedshiftSecondaryDependencies {
 
+object RedshiftCopyIn extends ((Connection, String, OutputStream => Unit) => Long) {
+  def apply(conn: Connection, sql: String, output: OutputStream => Unit): Long =
+    ???
+}
+
   @Produces
   def dsInfo
   (
@@ -35,7 +40,7 @@ class RedshiftSecondaryDependencies {
     new DSInfo {
       override val dataSource: JavaDataSource = storeDataSource
       //TODO ??
-      override val copyIn: (Connection, String, OutputStream => Unit) => Long = ???
+      override val copyIn = RedshiftCopyIn
     }
   }
 
@@ -59,7 +64,14 @@ class RedshiftSecondaryDependencies {
   }
 
   @Produces
-  def curator(): CuratorFramework = ???
+  def curator(zkConfig: ZookeeperConfig): CuratorFramework = {
+    CuratorFrameworkFactory.newClient(
+      zkConfig.ensemble,
+      new BoundedExponentialBackoffRetry(
+        zkConfig.baseSleepTimeMs,
+        zkConfig.maxSleepTimeMs,
+        zkConfig.maxRetries)).start()
+  }
 
   @Produces
   def coreBundle
@@ -69,8 +81,9 @@ class RedshiftSecondaryDependencies {
     curatorFramework: CuratorFramework
   ): SecondaryBundle = (dsInfo, metricsReporter, curatorFramework)
 
-  @Produces
-  def secondaries(): SecondaryMap = ???
+  //TODO: Map keys will need to be dynamic
 
+  @Produces
+  def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> secondary)
 
 }

@@ -7,6 +7,13 @@ import io.smallrye.config.ConfigMapping;
 
 @StaticInitSafe
 @ConfigMapping(prefix = "redshift")
-public interface RedshiftSecondaryConfig extends SecondaryWatcherAppConfig {
+public interface RedshiftSecondaryConfig extends SecondaryWatcherAppConfig { }
 
+@StaticInitSafe
+@ConfigMapping(prefix = "zookeeper")
+public interface ZookeeperConfig {
+    String ensemble;
+    Int baseSleepTimeMs;
+    Int maxSleepTimeMs;
+    Int maxRetries;
 }
