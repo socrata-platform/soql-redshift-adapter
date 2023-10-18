@@ -5,19 +5,19 @@ import com.socrata.datacoordinator.secondary.Secondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.thirdparty.metrics.MetricsReporter
-import config.RedshiftSecondaryDeps.{SecondaryMap, SecondaryBundle}
+import config.RedshiftSecondaryDependencies.{SecondaryMap, SecondaryBundle}
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 import org.apache.curator.framework.CuratorFramework
 
-object RedshiftSecondaryDeps{
+object RedshiftSecondaryDependencies{
   type SecondaryBundle = (DSInfo, MetricsReporter, CuratorFramework)
   type SecondaryWithWorkers = (Secondary[SoQLType, SoQLValue], NumWorkers)
   type SecondaryMap = Map[String, SecondaryWithWorkers]
 }
 
 @ApplicationScoped
-class RedshiftSecondaryDeps {
+class RedshiftSecondaryDependencies {
 
   @Produces
   def dsInfo():DSInfo = ???
