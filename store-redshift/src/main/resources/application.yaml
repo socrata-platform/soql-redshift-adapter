@@ -1,16 +1,17 @@
 version:
   version: 5.2
 redshift:
+  backoff-interval: 10
 
 aws:
   region: ${AWS_DEFAULT_REGION}
   accessKey: ${AWS_ACCESS_KEY_ID}
   secretKey: ${AWS_SECRET_ACCESS_KEY}
 zookeeper:
-  ensemble: ${ZK_ENSEMBLE}
-  baseSleepTimeMs: ${ZK_BASE_SLEEP_TIME_MS}
-  maxSleepTimeMs: ${ZK_MAX_SLEEP_TIME_MS}
-  maxRetries: ${ZK_MAX_RETRIES}
+  ensemble: local.dev.socrata.net:2181
+  base-sleep-time-ms: 100
+  max-sleep-time-ms: 10000
+  max-retries: 29
 quarkus:
   test:
     hang-detection-timeout:
