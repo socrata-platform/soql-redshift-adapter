@@ -4,20 +4,20 @@ import java.sql.ResultSet
 
 object ResultSet {
 
-  def extract[T](res: ResultSet)(f: ResultSet => T): BufferedIterator[T] = {
+  def extract[T](resultSet: ResultSet)(mappingFunction: ResultSet => T): BufferedIterator[T] = {
     new Iterator[T] {
-      def hasNext = res.next()
+      def hasNext = resultSet.next()
 
-      def next() = f(res)
+      def next() = mappingFunction(resultSet)
     }.buffered
   }
 
-  def extractCollecting[T,M](res: ResultSet)(f: ResultSet => T)(m: BufferedIterator[T] => M): M={
-    m(extract(res)(f))
+  def extractCollecting[T,M](resultSet: ResultSet)(mappingFunction: ResultSet => T)(collectingFunction: BufferedIterator[T] => M): M={
+    collectingFunction(extract(resultSet)(mappingFunction))
   }
 
-  def extractHeadOption[T](res: ResultSet)(f: ResultSet => T): Option[T] = {
-    extractCollecting(res)(f)(_.headOption)
+  def extractHeadOption[T](resultSet: ResultSet)(mappingFunction: ResultSet => T): Option[T] = {
+    extractCollecting(resultSet)(mappingFunction)(_.headOption)
   }
 
 }
