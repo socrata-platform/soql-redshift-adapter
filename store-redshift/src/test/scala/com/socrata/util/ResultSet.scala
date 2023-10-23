@@ -12,8 +12,12 @@ object ResultSet {
     }.buffered
   }
 
+  def extractCollecting[T,M](res: ResultSet)(f: ResultSet => T)(m: BufferedIterator[T] => M): M={
+    m(extract(res)(f))
+  }
+
   def extractHeadOption[T](res: ResultSet)(f: ResultSet => T): Option[T] = {
-    extract(res)(f).headOption
+    extractCollecting(res)(f)(_.headOption)
   }
 
 }
