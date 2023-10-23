@@ -12,4 +12,8 @@ object ResultSet {
     }.buffered
   }
 
+  def extractHeadOption[T](res: ResultSet)(f: ResultSet => T): Option[T] = {
+    extract(res)(f).headOption
+  }
+
 }
