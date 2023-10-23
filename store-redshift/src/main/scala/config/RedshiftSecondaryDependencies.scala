@@ -2,6 +2,7 @@ package config
 
 import com.codahale.metrics.MetricRegistry
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.socrata.config.JacksonConfig
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
 import com.socrata.datacoordinator.secondary.Secondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
@@ -11,6 +12,7 @@ import com.socrata.thirdparty.metrics.{Metrics, MetricsOptions, MetricsReporter}
 import config.RedshiftSecondaryDependencies.{SecondaryBundle, SecondaryMap}
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
+import io.quarkus.jackson.ObjectMapperCustomizer
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 import jakarta.json.JsonObject
@@ -33,6 +35,9 @@ object RedshiftSecondaryDependencies {
 
 @ApplicationScoped
 class RedshiftSecondaryDependencies {
+
+  @Produces
+  def objectMapperCustomizer(): ObjectMapperCustomizer = new JacksonConfig
 
   @Produces
   def redshiftSecondaryConfig

@@ -30,7 +30,7 @@ class InsertTest {
       Using.resource(conn.createStatement()) { stmt =>
         stmt.executeUpdate(
           """
-            |create temporary table if not exists "hdyn-4f6y"(
+            |create temporary table if not exists "100k"(
             |fiscal_year bigint not null,
             |department_name text not null,
             |supplier_name text not null,
@@ -40,7 +40,7 @@ class InsertTest {
             |amount bigint not null,
             |cert_classification text not null
             |);
-            |truncate table "hdyn-4f6y";
+            |truncate table "100k";
             |""".stripMargin)
       }
     }
@@ -49,64 +49,64 @@ class InsertTest {
   @DisplayName("100k rows via 1k batch, JDBC")
   @Test
   def insertJdbc100k1k(): Unit = {
-    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
+    assume(queryService.getTableRowCount("100k").get == 0L)
     Timing.timed {
       insertService.insertJdbc(
-        "hdyn-4f6y",
+        "100k",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
         1000,
-        readTestData("/data/hdyn-4f6y/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator()
       )
     } { elapsed =>
       Log.info(s"100k rows via 1k batch, JDBC took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
+    assert(queryService.getTableRowCount("100k").get == 100000L)
   }
 
   @DisplayName("100k rows via 10k batch, JDBC")
   @Test
   def insertJdbc100k10k(): Unit = {
-    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
+    assume(queryService.getTableRowCount("100k").get == 0L)
     Timing.timed {
       insertService.insertJdbc(
-        "hdyn-4f6y",
+        "100k",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
         10000,
-        readTestData("/data/hdyn-4f6y/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator()
       )
     } { elapsed =>
       Log.info(s"100k rows via 10k batch, JDBC took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
+    assert(queryService.getTableRowCount("100k").get == 100000L)
   }
 
   @DisplayName("100k rows via 100k batch, JDBC")
   @Test
   def insertJdbc100k100k(): Unit = {
-    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
+    assume(queryService.getTableRowCount("100k").get == 0L)
     Timing.timed {
       insertService.insertJdbc(
-        "hdyn-4f6y",
+        "100k",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
         100000,
-        readTestData("/data/hdyn-4f6y/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator()
       )
     } { elapsed =>
       Log.info(s"100k rows via 100k batch, JDBC took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
+    assert(queryService.getTableRowCount("100k").get == 100000L)
   }
 
   @DisplayName("100k rows via S3")
   @Test
   def insertS3100k(): Unit = {
-    assume(queryService.getTableRowCount("hdyn-4f6y").get == 0L)
+    assume(queryService.getTableRowCount("100k").get == 0L)
     Timing.timed {
-      insertService.insertS3("staging-redshift-adapter", "hdyn-4f6y", new File(getClass.getResource("/data/hdyn-4f6y/data.csv").toURI))
+      insertService.insertS3("staging-redshift-adapter", "100k", new File(getClass.getResource("/data/100k/data.csv").toURI))
     } { elapsed =>
       Log.info(s"100k rows via S3 took $elapsed")
     }
-    assert(queryService.getTableRowCount("hdyn-4f6y").get == 100000L)
+    assert(queryService.getTableRowCount("100k").get == 100000L)
   }
 
 }
