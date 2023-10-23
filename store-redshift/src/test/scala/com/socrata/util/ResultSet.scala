@@ -12,12 +12,12 @@ object ResultSet {
     }.buffered
   }
 
-  def extractCollecting[T,M](resultSet: ResultSet)(mappingFunction: ResultSet => T)(collectingFunction: BufferedIterator[T] => M): M={
+  def extractThen[T,M](resultSet: ResultSet)(mappingFunction: ResultSet => T)(collectingFunction: BufferedIterator[T] => M): M={
     collectingFunction(extract(resultSet)(mappingFunction))
   }
 
   def extractHeadOption[T](resultSet: ResultSet)(mappingFunction: ResultSet => T): Option[T] = {
-    extractCollecting(resultSet)(mappingFunction)(_.headOption)
+    extractThen(resultSet)(mappingFunction)(_.headOption)
   }
 
 }
