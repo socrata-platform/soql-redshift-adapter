@@ -32,4 +32,4 @@ quarkus:
       password: ${REDSHIFT_PASSWORD}
       jdbc:
         driver: com.amazon.redshift.jdbc.Driver
-        url: jdbc:redshift://redshiftinstance-wtckbqvktove.ck5lkhdheomu.us-west-2.redshift.amazonaws.com:5439/dev?reWriteBatchedInserts=true&reWriteBatchedInsertsSize=1048576 # Must be power of 2. Max rewrite insert size. We will flush buffer manually long before this.
+        url: ${REDSHIFT_JDBC_URL} # Must be power of 2. Max rewrite insert size. We will flush buffer manually long before this.
