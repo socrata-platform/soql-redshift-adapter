@@ -1,9 +1,0 @@
-version:
-  version: 5.2
-quarkus:
-  log:
-    level: DEBUG
-mp:
-  openapi:
-    scan:
-      disable: true

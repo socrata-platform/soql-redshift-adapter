@@ -1,0 +1,1 @@
+# soql-redshift-adapter-server

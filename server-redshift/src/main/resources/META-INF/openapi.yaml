@@ -1,0 +1,513 @@
+openapi: "3.0.0"
+info:
+  title: "SOQL Query API"
+  version: "1.0.0"
+paths:
+  /version:
+    get:
+      summary: "Get Version Information"
+      description: "Retrieve the version information of the application."
+      responses:
+        200:
+          description: "Successful response containing the version information."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionInfo"
+  /new-query:
+    post:
+      summary: "Create a new query"
+      description: "Endpoint to create a new query based on the provided request object."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewQueryRequest'
+      responses:
+        '200':
+          description: "Query successfully created. Returns a NewQueryResponse object."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewQueryResponse'
+  /info/{dataset}:
+    post:
+      summary: "Execute a SOQL query using POST, getting an explaination"
+      parameters:
+        - name: "dataset"
+          in: "path"
+          required: true
+          description: "The identifier of the dataset to query."
+          schema:
+            type: "string"
+        - name: "rowCount"
+          in: "query"
+          description: "The maximum number of rows to return."
+          schema:
+            type: "integer"
+        - name: "copy"
+          in: "query"
+          description: "Identifier to reference an existing copy."
+          schema:
+            type: "string"
+        - name: "rollupName"
+          in: "query"
+          description: "The name of the rollup to use."
+          schema:
+            type: "string"
+        - name: "obfuscatedId"
+          in: "query"
+          description: "Boolean flag indicating whether to obfuscate identifiers."
+          schema:
+            type: "boolean"
+        - name: "queryTimeoutSeconds"
+          in: "query"
+          description: "The maximum time to wait for the query to execute, in seconds."
+          schema:
+            type: "integer"
+        - name: "X-Socrata-Debug"
+          in: "query"
+          description: "Debug parameter for Socrata."
+          schema:
+            type: "string"
+        - name: "X-Socrata-Analyze"
+          in: "header"
+          description: "Analyze parameter for Socrata."
+          schema:
+            type: "string"
+        - name: "context"
+          in: "query"
+          description: "Contextual information for the query."
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InfoRequest"
+      responses:
+        '200':
+          description: "Query executed successfully"
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/InfoResponse"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /rollups:
+    get:
+      summary: "Retrieve rollups for a specified dataset"
+      parameters:
+        - name: "ds"
+          in: "query"
+          schema:
+            type: "string"
+          description: "The dataset identifier for which rollups are being requested."
+        - name: "rn"
+          in: "query"
+          schema:
+            type: "string"
+          description: "The resource name for which rollups are being requested."
+        - name: "copy"
+          in: "query"
+          schema:
+            type: "string"
+          description: "The dataset copy identifier."
+        - name: "include_unmaterialized"
+          in: "query"
+          schema:
+            type: "boolean"
+          description: "Whether to include unmaterialized rollups in the response."
+      responses:
+        200:
+          description: "Successful response containing the rollups for the specified dataset and copy identifier."
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/RollupInfo"
+        404:
+          description: "Resource Not Found - The specified dataset or resource name does not exist."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /schema:
+    get:
+      summary: "Retrieve the schema of the dataset"
+      description: "This endpoint returns the schema of the dataset, including the internal name, columns, and primary key."
+      parameters:
+        - name: "copy"
+          in: "query"
+          description: "Identifier to reference an existing copy."
+          schema:
+            type: "string"
+        - name: "fieldName"
+          in: "query"
+          description: "Boolean to determine if field names should be included as part of the response."
+          schema:
+            type: "boolean"
+        - name: "ds"
+          in: "query"
+          description: "The dataset identifier. A schema can be loaded via either its datasetId or its resource name."
+          schema:
+            type: "string"
+        - name: "rn"
+          in: "query"
+          description: "The resource name. A schema can be loaded via either its datasetId or its resource name."
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "Schema retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetSchema"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /query/{dataset}:
+    get:
+      summary: "Execute a SOQL query using GET"
+      parameters:
+        - name: "dataset"
+          in: "path"
+          required: true
+          description: "The identifier of the dataset to query."
+          schema:
+            type: "string"
+        - name: "query"
+          in: "query"
+          required: true
+          description: "The SOQL query string."
+          schema:
+            type: "string"
+        - name: "rowCount"
+          in: "query"
+          description: "The maximum number of rows to return."
+          schema:
+            type: "integer"
+        - name: "copy"
+          in: "query"
+          description: "Identifier to reference an existing copy."
+          schema:
+            type: "string"
+        - name: "rollupName"
+          in: "query"
+          description: "The name of the rollup to use."
+          schema:
+            type: "string"
+        - name: "obfuscatedId"
+          in: "query"
+          description: "Boolean flag indicating whether to obfuscate identifiers."
+          schema:
+            type: "boolean"
+        - name: "queryTimeoutSeconds"
+          in: "query"
+          description: "The maximum time to wait for the query to execute, in seconds."
+          schema:
+            type: "integer"
+        - name: "X-Socrata-Debug"
+          in: "query"
+          description: "Debug parameter for Socrata."
+          schema:
+            type: "string"
+        - name: "X-Socrata-Analyze"
+          in: "header"
+          description: "Analyze parameter for Socrata."
+          schema:
+            type: "string"
+        - name: "context"
+          in: "query"
+          description: "Contextual information for the query."
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "Query executed successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryResponse"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      summary: "Execute a SOQL query using POST"
+      parameters:
+        - name: "dataset"
+          in: "path"
+          required: true
+          description: "The identifier of the dataset to query."
+          schema:
+            type: "string"
+        - name: "rowCount"
+          in: "query"
+          description: "The maximum number of rows to return."
+          schema:
+            type: "integer"
+        - name: "copy"
+          in: "query"
+          description: "Identifier to reference an existing copy."
+          schema:
+            type: "string"
+        - name: "rollupName"
+          in: "query"
+          description: "The name of the rollup to use."
+          schema:
+            type: "string"
+        - name: "obfuscatedId"
+          in: "query"
+          description: "Boolean flag indicating whether to obfuscate identifiers."
+          schema:
+            type: "boolean"
+        - name: "queryTimeoutSeconds"
+          in: "query"
+          description: "The maximum time to wait for the query to execute, in seconds."
+          schema:
+            type: "integer"
+        - name: "X-Socrata-Debug"
+          in: "query"
+          description: "Debug parameter for Socrata."
+          schema:
+            type: "string"
+        - name: "X-Socrata-Analyze"
+          in: "header"
+          description: "Analyze parameter for Socrata."
+          schema:
+            type: "string"
+        - name: "context"
+          in: "query"
+          description: "Contextual information for the query."
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QueryRequest"
+      responses:
+        '200':
+          description: "Query executed successfully"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/QueryResponse"
+        '400':
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    VersionInfo:
+      type: "object"
+      properties:
+        version:
+          type: "string"
+          description: "The version of the application."
+        gitSHA:
+          type: "string"
+          description: "The Git SHA of the application's current commit."
+      required:
+        - version
+      description: "Object containing the version and Git SHA information of the application."
+    NewQueryRequest:
+      type: object
+      description: "Object representing the request to create a new query."
+      properties:
+        analysis:
+          $ref: '#/components/schemas/SoQLAnalysis'
+          description: "Analysis object containing the details of the SoQL Analysis."
+        locationSubcolumns:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LocationSubcolumn'
+          description: "Map representing the location subcolumns."
+        context:
+          type: object
+          additionalProperties:
+            type: string
+          description: "Context map containing string key-value pairs."
+        passes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pass'
+          description: "Array of Pass objects representing the passes."
+        debug:
+          $ref: '#/components/schemas/Debug'
+          description: "Debug object containing debugging information."
+      required:
+        - analysis
+        - locationSubcolumns
+        - context
+        - passes
+    SoQLAnalysis:
+      type: object
+      description: "Object representing the SoQL Analysis."
+    LocationSubcolumn:
+      type: object
+      description: "Object representing a location subcolumn."
+      additionalProperties:
+        type: array
+        items:
+          type: string
+          nullable: true
+    Pass:
+      type: object
+      description: "Object representing a Pass."
+    Debug:
+      type: object
+      description: "Object containing debugging information."
+    NewQueryResponse:
+      type: object
+      description: "Response object returned after successfully creating a new query."
+    InfoRequest:
+      type: "object"
+      properties:
+        query:
+          type: "string"
+          description: "The SOQL query string."
+    InfoResponse:
+      type: "object"
+      properties:
+        explain:
+          type: "string"
+          description: "The explaination of a query execution"
+      required:
+        - "explain"
+    RollupInfo:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+          description: "The name of the rollup."
+        soql:
+          type: "string"
+          description: "The SOQL query representing the rollup."
+      required:
+        - "name"
+        - "soql"
+    DatasetSchema:
+      type: "object"
+      properties:
+        datasetInternalName:
+          type: "string"
+          description: "The internal name of the dataset."
+        columns:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ColumnVariant"
+          description: "The columns in the dataset."
+        primaryKey:
+          type: "string"
+          description: "The primary key of the dataset."
+    ColumnVariant:
+      type: "object"
+      properties:
+        variantType:
+          type: "string"
+          enum:
+            - "column"
+            - "columnWithFieldName"
+          description: "The type of the column variant."
+      required:
+        - "variantType"
+      discriminator:
+        propertyName: "variantType"
+        mapping:
+          column: "#/components/schemas/Column"
+          columnWithFieldName: "#/components/schemas/ColumnWithFieldName"
+    Column:
+      allOf:
+        - $ref: "#/components/schemas/ColumnVariant"
+        - type: "object"
+          properties:
+            name:
+              type: "string"
+              description: "The name of the column."
+            type:
+              type: "string"
+              description: "The data type of the column."
+          required:
+            - "name"
+            - "type"
+    ColumnWithFieldName:
+      allOf:
+        - $ref: "#/components/schemas/ColumnVariant"
+        - type: "object"
+          properties:
+            name:
+              type: "string"
+              description: "The name of the column."
+            type:
+              type: "string"
+              description: "The data type of the column."
+            fieldName:
+              type: "string"
+              description: "The field name of the column."
+          required:
+            - "name"
+            - "type"
+            - "fieldName"
+    QueryRequest:
+      type: "object"
+      properties:
+        query:
+          type: "string"
+          description: "The SOQL query string."
+    QueryResponse:
+      type: "object"
+      properties:
+        columnName:
+          type: "string"
+          description: "The name of the column."
+        value:
+          type: "string"
+          description: "The value in the column."
+      required:
+        - "columnName"
+        - "value"
+    ErrorResponse:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+          description: "Error message describing the reason for the failure."

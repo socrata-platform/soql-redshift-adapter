@@ -1,11 +1,18 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter</artifactId>
   <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>server-redshift</module>
+    <module>store-redshift</module>
+    <module>common-redshift</module>
+  </modules>
   <properties>
+    <aws.sdk.version>1.12.565</aws.sdk.version>
     <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <maven.compiler.release>17</maven.compiler.release>
@@ -15,10 +22,15 @@
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.3.2</quarkus.platform.version>
+    <redshift-adapter.version>1.0.0-SNAPSHOT</redshift-adapter.version>
+    <redshift.jdbc.version>2.1.0.19</redshift.jdbc.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
     <scala.version>2.12.18</scala.version>
     <skipITs>true</skipITs>
+    <skipTests>true</skipTests>
+    <soql.std.version>4.14.9</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
+    <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -62,6 +74,26 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-agroal</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jdbc-h2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-orm-panache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-jaxb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
@@ -81,24 +113,40 @@
       <version>${scala.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.socrata</groupId>
-      <artifactId>coordinatorlib_2.12</artifactId>
-      <version>4.2.13</version>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_2.12</artifactId>
+      <version>${jackson-module-scala.version}</version>
     </dependency>
     <dependency>
       <groupId>com.socrata</groupId>
       <artifactId>soql-stdlib_2.12</artifactId>
-      <version>4.14.9</version>
+      <version>${soql.std.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-scala_2.12</artifactId>
-      <version>2.15.2</version>
+      <groupId>com.amazon.redshift</groupId>
+      <artifactId>redshift-jdbc42</artifactId>
+      <version>${redshift.jdbc.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-annotations</artifactId>
-      <version>1.6.11</version>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-core</artifactId>
+      <version>${aws.sdk.version}</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-redshift</artifactId>
+      <version>${aws.sdk.version}</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sts</artifactId>
+      <version>${aws.sdk.version}</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
   <repositories>
@@ -140,6 +188,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <skipTests>${skipTests}</skipTests>
           <systemPropertyVariables>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
             <maven.home>${maven.home}</maven.home>
@@ -196,65 +245,6 @@
             <arg>-target:jvm-11</arg>
           </args>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.openapitools</groupId>
-        <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>${openapi-generator.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <inputSpec>${project.basedir}/src/main/resources/META-INF/openapi.yaml</inputSpec>
-              <generatorName>jaxrs-spec</generatorName>
-              <configHelp>false</configHelp>
-              <configOptions>
-                <dateLibrary>java8</dateLibrary>
-                <generateBuilders>true</generateBuilders>
-                <openApiNullable>true</openApiNullable>
-                <serializableModel>true</serializableModel>
-                <supportAsync>false</supportAsync>
-                <useMicroProfileOpenAPIAnnotations>true</useMicroProfileOpenAPIAnnotations>
-                <useBeanValidation>true</useBeanValidation>
-                <useOneOfInterfaces>true</useOneOfInterfaces>
-                <useSwaggerAnnotations>true</useSwaggerAnnotations>
-                <interfaceOnly>true</interfaceOnly>
-                <useJakartaEe>true</useJakartaEe>
-                <asyncNative>true</asyncNative>
-                <library>quarkus</library>
-                <serializationLibrary>jackson</serializationLibrary>
-              </configOptions>
-              <apiPackage>com.socrata.api</apiPackage>
-              <modelPackage>com.socrata.model</modelPackage>
-              <generateModelTests>false</generateModelTests>
-              <generateModelDocumentation>false</generateModelDocumentation>
-              <generateSupportingFiles>false</generateSupportingFiles>
-              <generateApiTests>false</generateApiTests>
-              <generateApiDocumentation>false</generateApiDocumentation>
-              <auth>false</auth>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${build-helper-plugin.version}</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
