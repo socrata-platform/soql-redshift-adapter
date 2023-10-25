@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.socrata</groupId>
     <artifactId>soql-redshift-adapter-common</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+
     <properties>
         <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
         <openapi-generator.version>7.0.0</openapi-generator.version>
