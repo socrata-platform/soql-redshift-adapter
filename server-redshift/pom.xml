@@ -17,11 +17,6 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.socrata</groupId>
-            <artifactId>coordinatorlib_2.12</artifactId>
-            <version>4.2.13</version>
-        </dependency>
-        <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
             <version>1.6.11</version>
