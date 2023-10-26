@@ -21,7 +21,7 @@ redshift:
       session-timeout: 4s
   replay-wait: 2 minutes
   tmpdir: ${java.io.tmpdir}
-  watcher-id: ${UUID}
+  watcher-id: ${quarkus.uuid}
 
 aws:
   region: ${AWS_DEFAULT_REGION}
