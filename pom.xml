@@ -150,11 +150,6 @@
     </dependency>
   </dependencies>
   <repositories>
-    <repository>
-      <id>socrata</id>
-      <name>socrata</name>
-      <url>https://repo.socrata.com/artifactory/libs-release</url>
-    </repository>
   </repositories>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
