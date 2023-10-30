@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.socrata</groupId>
     <artifactId>soql-redshift-adapter-store</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+
     <properties>
         <secondarylib.version>4.2.17</secondarylib.version>
         <guava.version>19.0</guava.version>
@@ -20,7 +20,7 @@
         <dependency>
             <artifactId>soql-redshift-adapter-common</artifactId>
             <groupId>com.socrata</groupId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.socrata</groupId>

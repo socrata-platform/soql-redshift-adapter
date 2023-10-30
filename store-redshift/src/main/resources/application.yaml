@@ -1,7 +1,27 @@
 version:
   version: 5.2
 redshift:
-  backoff-interval: 10
+  backoff-interval: 5 minutes
+  claim-timeout: 30m
+  collocation-lock-path: collocation-lock
+  collocation-lock-timeout: 10s
+  instance: ${TRUTH_CLUSTER} #alpha
+  log4j:
+  max-replay-wait: 2 hours
+  max-replays: 200
+  max-retries: 29
+  #stub layout for now
+  message-producer-config:
+    eurybates:
+      producers: activemq
+      activemq:
+        connection-string: tcp://local.dev.socrata.net:61616
+    zookeeper:
+      conn-spec: local.dev.socrata.net:2181
+      session-timeout: 4s
+  replay-wait: 2 minutes
+  tmpdir: ${java.io.tmpdir}
+  watcher-id: ${quarkus.uuid}
 
 aws:
   region: ${AWS_DEFAULT_REGION}
