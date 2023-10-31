@@ -1,4 +1,4 @@
-package config
+package com.socrata.config
 
 import com.codahale.metrics.MetricRegistry
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -9,7 +9,7 @@ import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
 import com.socrata.datacoordinator.secondary.messaging.eurybates.MessageProducerConfig
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.thirdparty.metrics.{Metrics, MetricsOptions, MetricsReporter}
-import config.RedshiftSecondaryDependencies.{SecondaryBundle, SecondaryMap}
+import com.socrata.config.RedshiftSecondaryDependencies.{SecondaryBundle, SecondaryMap}
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.jackson.ObjectMapperCustomizer
@@ -19,7 +19,7 @@ import jakarta.json.JsonObject
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.BoundedExponentialBackoffRetry
 import org.eclipse.microprofile.config.ConfigProvider
-import service.RedshiftSecondary
+import com.socrata.service.RedshiftSecondary
 
 import java.io.{File, OutputStream}
 import java.sql.Connection
@@ -46,9 +46,12 @@ class RedshiftSecondaryDependencies {
   ): RedshiftSecondaryConfig = {
     //Seems to be tricky to implement scala -> java config types via "static" config. This is because of spi generic parameter limitations, type erasure and no arg constructor requirements.
     //Lets simply read it as json. At this point we are past the "static" config bootstrap.
-    val asJson = ConfigProvider.getConfig().getValue("redshift",classOf[JsonObject])
+    val asJson = JacksonConfig.deserializeConfig(ConfigProvider.getConfig(),"redshift")
+    println(asJson.toPrettyString)
     //And use our configured objectMapper to marshall it. Our objectMapper knows how to convert scala -> java.
-    objectMapper.convertValue(asJson,classOf[RedshiftSecondaryConfig])
+    val theConfig = objectMapper.convertValue(asJson,classOf[RedshiftSecondaryConfig])
+    println(objectMapper.writeValueAsString(theConfig))
+    theConfig
   }
 
   @Produces

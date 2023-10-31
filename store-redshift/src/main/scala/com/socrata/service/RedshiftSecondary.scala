@@ -1,13 +1,13 @@
-package service
+package com.socrata.service
 
-import _root_.config.RedshiftSecondaryConfig
+import com.socrata.config.RedshiftSecondaryConfig
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.truth.metadata.IndexDirective
 import com.socrata.datacoordinator.util.collection.ColumnIdMap
 import com.socrata.soql.types.{SoQLType, SoQLValue}
-import db.meta.service.MetaService
+import com.socrata.db.meta.service.MetaService
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped

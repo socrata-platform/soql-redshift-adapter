@@ -1,4 +1,4 @@
-package db.meta.service
+package com.socrata.db.meta.service
 
 import jakarta.enterprise.context.ApplicationScoped
 

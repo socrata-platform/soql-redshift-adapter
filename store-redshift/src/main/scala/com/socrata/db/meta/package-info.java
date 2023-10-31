@@ -1,5 +1,5 @@
-@PersistenceUnit("store")
-package db.store;
+@PersistenceUnit("db/meta")
+package com.socrata.db.meta;
 
 import io.quarkus.hibernate.orm.PersistenceUnit;
 

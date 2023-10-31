@@ -1,5 +1,6 @@
 package com.socrata
 
+import com.socrata.config.RedshiftSecondaryConfig
 import io.quarkus.logging.Log
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
@@ -15,6 +16,9 @@ class SanityTest() {
   @DataSource("store")
   @Inject
   var dataSource: AgroalDataSource = _
+
+  @Inject
+  var redshiftSecondaryConfig: RedshiftSecondaryConfig = _
 
   @DisplayName("Connect to redshift jdbc")
   @Test
