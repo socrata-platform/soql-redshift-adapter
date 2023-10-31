@@ -13,8 +13,6 @@ import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.functions.SoQLTypeInfo2
 
-import com.socrata.redshift.analyzer2.SoQLValueDebugHelper
-
 final class DatabaseMetaTypes extends MetaTypes {
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
@@ -64,17 +62,5 @@ final class DatabaseMetaTypes extends MetaTypes {
       provenanceMapper,
       typeInfo.updateProvenance
     )
-  }
-}
-
-object DatabaseMetaTypes extends MetaTypeHelper[DatabaseMetaTypes] {
-  object DebugHelper extends SoQLValueDebugHelper { // Various implicits to make things printable
-    implicit object hasDocDBTN extends HasDoc[CopyInfo] {
-      def docOf(cv: CopyInfo) = Doc(cv.datasetInfo.systemId.toString) ++ d"/" ++ Doc(cv.lifecycleStage.toString)
-
-    }
-    implicit object hasDocDBCN extends HasDoc[ColumnInfo[SoQLType]] {
-      def docOf(cv: ColumnInfo[SoQLType]) = Doc(cv.userColumnId.toString)
-    }
   }
 }

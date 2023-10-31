@@ -10,8 +10,6 @@ import com.socrata.soql.types.SoQLValue
 import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.functions.SoQLTypeInfo2
 
-import com.socrata.redshift.analyzer2.SoQLValueDebugHelper
-
 case class AugmentedTableName(name: String, isRollup: Boolean)
 
 final abstract class DatabaseNamesMetaTypes extends MetaTypes with SoQLMetaTypesExt {
@@ -60,11 +58,5 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
       provenanceMapper,
       typeInfo.updateProvenance
     )
-  }
-
-  object DebugHelper extends SoQLValueDebugHelper { // Various implicits to make things printable
-    implicit object atnHasDoc extends HasDoc[AugmentedTableName] {
-      def docOf(v: AugmentedTableName) = Doc(v.name)
-    }
   }
 }
