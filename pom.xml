@@ -129,22 +129,7 @@
                     <artifactId>liquibase-plugin</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>        
-    <dependency>
-      <groupId>com.socrata</groupId>
-      <artifactId>soql-stdlib_2.12</artifactId>
-      <version>${soql.std.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.socrata</groupId>
-      <artifactId>soql-utils_2.12</artifactId>
-      <version>${soql.std.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.socrata</groupId>
-      <artifactId>soql-sqlizer_2.12</artifactId>
-      <version>${soql.std.version}</version>
-    </dependency>
+    </dependency>        
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc42</artifactId>

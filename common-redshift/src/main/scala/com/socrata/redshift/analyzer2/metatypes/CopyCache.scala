@@ -8,9 +8,6 @@ import com.socrata.soql.collection.OrderedMap
 import com.socrata.datacoordinator.id.{UserColumnId, DatasetInternalName}
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
 
-import com.socrata.redshift.store.PGSecondaryUniverse
-import com.socrata.redshift.query.QueryServerHelper
-
 trait CopyCache[MT <: MetaTypes] extends LabelUniverse[MT] {
   def apply(dtn: DatabaseTableName): Option[(CopyInfo, OrderedMap[UserColumnId, ColumnInfo[CT]])]
 

@@ -16,7 +16,21 @@
         <openapi-generator.version>7.0.0</openapi-generator.version>
     </properties>
     <dependencies>
-
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-stdlib_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-utils_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-sqlizer_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
