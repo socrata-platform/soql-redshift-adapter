@@ -8,8 +8,8 @@ final class RedshiftExprSqlFactory[MT <: MetaTypes with metatypes.SoQLMetaTypesE
   override def compress(expr: Option[Expr], rawSqls: Seq[Doc]): Doc =
     expr match {
       case Some(_ : NullLiteral) =>
-        d"null :: jsonb"
+        d"null :: jsonb" // change this
       case _ =>
-        rawSqls.funcall(d"soql_compress_compound")
+        rawSqls.funcall(d"soql_compress_compound") // change this
     }
 }

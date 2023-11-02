@@ -17,6 +17,38 @@ import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types._
 import com.socrata.soql.sqlizer._
 
+
+/*
+
+
+
+
+Make tests which create a table of every column type
+
+
+
+ids, money, url, etc..
+
+ ensure literals can be construced.
+ Ensure compressedSubColumns works in all cases
+ ensure doExtractFrom works
+
+
+not sure how to test compression and stuff like that. How do I know
+
+I think I can remove all use of indices https://popsql.com/learn-sql/redshift/how-to-create-an-index-in-redshift
+
+
+add scalafmt
+
+ */
+
+
+
+
+
+
+
 abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String})](
   cryptProviders: CryptProviderProvider,
   override val exprSqlFactory: ExprSqlFactory[MT],
@@ -35,6 +67,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
   private def createTextlikeIndices(idxBaseName: DocNothing, tableName: DatabaseTableName, colName: DocNothing) = {
     val databaseName = namespace.databaseTableName(tableName)
+    // Will we even have indices?
     Seq(
       d"CREATE INDEX IF NOT EXISTS" +#+ idxBaseName ++ d"_u" +#+ d"ON" +#+ databaseName +#+ d"(upper(" ++ colName ++ d") text_pattern_ops)",
       d"CREATE INDEX IF NOT EXISTS" +#+ idxBaseName ++ d"_tpo" +#+ d"ON" +#+ databaseName +#+ d"(" ++ colName +#+ d"text_pattern_ops)",
@@ -78,7 +111,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
   }
 
   val reps = Map[SoQLType, Rep](
-    SoQLID -> new ProvenancedRep(SoQLID, d"bigint") {
+    SoQLID -> new ProvenancedRep(SoQLID, d"bigint") { // change this
       override def provenanceOf(e: LiteralValue) = {
         val rawId = e.value.asInstanceOf[SoQLID]
         Set(rawId.provenance)
@@ -88,7 +121,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val sourceName = compressedDatabaseColumn(column)
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
-          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
+          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName, // no json
           d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName,
         )
       }
@@ -286,7 +319,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           SoQLBoolean(v)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = // remove indices maybe?
         createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
     },
     SoQLFixedTimestamp -> new SingleColumnRep(SoQLFixedTimestamp, d"timestamp with time zone") {
@@ -294,9 +327,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val SoQLFixedTimestamp(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLFixedTimestamp.StringRep(s)), e)
       }
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.FixedTimestampRep("")
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.FixedTimestampRep("").fromResultSet(rs, dbCol)
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
         createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
@@ -306,9 +338,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val SoQLFloatingTimestamp(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLFloatingTimestamp.StringRep(s)), e)
       }
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.FloatingTimestampRep("")
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.FloatingTimestampRep("").fromResultSet(rs, dbCol)
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
         createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
@@ -318,9 +349,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val SoQLDate(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLDate.StringRep(s)), e)
       }
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.DateRep("")
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.DateRep("").fromResultSet(rs, dbCol)
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
         createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
@@ -330,21 +360,19 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val SoQLTime(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLTime.StringRep(s)), e)
       }
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.TimeRep("")
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.TimeRep("").fromResultSet(rs, dbCol)
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
         createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
     },
-    SoQLJson -> new SingleColumnRep(SoQLJson, d"jsonb") {
+    SoQLJson -> new SingleColumnRep(SoQLJson, d"jsonb") { // this'll need to be super
       def literal(e: LiteralValue) = {
         val SoQLJson(j) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(CompactJsonWriter.toString(j)), e)
       }
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("")
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("").fromResultSet(rs, dbCol)
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
         Seq(
@@ -352,7 +380,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         )
     },
 
-    SoQLDocument -> new SingleColumnRep(SoQLDocument, d"jsonb") {
+    SoQLDocument -> new SingleColumnRep(SoQLDocument, d"jsonb") { // this'll need to be a super as well
       override def literal(e: LiteralValue) = ??? // no such thing as a doc liteal
       override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         Option(rs.getString(dbCol)) match {
@@ -368,7 +396,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Nil
     },
 
-    SoQLInterval -> new SingleColumnRep(SoQLInterval, d"interval") {
+    SoQLInterval -> new SingleColumnRep(SoQLInterval, d"interval") { // not even valid in redshift, apparently
       override def literal(e: LiteralValue) = {
         val SoQLInterval(p) = e.value
         exprSqlFactory(d"interval" +#+ mkStringLiteral(periodToRedshiftInterval(p)), e)
@@ -509,9 +537,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case "phone_type" => SubcolInfo[MT](SoQLPhone, 1, "text", SoQLText, _.parenthesized +#+ d"->> 1")
         }
 
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.PhoneRep("")
       override protected def doExtractExpanded(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.PhoneRep("").fromResultSet(rs, dbCol)
       }
       override protected def doExtractCompressed(rs: ResultSet, dbCol: Int): CV = {
         Option(rs.getString(dbCol)) match {
@@ -727,9 +754,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case "description" => SubcolInfo[MT](SoQLUrl, 1, "text", SoQLText, _.parenthesized +#+ d"->> 1")
         }
 
-      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.UrlRep("")
       override protected def doExtractExpanded(rs: ResultSet, dbCol: Int): CV = {
-        ugh.fromResultSet(rs, dbCol)
+        new com.socrata.datacoordinator.common.soql.sqlreps.UrlRep("").fromResultSet(rs, dbCol)
       }
       override protected def doExtractCompressed(rs: ResultSet, dbCol: Int): CV = {
         Option(rs.getString(dbCol)) match {
