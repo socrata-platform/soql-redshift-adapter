@@ -1,6 +1,6 @@
-package db.meta.repository
+package com.socrata.db.meta.repository
 
-import db.meta.entity.{Dataset, DatasetInternalName}
+import com.socrata.db.meta.entity.{Dataset, DatasetInternalName}
 import io.quarkus.hibernate.orm.panache.PanacheRepository
 import jakarta.enterprise.context.ApplicationScoped
 

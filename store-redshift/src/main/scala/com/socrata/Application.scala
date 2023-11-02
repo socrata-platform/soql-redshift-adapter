@@ -1,8 +1,10 @@
+package com.socrata
+
+import com.socrata.config.RedshiftSecondaryConfig
+import com.socrata.config.RedshiftSecondaryDependencies.SecondaryMap
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
-import com.socrata.datacoordinator.secondary.{SecondaryWatcherApp, SecondaryWatcherAppConfig}
+import com.socrata.datacoordinator.secondary.SecondaryWatcherApp
 import com.socrata.thirdparty.metrics.MetricsReporter
-import config.RedshiftSecondaryConfig
-import config.RedshiftSecondaryDependencies.SecondaryMap
 import io.quarkus.runtime.QuarkusApplication
 import io.quarkus.runtime.annotations.QuarkusMain
 import org.apache.curator.framework.CuratorFramework
