@@ -1,4 +1,4 @@
-package com.socrata.redshift.analyzer2.metatypes
+package com.socrata.sqlizer.metatypes
 
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
 import com.socrata.datacoordinator.id.UserColumnId

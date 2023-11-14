@@ -1,10 +1,10 @@
-package com.socrata.redshift.analyzer2
+package com.socrata.sqlizer
 
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.sqlizer._
 
-import com.socrata.redshift.analyzer2.metatypes.DatabaseNamesMetaTypes
+import com.socrata.sqlizer.metatypes.DatabaseNamesMetaTypes
 
 object RedshiftNamespaces extends SqlNamespaces[DatabaseNamesMetaTypes] {
   override def rawDatabaseTableName(dtn: DatabaseTableName) = {

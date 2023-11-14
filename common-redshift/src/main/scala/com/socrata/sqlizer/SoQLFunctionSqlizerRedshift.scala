@@ -1,4 +1,4 @@
-package com.socrata.redshift.analyzer2
+package com.socrata.sqlizer
 
 import scala.language.implicitConversions
 

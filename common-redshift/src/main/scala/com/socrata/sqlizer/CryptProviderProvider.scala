@@ -1,4 +1,4 @@
-package com.socrata.redshift.analyzer2
+package com.socrata.sqlizer
 
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.obfuscation.CryptProvider

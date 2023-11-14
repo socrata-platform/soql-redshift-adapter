@@ -1,10 +1,10 @@
-package com.socrata.redshift.analyzer2.metatypes
+package com.socrata.sqlizer.metatypes
 
 import com.socrata.soql.analyzer2.MetaTypes
 import com.socrata.soql.sqlizer.MetaTypesExt
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 
-import com.socrata.redshift.analyzer2._
+import com.socrata.sqlizer._
 
 trait SoQLMetaTypesExt extends MetaTypesExt { this: MetaTypes =>
   type ExtraContext = SoQLExtraContext
