@@ -1,4 +1,4 @@
-package com.socrata.sqlizer.metatypes
+package com.socrata.common.sqlizer.metatypes
 
 import scala.collection.{mutable => scm}
 

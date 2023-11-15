@@ -1,4 +1,4 @@
-package com.socrata.sqlizer.metatypes
+package com.socrata.common.sqlizer.metatypes
 
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
 import com.socrata.datacoordinator.id.UserColumnId

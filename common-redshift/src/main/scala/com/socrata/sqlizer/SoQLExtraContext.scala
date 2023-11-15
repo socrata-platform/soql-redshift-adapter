@@ -1,11 +1,11 @@
-package com.socrata.sqlizer
+package com.socrata.common.sqlizer
 
 import org.joda.time.DateTime
 
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.sqlizer.ExtraContext
 
-import com.socrata.sqlizer.metatypes.DatabaseNamesMetaTypes
+import com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes
 
 class SoQLExtraContext(
   val systemContext: Map[String, String],

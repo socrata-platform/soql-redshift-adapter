@@ -1,4 +1,4 @@
-package com.socrata.sqlizer
+package com.socrata.common.sqlizer
 
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.obfuscation.CryptProvider
