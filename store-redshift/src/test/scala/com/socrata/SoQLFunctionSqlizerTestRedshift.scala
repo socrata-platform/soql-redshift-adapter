@@ -24,10 +24,11 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.{DisplayName, Test}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test;
+import com.socrata.common.sqlizer._
 
 
 object SoQLFunctionSqlizerTestRedshift {
-  final abstract class TestMT extends MetaTypes with com.socrata.common.sqlizer.metatypes.SoQLMetaTypesExt {
+  final abstract class TestMT extends MetaTypes with metatypes.SoQLMetaTypesExt {
     type ColumnType = SoQLType
     type ColumnValue = SoQLValue
     type ResourceNameScope = Int
@@ -64,17 +65,17 @@ object SoQLFunctionSqlizerTestRedshift {
     protected override def autoColumnPrefix: String = "i"
   }
 
-  val TestFuncallSqlizer = new com.socrata.common.sqlizer.SoQLFunctionSqlizerRedshift[TestMT]
+  val TestFuncallSqlizer = new SoQLFunctionSqlizerRedshift[TestMT]
 
   val TestSqlizer = new Sqlizer[TestMT](
     TestFuncallSqlizer,
-    new com.socrata.common.sqlizer.RedshiftExprSqlFactory[TestMT],
+    new RedshiftExprSqlFactory[TestMT],
     TestNamespaces,
-    new com.socrata.common.sqlizer.SoQLRewriteSearch[TestMT](searchBeforeQuery = true),
+    new SoQLRewriteSearch[TestMT](searchBeforeQuery = true),
     ProvenanceMapper,
     _ => false,
     (sqlizer, physicalTableFor, extraContext) =>
-      new com.socrata.common.sqlizer.SoQLRepProviderRedshift[TestMT](
+      new SoQLRepProviderRedshift[TestMT](
         extraContext.cryptProviderProvider,
         sqlizer.exprSqlFactory,
         sqlizer.namespace,
@@ -95,7 +96,7 @@ class SoQLFunctionSqlizerTestRedshift  {
   val sqlizer = SoQLFunctionSqlizerTestRedshift.TestSqlizer
   val funcallSqlizer = SoQLFunctionSqlizerTestRedshift.TestFuncallSqlizer
 
-  def extraContext = new com.socrata.common.sqlizer.SoQLExtraContext(
+  def extraContext = new SoQLExtraContext(
     Map.empty,
     _ => Some(obfuscation.CryptProvider.zeros),
     Map.empty,
