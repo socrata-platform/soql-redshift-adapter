@@ -826,7 +826,7 @@ class SoQLFunctionSqlizerTestRedshift  {
 
   @Test
   def `(window function) sum works`: Unit = {
-    assertEquals(analyzeStatement("SELECT text, num, sum(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"), ("""SELECT x1.text AS i1, x1.num AS i2, sum(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS y1"""))
+    assertEquals(analyzeStatement("SELECT text, num, sum(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"), ("""SELECT x1.text AS i1, x1.num AS i2, sum(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1"""))
   }
 
   @Test
