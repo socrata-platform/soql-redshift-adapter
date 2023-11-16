@@ -1,4 +1,4 @@
-package com.socrata.sqlizer
+package com.socrata.common.sqlizer
 
 import scala.language.implicitConversions
 
@@ -10,6 +10,7 @@ import com.socrata.soql.functions.SoQLFunctions._
 import com.socrata.soql.functions.{Function, MonomorphicFunction, SoQLTypeInfo}
 import com.socrata.soql.sqlizer._
 import SoQLFunctionSqlizerRedshift._
+
 
 // move over tests as well
 class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({ type ColumnType = SoQLType; type ColumnValue = SoQLValue })] extends FuncallSqlizer[MT] {

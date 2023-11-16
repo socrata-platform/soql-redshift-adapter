@@ -1,4 +1,4 @@
-package com.socrata.sqlizer
+package com.socrata.common.sqlizer
 
 import java.sql.ResultSet
 
@@ -19,7 +19,7 @@ import com.socrata.soql.sqlizer._
 
 
 /*
-
+n
 
 
 
@@ -54,7 +54,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
   override val exprSqlFactory: ExprSqlFactory[MT],
   override val namespace: SqlNamespaces[MT],
   override val toProvenance: types.ToProvenance[MT],
-  override val isRollup: types.DatabaseTableName[MT] => Boolean,
+  override val isRollup: types.DatabaseTableName[MT] => Boolean, // can be removed
   locationSubcolumns: Map[types.DatabaseTableName[MT], Map[types.DatabaseColumnName[MT], Seq[Option[types.DatabaseColumnName[MT]]]]],
   physicalTableFor: Map[AutoTableLabel, types.DatabaseTableName[MT]]
 ) extends Rep.Provider[MT] {
@@ -64,23 +64,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
     d"text" +#+ mkStringLiteral(s)
   override def mkByteaLiteral(bytes: Array[Byte]): Doc =
     d"bytea" +#+ mkStringLiteral(bytes.iterator.map { b => "%02x".format(b & 0xff) }.mkString("\\x", "", ""))
-
-  private def createTextlikeIndices(idxBaseName: DocNothing, tableName: DatabaseTableName, colName: DocNothing) = {
-    val databaseName = namespace.databaseTableName(tableName)
-    // Will we even have indices?
-    Seq(
-      d"CREATE INDEX IF NOT EXISTS" +#+ idxBaseName ++ d"_u" +#+ d"ON" +#+ databaseName +#+ d"(upper(" ++ colName ++ d") text_pattern_ops)",
-      d"CREATE INDEX IF NOT EXISTS" +#+ idxBaseName ++ d"_tpo" +#+ d"ON" +#+ databaseName +#+ d"(" ++ colName +#+ d"text_pattern_ops)",
-      d"CREATE INDEX IF NOT EXISTS" +#+ idxBaseName ++ d"_nl" +#+ d"ON" +#+ databaseName +#+ d"(" ++ colName +#+ d"nulls last)",
-      d"CREATE INDEX IF NOT EXISTS" +#+ idxBaseName ++ d"_unl" +#+ d"ON" +#+ databaseName +#+ d"(upper(" ++ colName ++ d") nulls last)"
-    )
-  }
-
-  private def createSimpleIndices(idxName: DocNothing, tableName: DatabaseTableName, colName: DocNothing) = {
-    Seq(
-      d"CREATE INDEX IF NOT EXISTS" +#+ idxName +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"(" ++ colName ++ d")"
-    )
-  }
 
   abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV, name: String) extends SingleColumnRep(t, d"geometry") {
     private val open = d"st_${name}fromwkb"
@@ -104,20 +87,17 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }.map(ctor).getOrElse(SoQLNull)
     }
 
-    override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-      Seq(
-        d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label) +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"USING GIST (" ++ compressedDatabaseColumn(label) ++ d")"
-      )
+    override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
   }
 
   val reps = Map[SoQLType, Rep](
-    SoQLID -> new ProvenancedRep(SoQLID, d"bigint") { // change this
-      override def provenanceOf(e: LiteralValue) = {
+    SoQLID -> new ProvenancedRep(SoQLID, d"bigint") {
+      override def provenanceOf(e: LiteralValue) = { // test this
         val rawId = e.value.asInstanceOf[SoQLID]
         Set(rawId.provenance)
       }
 
-      override def compressedSubColumns(table: String, column: ColumnLabel) = {
+      override def compressedSubColumns(table: String, column: ColumnLabel) = { // TODO: do this
         val sourceName = compressedDatabaseColumn(column)
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
@@ -182,16 +162,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         }
       }
 
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        if(isRollup(tableName)) {
-          Seq(
-            d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label) +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"(" ++ expandedDatabaseColumns(label).commaSep ++ d")"
-          )
-        } else {
-          Seq(
-            d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label) +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"(" ++ compressedDatabaseColumn(label) ++ d")"
-          )
-        }
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
     SoQLVersion -> new ProvenancedRep(SoQLVersion, d"bigint") {
       override def provenanceOf(e: LiteralValue) = {
@@ -264,17 +236,11 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         }
       }
 
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        if(isRollup(tableName)) {
-          Seq(
-            d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label) +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"(" ++ expandedDatabaseColumns(label).commaSep ++ d")"
-          )
-        } else {
-          Seq(
-            d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label) +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"(" ++ compressedDatabaseColumn(label) ++ d")"
-          )
-        }
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
+
+    // do id and version (more complex because of cryptprovider stuff)
+
 
     // ATOMIC REPS
 
@@ -289,8 +255,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case Some(t) => SoQLText(t)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createTextlikeIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLNumber -> new SingleColumnRep(SoQLNumber, Doc(SoQLFunctionSqlizerRedshift.numericType)) {
       override def literal(e: LiteralValue) = {
@@ -303,8 +268,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case Some(t) => SoQLNumber(t)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
     SoQLBoolean -> new SingleColumnRep(SoQLBoolean, d"boolean") {
       def literal(e: LiteralValue) = {
@@ -319,8 +284,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           SoQLBoolean(v)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = // remove indices maybe?
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLFixedTimestamp -> new SingleColumnRep(SoQLFixedTimestamp, d"timestamp with time zone") {
       def literal(e: LiteralValue) = {
@@ -330,8 +294,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.FixedTimestampRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
     SoQLFloatingTimestamp -> new SingleColumnRep(SoQLFloatingTimestamp, d"timestamp without time zone") {
       def literal(e: LiteralValue) = {
@@ -341,8 +305,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.FloatingTimestampRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLDate -> new SingleColumnRep(SoQLDate, d"date") {
       def literal(e: LiteralValue) = {
@@ -352,8 +315,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.DateRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
     SoQLTime -> new SingleColumnRep(SoQLTime, d"time without time zone") {
       def literal(e: LiteralValue) = {
@@ -363,8 +326,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.TimeRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
     SoQLJson -> new SingleColumnRep(SoQLJson, d"jsonb") { // this'll need to be super
       def literal(e: LiteralValue) = {
@@ -374,10 +337,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        Seq(
-          d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label) +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"USING GIN (" ++ compressedDatabaseColumn(label) ++ d")"
-        )
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
 
     SoQLDocument -> new SingleColumnRep(SoQLDocument, d"jsonb") { // this'll need to be a super as well
@@ -393,7 +354,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             SoQLNull
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Nil
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
 
     SoQLInterval -> new SingleColumnRep(SoQLInterval, d"interval") { // not even valid in redshift, apparently
@@ -456,8 +417,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             SoQLNull
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) =
-        createSimpleIndices(namespace.indexName(tableName, label), tableName, compressedDatabaseColumn(label))
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
+
     },
 
     SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_), "point") {
@@ -559,11 +520,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             }
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = {
-        val Seq(numberCol, typeCol) = expandedDatabaseColumns(label)
-        createTextlikeIndices(namespace.indexName(tableName, label, "number"), tableName, numberCol) ++
-          createTextlikeIndices(namespace.indexName(tableName, label, "type"), tableName, typeCol)
-      }
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
 
     SoQLLocation -> new CompoundColumnRep(SoQLLocation) {
@@ -622,19 +579,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case "zip" => SubcolInfo[MT](SoQLLocation, 4, "text", SoQLText, _.parenthesized +#+ d"->> 4")
         }
 
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = {
-        val Seq(pointCol, addressCol, cityCol, stateCol, zipCol) = expandedDatabaseColumns(label)
-
-        val textIndices =
-          createTextlikeIndices(namespace.indexName(tableName, label, "address"), tableName, addressCol) ++
-          createTextlikeIndices(namespace.indexName(tableName, label, "city"), tableName, cityCol) ++
-          createTextlikeIndices(namespace.indexName(tableName, label, "state"), tableName, stateCol) ++
-          createTextlikeIndices(namespace.indexName(tableName, label, "zip"), tableName, zipCol)
-
-        textIndices ++ Seq(
-          d"CREATE INDEX IF NOT EXISTS" +#+ namespace.indexName(tableName, label, "point") +#+ d"ON" +#+ namespace.databaseTableName(tableName) +#+ d"USING GIST (" ++ pointCol ++ d")"
-        )
-      }
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
 
       override def hasTopLevelWrapper = true
       override def wrapTopLevel(raw: ExprSql) = {
@@ -776,11 +721,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             }
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = {
-        val Seq(urlCol, descCol) = expandedDatabaseColumns(label)
-        createTextlikeIndices(namespace.indexName(tableName, label, "url"), tableName, urlCol) ++
-          createTextlikeIndices(namespace.indexName(tableName, label, "desc"), tableName, descCol)
-      }
+      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     }
   )
 }
