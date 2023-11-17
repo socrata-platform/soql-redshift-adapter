@@ -2,7 +2,7 @@ package com.socrata.common.sqlizer
 
 import java.sql.ResultSet
 
-import com.rojoma.json.v3.ast.{JNull, JValue, JString}
+import com.rojoma.json.v3.ast._
 import com.rojoma.json.v3.io.CompactJsonWriter
 import com.rojoma.json.v3.interpolation._
 import com.rojoma.json.v3.util.JsonUtil
@@ -329,10 +329,16 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
 
     },
-    SoQLJson -> new SingleColumnRep(SoQLJson, d"jsonb") { // this'll need to be super
+    SoQLJson -> new SingleColumnRep(SoQLJson, d"super") { // this'll need to be super
       def literal(e: LiteralValue) = {
         val SoQLJson(j) = e.value
-        exprSqlFactory(sqlType +#+ mkStringLiteral(CompactJsonWriter.toString(j)), e)
+
+        val stringRepr = j match {
+          case _: JNumber | JNull => Doc(CompactJsonWriter.toString(j))
+          case _ => mkStringLiteral(CompactJsonWriter.toString(j))
+        }
+
+        exprSqlFactory(stringRepr.funcall(d"JSON_PARSE"), e)
       }
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("").fromResultSet(rs, dbCol)
@@ -464,7 +470,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val sourceName = compressedDatabaseColumn(column)
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
-          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
+          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName, // this is all wrong
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1 AS" +#+ dataName,
         )
       }
@@ -488,7 +494,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
               case None => d"null :: text"
             }
 
-            exprSqlFactory(d"jsonb_build_array(" ++ numberLit ++ d"," ++ typLit ++ d")", e)
+            exprSqlFactory(d"JSON_PARSE('[" ++ numberLit ++ d"," ++ typLit ++ d"])'", e)
         }
       }
 

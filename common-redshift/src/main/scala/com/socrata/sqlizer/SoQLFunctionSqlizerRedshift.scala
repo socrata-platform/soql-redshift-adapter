@@ -595,7 +595,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       // json
       JsonProp -> sqlizeBinaryOp("->"),
       JsonIndex -> sqlizeBinaryOp("->"),
-      TextToJson -> sqlizeCast("jsonb"),
+//      TextToJson -> sqlizeCast("jsonb"),
       JsonToText -> sqlizeCast("text"),
 
       // conditional

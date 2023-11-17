@@ -1,7 +1,9 @@
 package com.socrata.store.sqlizer
 
+import com.vividsolutions.jts.geom.{LineString, LinearRing, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, Coordinate, PrecisionModel}
 import com.socrata.soql.parsing._
-import com.rojoma.json.v3.ast.JString
+import com.rojoma.json.v3.ast._
+import com.rojoma.json.v3.interpolation._
 
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.types._
@@ -26,6 +28,24 @@ import org.junit.jupiter.api.{DisplayName, Test}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test;
 import com.socrata.common.sqlizer._
+
+import TableCreationTest.hasType
+
+import org.joda.time.{DateTime, LocalDate, LocalDateTime, LocalTime, Period}
+import org.joda.time.format.{DateTimeFormat}
+
+object ZipExt {
+  implicit class ZipUtils[T](seq: Seq[T]) {
+    def zipExact[R](other: Seq[R]): Seq[(T, R)] = {
+      if(seq.length == other.length) {
+        seq.zip(other)
+      } else fail(s"""You cannot pass...${seq} and ${other} are different lengths
+The dark fire will not avail you, flame of Udûn. """)
+    }
+  }
+}
+
+import ZipExt._
 
 
 object TableCreationTest {
@@ -107,7 +127,14 @@ object TableCreationTest {
   ) {
     override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
   }
+
+  implicit val hasType: HasType[TableCreationTest.TestMT#ColumnValue, TableCreationTest.TestMT#ColumnType]  = new HasType[TableCreationTest.TestMT#ColumnValue, TableCreationTest.TestMT#ColumnType] {
+      def typeOf(cv: TableCreationTest.TestMT#ColumnValue): TableCreationTest.TestMT#ColumnType = cv.typ
+    }
+
 }
+
+
 
 class TableCreationTest  {
 
@@ -116,15 +143,177 @@ class TableCreationTest  {
   val sqlizer = TableCreationTest.TestSqlizer
   val funcallSqlizer = TableCreationTest.TestFuncallSqlizer
   val repProvider = TableCreationTest.TestRepProvider
+}
+
+class RepsLiterals {
+  val repProvider = TableCreationTest.TestRepProvider
+  type TestMT = TableCreationTest.TestMT
+
+  def testFails[T <: Throwable](literal: TestMT#ColumnValue)(expectedType: Class[T]) = {
+    assertThrows(expectedType, () =>
+      repProvider
+        .reps(literal.typ).literal(LiteralValue[TestMT](literal)(AtomicPositionInfo.None))
+    )
+  }
+
+  def test(literal: TestMT#ColumnValue)(expected: String*) =
+    repProvider
+      .reps(literal.typ).literal(LiteralValue[TestMT](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
+      .zipExact(expected.toList)
+      .foreach { case (received, expected) => assertEquals(expected, received)}
+
+  @Test
+  def soqlText(): Unit = {
+    test(SoQLText("here are some words"))("text 'here are some words'")
+  }
 
 
   @Test
-  def foo(): Unit = {
-    implicit val hasType: HasType[TableCreationTest.TestMT#ColumnValue, TableCreationTest.TestMT#ColumnType]  = new HasType[TableCreationTest.TestMT#ColumnValue, TableCreationTest.TestMT#ColumnType] {
-      def typeOf(cv: TableCreationTest.TestMT#ColumnValue): TableCreationTest.TestMT#ColumnType = cv.typ
-    }
-
-    println(repProvider.reps(SoQLUrl).compressedSubColumns("table1", DatabaseColumnName("text")))
-//    println(repProvider.reps(SoQLNumber).literal(LiteralValue[TestMT](SoQLNumber(new java.math.BigDecimal(22)))(new AtomicPositionInfo(SoQLPosition(0, 0, "", 0), SoQLPosition(0, 0, "", 0)))))
+  def soqlNumber(): Unit = {
+    test(SoQLNumber(new java.math.BigDecimal(22)))("22 :: decimal(30, 7)")
   }
+
+  @Test
+  def SoQLBoolean(): Unit = {
+    test(new SoQLBoolean(false))("false")
+  }
+
+  val dateStr = "2021-06-13 18-14-23CST"
+  val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH-mm-sszzz")
+
+  @Test
+  def soqlFixedTimestamp(): Unit = {
+    val dateTime: DateTime = formatter.parseDateTime(dateStr)
+    test(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
+  }
+
+  @Test
+  def SoQLFloatingTimestamp(): Unit = {
+    val dateTime: LocalDateTime = formatter.parseLocalDateTime(dateStr)
+    test(new SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
+  }
+
+  @Test
+  def SoQLDate(): Unit = {
+    val dateTime: LocalDate = formatter.parseLocalDate(dateStr)
+    test(new SoQLDate(dateTime))("date '2021-06-13'")
+  }
+
+  @Test
+  def SoQLTime(): Unit = {
+    val dateTime: LocalTime = formatter.parseLocalTime(dateStr)
+    test(new SoQLTime(dateTime))("time without time zone '18:14:23.000'")
+  }
+
+  @Test
+  def SoQLJson(): Unit = {
+    test(new SoQLJson(JNumber(2)))("JSON_PARSE(2)")
+    test(new SoQLJson(JNumber(2.18)))("JSON_PARSE(2.18)")
+    test(new SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
+    test(new SoQLJson(JNull))("JSON_PARSE(null)")
+    test(new SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
+  }
+
+  @Test
+  def SoQLDocument(): Unit = {
+    testFails(new SoQLDocument("", None, None))(classOf[NotImplementedError])
+  }
+
+  // untested
+  @Test
+  def SoQLInterval(): Unit = {
+    test(new SoQLInterval(new Period(1, 2, 3, 4, 5, 6, 7, 8)))("interval '1 years, 2 months, 3 weeks, 4 days, 5 hours, 6 minutes, 7 seconds, 8 milliseconds'")
+  }
+
+  val precisionModel = new PrecisionModel()
+  val coordinate = new Coordinate(1, 2, 3)
+  val point = new Point(coordinate, precisionModel, Geo.defaultSRID)
+
+  // untested
+  @Test
+  def SoQLPoint(): Unit = {
+    test(new SoQLPoint(point))(
+      """st_pointfromwkb(bytea '\x00000000013ff00000000000004000000000000000', 4326)"""
+    )
+  }
+
+  // untested
+  @Test
+  def SoQLMultiPoint(): Unit = {
+    test(new SoQLMultiPoint(new MultiPoint(Array(point, point, point), precisionModel, Geo.defaultSRID)))(
+      """st_mpointfromwkb(
+  bytea '\x00000000040000000300000000013ff0000000000000400000000000000000000000013ff0000000000000400000000000000000000000013ff00000000000004000000000000000',
+  4326
+)"""
+    )
+  }
+
+  val lineString = new LineString(Array(coordinate, coordinate), precisionModel, Geo.defaultSRID)
+
+  // untested
+  @Test
+  def SoQLLine(): Unit = {
+    test(new SoQLLine(lineString))(
+      """st_linefromwkb(
+  bytea '\x0000000002000000023ff000000000000040000000000000003ff00000000000004000000000000000',
+  4326
+)"""
+    )
+  }
+
+  // untested
+  @Test
+  def SoQLMultiLine(): Unit = {
+    test(new SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
+      """st_mlinefromwkb(
+  bytea '\x0000000005000000020000000002000000023ff000000000000040000000000000003ff000000000000040000000000000000000000002000000023ff000000000000040000000000000003ff00000000000004000000000000000',
+  4326
+)"""
+    )
+  }
+
+  val polygon = new Polygon(new LinearRing(Array(coordinate, coordinate, coordinate, coordinate), precisionModel, Geo.defaultSRID), precisionModel, Geo.defaultSRID)
+
+  // untested
+  @Test
+  def SoQLPolygon(): Unit = {
+    test(new SoQLPolygon(polygon))(
+      """st_polygonfromwkb(
+  bytea '\x000000000300000001000000043ff000000000000040000000000000003ff000000000000040000000000000003ff000000000000040000000000000003ff00000000000004000000000000000',
+  4326
+)"""
+    )
+  }
+
+  // untested
+  @Test
+  def SoQLMultiPolygon(): Unit = {
+    test(new SoQLMultiPolygon(new MultiPolygon(Array(polygon, polygon, polygon), precisionModel, Geo.defaultSRID)))(
+      """st_mpolyfromwkb(
+  bytea '\x000000000600000003000000000300000001000000043ff000000000000040000000000000003ff000000000000040000000000000003ff000000000000040000000000000003ff00000000000004000000000000000000000000300000001000000043ff000000000000040000000000000003ff000000000000040000000000000003ff000000000000040000000000000003ff00000000000004000000000000000000000000300000001000000043ff000000000000040000000000000003ff000000000000040000000000000003ff000000000000040000000000000003ff00000000000004000000000000000',
+  4326
+)"""
+    )
+  }
+
+
+  // untested
+  @Test
+  def SoQLPhone(): Unit = {
+    test(new SoQLPhone(Some("325-555-5555"), Some("home")))(
+      """JSON_PARSE('[text "325-555-5555",text "home"]')""" // not right. Should be array of strings. the text inside will blow everything up
+    )
+  }
+
 }
+
+/*
+ 1. talk to Dalia about geometry things
+ test all geom and interval things
+ test column create commands (compressedSubCols and stuff)
+ test compression of bag of columns into a super
+
+ make tests construct real tables and run queries against them
+ make tests construct real literals and verify they work
+
+ */
