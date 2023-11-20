@@ -63,14 +63,15 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
   override def mkTextLiteral(s: String): Doc =
     d"text" +#+ mkStringLiteral(s)
   override def mkByteaLiteral(bytes: Array[Byte]): Doc =
-    d"bytea" +#+ mkStringLiteral(bytes.iterator.map { b => "%02x".format(b & 0xff) }.mkString("\\x", "", ""))
+    mkStringLiteral(bytes.iterator.map { b => "%02x".format(b & 0xff) }.mkString)
 
   abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV, name: String) extends SingleColumnRep(t, d"geometry") {
-    private val open = d"st_${name}fromwkb"
+    private val open = d"ST_GeomFromWKB"
 
     override def literal(e: LiteralValue) = {
       val geo = downcast(e.value)
-      exprSqlFactory(Seq(mkByteaLiteral(t.WkbRep(geo)), Geo.defaultSRIDLiteral).funcall(open), e)
+      exprSqlFactory(Seq(mkByteaLiteral(t.WkbRep(geo)), Geo.defaultSRIDLiteral).funcall(open
+      ), e)
     }
 
     protected def downcast(v: SoQLValue): T

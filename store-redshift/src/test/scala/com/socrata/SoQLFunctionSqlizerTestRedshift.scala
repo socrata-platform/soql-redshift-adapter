@@ -591,12 +591,12 @@ class SoQLFunctionSqlizerTestRedshift  {
 
   @Test
   def `TimeStampPlus`: Unit = {
-    assertEquals(analyze("('2022-12-31T23:59:59Z' + 'P1001Y1DT1H1S')"), ("""(timestamp with time zone '2022-12-31T23:59:59.000Z') + (interval '1 millenniums, 1 years, 1 days, 1 hours, 1 seconds')"""))
+    assertEquals(analyze("('2022-12-31T23:59:59Z' + 'P1001Y1DT1H1S')"), ("""(timestamp with time zone '2022-12-31T23:59:59.000Z') + (interval '1 years, 1 days, 1 hours, 1 seconds')"""))
   }
 
   @Test
   def `TimeStampMinus`: Unit = {
-    assertEquals(analyze("('2022-12-31T23:59:59Z' - 'P1001Y1DT1H1S')"), ("""(timestamp with time zone '2022-12-31T23:59:59.000Z') - (interval '1 millenniums, 1 years, 1 days, 1 hours, 1 seconds')"""))
+    assertEquals(analyze("('2022-12-31T23:59:59Z' - 'P1001Y1DT1H1S')"), ("""(timestamp with time zone '2022-12-31T23:59:59.000Z') - (interval '1 years, 1 days, 1 hours, 1 seconds')"""))
   }
 
   @Test
