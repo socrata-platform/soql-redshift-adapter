@@ -337,8 +337,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
     },
 
-    SoQLDocument -> new SingleColumnRep(SoQLDocument, d"jsonb") { // this'll need to be a super as well
-      override def literal(e: LiteralValue) = ??? // no such thing as a doc liteal
+    SoQLDocument -> new SingleColumnRep(SoQLDocument, d"super") {
+      override def literal(e: LiteralValue) = ???
       override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         Option(rs.getString(dbCol)) match {
           case Some(s) =>
