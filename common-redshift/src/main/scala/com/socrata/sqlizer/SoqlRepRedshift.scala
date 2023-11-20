@@ -377,9 +377,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         var hours = period.getHours
         var minutes = period.getMinutes
         var seconds = period.getSeconds
-        var millis = period.getMillis
 
-        val millennia = years / 1000
         years = years % 1000
 
         val centuries = years / 100
@@ -391,7 +389,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val quarters = months / 3
         months = months % 3
 
-        val millenniaPart = if (millennia != 0) s"$millennia millenniums" else ""
         val centuryPart = if (centuries != 0) s"$centuries centuries" else ""
         val decadePart = if (decades != 0) s"$decades decades" else ""
         val yearPart = if (years != 0) s"$years years" else ""
@@ -402,9 +399,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val hourPart = if (hours != 0) s"$hours hours" else ""
         val minutePart = if (minutes != 0) s"$minutes minutes" else ""
         val secondPart = if (seconds != 0) s"$seconds seconds" else ""
-        val millisPart = if (millis != 0) s"$millis milliseconds" else ""
 
-        val parts = List(millenniaPart, centuryPart, decadePart, yearPart, quarterPart, monthPart, weekPart, dayPart, hourPart, minutePart, secondPart, millisPart).filter(_.nonEmpty)
+        val parts = List(centuryPart, decadePart, yearPart, quarterPart, monthPart, weekPart, dayPart, hourPart, minutePart, secondPart).filter(_.nonEmpty)
         val interval = parts.mkString(", ")
 
         if (interval.trim.isEmpty) {
