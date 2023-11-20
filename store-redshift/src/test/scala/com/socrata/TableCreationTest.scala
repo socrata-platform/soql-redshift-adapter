@@ -161,81 +161,78 @@ class RepsLiterals {
       .foreach { case (received, expected) => assertEquals(expected, received)}
 
   @Test
-  def soqlText(): Unit = {
+  def text(): Unit = {
     test(SoQLText("here are some words"))("text 'here are some words'")
   }
 
 
   @Test
-  def soqlNumber(): Unit = {
+  def number(): Unit = {
     test(SoQLNumber(new java.math.BigDecimal(22)))("22 :: decimal(30, 7)")
   }
 
   @Test
-  def SoQLBoolean(): Unit = {
-    test(new SoQLBoolean(false))("false")
-    test(new SoQLBoolean(true))("true")
+  def boolean(): Unit = {
+    test(SoQLBoolean(false))("false")
+    test(SoQLBoolean(true))("true")
   }
 
   val dateStr = "2021-06-13 18-14-23CST"
   val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH-mm-sszzz")
 
   @Test
-  def soqlFixedTimestamp(): Unit = {
+  def fixedTimestamp(): Unit = {
     val dateTime: DateTime = formatter.parseDateTime(dateStr)
     test(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
   }
 
   @Test
-  def SoQLFloatingTimestamp(): Unit = {
+  def floatingTimestamp(): Unit = {
     val dateTime: LocalDateTime = formatter.parseLocalDateTime(dateStr)
-    test(new SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
+    test(SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
   }
 
   @Test
-  def SoQLDate(): Unit = {
+  def date(): Unit = {
     val dateTime: LocalDate = formatter.parseLocalDate(dateStr)
-    test(new SoQLDate(dateTime))("date '2021-06-13'")
+    test(SoQLDate(dateTime))("date '2021-06-13'")
   }
 
   @Test
-  def SoQLTime(): Unit = {
+  def time(): Unit = {
     val dateTime: LocalTime = formatter.parseLocalTime(dateStr)
-    test(new SoQLTime(dateTime))("time without time zone '18:14:23.000'")
+    test(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
   }
 
   // probably broken -- think about this
   @Test
-  def SoQLJson(): Unit = {
-    test(new SoQLJson(JNumber(2)))("JSON_PARSE(2)")
-    test(new SoQLJson(JNumber(2.18)))("JSON_PARSE(2.18)")
-    test(new SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
-    test(new SoQLJson(JNull))("JSON_PARSE(null)")
-    test(new SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
+  def json(): Unit = {
+    test(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
+    test(SoQLJson(JNumber(2.18)))("JSON_PARSE(2.18)")
+    test(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
+    test(SoQLJson(JNull))("JSON_PARSE(null)")
+    test(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
   }
 
   @Test
-  def SoQLDocument(): Unit = {
-    testFails(new SoQLDocument("", None, None))(classOf[NotImplementedError])
-  }
-
-  @Test
+  def document(): Unit = {
+    testFails(SoQLDocument("", None, None))(classOf[NotImplementedError])
   }
 
   val precisionModel = new PrecisionModel()
   val coordinate = new Coordinate(100, 999)
-  val point = new Point(coordinate, precisionModel, Geo.defaultSRID)
+  val pt = new Point(coordinate, precisionModel, Geo.defaultSRID)
 
   @Test
-  def SoQLPoint(): Unit = {
-    test(new SoQLPoint(point))(
+  def point(): Unit = {
+    test(SoQLPoint(pt))(
       "ST_GeomFromWKB('00000000014059000000000000408f380000000000', 4326)"
     )
   }
 
   @Test
-  def SoQLMultiPoint(): Unit = {
-    test(new SoQLMultiPoint(new MultiPoint(Array(point, point, point), precisionModel, Geo.defaultSRID)))(
+  def multipoint(): Unit = {
+    test(SoQLMultiPoint(new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '00000000040000000300000000014059000000000000408f38000000000000000000014059000000000000408f38000000000000000000014059000000000000408f380000000000',
   4326
@@ -247,8 +244,8 @@ class RepsLiterals {
   val lineString = new LineString(Array(coordinate, coordinate), precisionModel, Geo.defaultSRID)
 
   @Test
-  def SoQLLine(): Unit = {
-    test(new SoQLLine(lineString))(
+  def line(): Unit = {
+    test(SoQLLine(lineString))(
       """ST_GeomFromWKB(
   '0000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -256,19 +253,19 @@ class RepsLiterals {
   }
 
   @Test
-  def SoQLMultiLine(): Unit = {
-    test(new SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
+  def multiline(): Unit = {
+    test(SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '0000000005000000020000000002000000024059000000000000408f3800000000004059000000000000408f3800000000000000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
 )""")
   }
 
-  val polygon = new Polygon(new LinearRing(Array(coordinate, coordinate, coordinate, coordinate), precisionModel, Geo.defaultSRID), precisionModel, Geo.defaultSRID)
+  val poly = new Polygon(new LinearRing(Array(coordinate, coordinate, coordinate, coordinate), precisionModel, Geo.defaultSRID), precisionModel, Geo.defaultSRID)
 
   @Test
-  def SoQLPolygon(): Unit = {
-    test(new SoQLPolygon(polygon))(
+  def polygon(): Unit = {
+    test(SoQLPolygon(poly))(
       """ST_GeomFromWKB(
   '000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -276,8 +273,8 @@ class RepsLiterals {
   }
 
   @Test
-  def SoQLMultiPolygon(): Unit = {
-    test(new SoQLMultiPolygon(new MultiPolygon(Array(polygon, polygon, polygon), precisionModel, Geo.defaultSRID)))(
+  def multipolygon(): Unit = {
+    test(SoQLMultiPolygon(new MultiPolygon(Array(poly, poly, poly), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '000000000600000003000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -293,13 +290,20 @@ class ColumnCreator {
     repProvider
       .reps(`type`).physicalDatabaseTypes.map(_.toString)
       .zipExact(expected.toList)
-      .foreach { case (received, expected) => assertEquals(expected, received)}
+      .foreach { case (received, expected) => {assertEquals(expected, received)}}
 
+  def testFails[T <: Throwable](`type`: TestMT#ColumnType)(expectedType: Class[T]) = {
+    assertThrows(expectedType, () =>
+      println("================", repProvider
+        .reps(`type`).physicalDatabaseTypes)
+    )
+  }
 
   @Test
   def text(): Unit = {
     test(SoQLText)("text")
   }
+
 
   @Test
   def number(): Unit = {
@@ -309,6 +313,66 @@ class ColumnCreator {
   @Test
   def boolean(): Unit = {
     test(SoQLBoolean)("boolean")
+  }
+
+  @Test
+  def fixedTimestamp(): Unit = {
+    test(SoQLFixedTimestamp)("timestamp with time zone")
+  }
+
+  @Test
+  def floatingTimestamp(): Unit = {
+    test(SoQLFloatingTimestamp)("timestamp without time zone")
+  }
+
+  @Test
+  def date(): Unit = {
+    test(SoQLDate)("date")
+  }
+
+  @Test
+  def time(): Unit = {
+    test(SoQLTime)("time without time zone")
+  }
+
+  @Test
+  def json(): Unit = {
+    test(SoQLJson)("super")
+  }
+
+  @Test
+  def document(): Unit = {
+    test(SoQLDocument)("super")
+  }
+
+  @Test
+  def point(): Unit = {
+    test(SoQLPoint)("geometry")
+  }
+
+  @Test
+  def multipoint(): Unit = {
+    test(SoQLMultiPoint)("geometry")
+  }
+
+  @Test
+  def line(): Unit = {
+    test(SoQLLine)("geometry")
+  }
+
+  @Test
+  def multiline(): Unit = {
+    test(SoQLMultiLine)("geometry")
+  }
+
+  @Test
+  def polygon(): Unit = {
+    test(SoQLPolygon)("geometry")
+  }
+
+  @Test
+  def multipolygon(): Unit = {
+    test(SoQLMultiPolygon)("geometry")
   }
 }
 
