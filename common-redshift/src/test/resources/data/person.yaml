@@ -1,0 +1,7 @@
+person:
+  name: John
+  age: 20
+  address:
+    country: United States
+    state: New York
+    city: Buffalo

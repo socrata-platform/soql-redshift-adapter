@@ -2,7 +2,7 @@ package com.socrata.config
 
 import com.codahale.metrics.MetricRegistry
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.socrata.config.JacksonConfig
+import com.socrata.config.CommonObjectMapperCustomizer
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
 import com.socrata.datacoordinator.secondary.Secondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
@@ -37,7 +37,7 @@ object RedshiftSecondaryDependencies {
 class RedshiftSecondaryDependencies {
 
   @Produces
-  def objectMapperCustomizer(): ObjectMapperCustomizer = new JacksonConfig
+  def objectMapperCustomizer(): ObjectMapperCustomizer = new CommonObjectMapperCustomizer
 
   @Produces
   def redshiftSecondaryConfig
