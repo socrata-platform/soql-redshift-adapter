@@ -9,7 +9,6 @@ import com.rojoma.json.v3.util.JsonUtil
 import com.rojoma.json.v3.util.OrJNull.implicits._
 import com.vividsolutions.jts.geom.{Geometry, Point}
 import org.joda.time.Period
-import org.postgresql.util.PGInterval
 
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.analyzer2._
@@ -352,66 +351,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         }
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-    },
-
-    SoQLInterval -> new SingleColumnRep(SoQLInterval, d"interval") { // not even valid in redshift, apparently
-      override def literal(e: LiteralValue) = {
-        val SoQLInterval(p) = e.value
-        exprSqlFactory(d"interval" +#+ mkStringLiteral(periodToRedshiftInterval(p)), e)
-      }
-
-      def periodToRedshiftInterval(period: Period): String = {
-        var years = period.getYears
-        var months = period.getMonths
-        var weeks = period.getWeeks
-        var days = period.getDays
-        var hours = period.getHours
-        var minutes = period.getMinutes
-        var seconds = period.getSeconds
-
-        years = years % 1000
-
-        val centuries = years / 100
-        years = years % 100
-
-        val decades = years / 10
-        years = years % 10
-
-        val quarters = months / 3
-        months = months % 3
-
-        val centuryPart = if (centuries != 0) s"$centuries centuries" else ""
-        val decadePart = if (decades != 0) s"$decades decades" else ""
-        val yearPart = if (years != 0) s"$years years" else ""
-        val quarterPart = if (quarters != 0) s"$quarters quarters" else ""
-        val monthPart = if (months != 0) s"$months months" else ""
-        val weekPart = if (weeks != 0) s"$weeks weeks" else ""
-        val dayPart = if (days != 0) s"$days days" else ""
-        val hourPart = if (hours != 0) s"$hours hours" else ""
-        val minutePart = if (minutes != 0) s"$minutes minutes" else ""
-        val secondPart = if (seconds != 0) s"$seconds seconds" else ""
-
-        val parts = List(centuryPart, decadePart, yearPart, quarterPart, monthPart, weekPart, dayPart, hourPart, minutePart, secondPart).filter(_.nonEmpty)
-        val interval = parts.mkString(", ")
-
-        if (interval.trim.isEmpty) {
-          throw new IllegalArgumentException("Period cannot be converted to a non-empty Redshift interval")
-        } else {
-          interval
-        }
-      }
-      override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        //TODO redshiftify, interval -> period
-        Option(rs.getObject(dbCol).asInstanceOf[PGInterval]) match {
-          case Some(pgInterval) =>
-            val period = new Period(pgInterval.getYears, pgInterval.getMonths, 0, pgInterval.getDays, pgInterval.getHours, pgInterval.getMinutes, pgInterval.getWholeSeconds, pgInterval.getMicroSeconds / 1000)
-            SoQLInterval(period)
-          case None =>
-            SoQLNull
-        }
-      }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
 
     SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_), "point") {

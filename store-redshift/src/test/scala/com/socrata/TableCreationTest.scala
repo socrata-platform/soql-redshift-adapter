@@ -220,8 +220,6 @@ class RepsLiterals {
   }
 
   @Test
-  def SoQLInterval(): Unit = {
-    test(new SoQLInterval(new Period(1, 2, 3, 4, 5, 6, 7, 8)))("interval '1 years, 2 months, 3 weeks, 4 days, 5 hours, 6 minutes, 7 seconds'")
   }
 
   val precisionModel = new PrecisionModel()

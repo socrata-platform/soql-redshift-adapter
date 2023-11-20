@@ -618,7 +618,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       NumberToText -> sqlizeCast("text"),
       TextToFixedTimestamp -> sqlizeCast("timestamp with time zone"),
       TextToFloatingTimestamp -> sqlizeCast("timestamp without time zone"),
-      TextToInterval -> sqlizeCast("interval"),
       TextToBlob -> sqlizeTypechangingIdentityCast,
       TextToPhoto -> sqlizeTypechangingIdentityCast
     ) ++ castIdentities.map { f =>
