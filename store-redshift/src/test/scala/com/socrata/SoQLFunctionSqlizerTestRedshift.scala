@@ -880,4 +880,30 @@ class SoQLFunctionSqlizerTestRedshift  {
     assertEquals(analyzeStatement("SELECT ('MULTIPOLYGON' || '(((1 1, 1 3, 3 3, 3 1, 1 1)), ((4 3, 6 3, 6 1, 4 1, 4 3)))') :: multipolygon"), ("""SELECT st_asbinary(st_geomfromtext((text 'MULTIPOLYGON') || (text '(((1 1, 1 3, 3 3, 3 1, 1 1)), ((4 3, 6 3, 6 1, 4 1, 4 3)))'), 4326)) AS i1 FROM table1 AS x1"""))
   }
 
+//  tests for simple casts
+
+  @Test
+  def`bla`(): Unit = {
+    analyzeStatement("SELECT ('TR' || 'UE') :: boolean")
+  }
+
+  @Test
+  def `text to numeric cast works`(): Unit = {
+    assertEquals(analyzeStatement("SELECT ('5' || '4') :: number"), """SELECT ((text '5') || (text '4')) :: decimal(30, 7) AS i1 FROM table1 AS x1""")
+  }
+
+  @Test
+  def `number to text cast works`(): Unit = {
+    assertEquals(analyzeStatement("SELECT (5 + 4) :: text"), """SELECT ((5 :: decimal(30, 7)) + (4 :: decimal(30, 7))) :: text AS i1 FROM table1 AS x1""")
+  }
+
+  @Test
+  def `text to fixed timestamp works`(): Unit = {
+    assertEquals(analyzeStatement("Select ('2022-12-31T' || '23:59:59Z') :: fixed_timestamp"), """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp with time zone AS i1 FROM table1 AS x1""")
+  }
+
+  @Test
+  def `text to floating timestamp works`(): Unit = {
+    assertEquals(analyzeStatement("SELECT ('2022-12-31T' || '23:59:59Z') :: floating_timestamp"), """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp without time zone AS i1 FROM table1 AS x1""")
+  }
 }
