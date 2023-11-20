@@ -1,5 +1,7 @@
 package com.socrata.store.sqlizer
 
+import scala.util.Using
+
 import com.vividsolutions.jts.geom.{LineString, LinearRing, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, Coordinate, PrecisionModel}
 import com.socrata.soql.parsing._
 import com.rojoma.json.v3.ast._
@@ -134,16 +136,13 @@ object TableCreationTest {
 
 }
 
-class TableCreationTest  {
 
-  type TestMT = TableCreationTest.TestMT
-
-  val sqlizer = TableCreationTest.TestSqlizer
-  val funcallSqlizer = TableCreationTest.TestFuncallSqlizer
-  val repProvider = TableCreationTest.TestRepProvider
-}
-
+@QuarkusTest
 class RepsLiterals {
+  @DataSource("store")
+  @Inject
+  var dataSource: AgroalDataSource = _
+
   val repProvider = TableCreationTest.TestRepProvider
   type TestMT = TableCreationTest.TestMT
 
@@ -154,11 +153,12 @@ class RepsLiterals {
     )
   }
 
-  def test(literal: TestMT#ColumnValue)(expected: String*) =
+  def test(literal: TestMT#ColumnValue)(expected: String*) = {
     repProvider
       .reps(literal.typ).literal(LiteralValue[TestMT](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
       .zipExact(expected.toList)
       .foreach { case (received, expected) => assertEquals(expected, received)}
+  }
 
   @Test
   def text(): Unit = {
@@ -282,7 +282,12 @@ class RepsLiterals {
   }
 }
 
+@QuarkusTest
 class ColumnCreator {
+  @DataSource("store")
+  @Inject
+  var dataSource: AgroalDataSource = _
+
   val repProvider = TableCreationTest.TestRepProvider
   type TestMT = TableCreationTest.TestMT
 
@@ -290,7 +295,22 @@ class ColumnCreator {
     repProvider
       .reps(`type`).physicalDatabaseTypes.map(_.toString)
       .zipExact(expected.toList)
-      .foreach { case (received, expected) => {assertEquals(expected, received)}}
+      .foreach { case (received, expected) => {
+        assertEquals(expected, received)
+        Using.resource(dataSource.getConnection) { conn =>
+          try {
+            Using.resource(conn.createStatement()) { stmt =>
+              stmt.executeUpdate(
+                s"""create table "columncreator" (testcol ${received})""")
+            }
+          } finally {
+            Using.resource(conn.createStatement()) { stmt =>
+              stmt.executeUpdate(
+                s"""drop table "columncreator"""")
+            }
+          }
+        }
+      }}
 
   def testFails[T <: Throwable](`type`: TestMT#ColumnType)(expectedType: Class[T]) = {
     assertThrows(expectedType, () =>
