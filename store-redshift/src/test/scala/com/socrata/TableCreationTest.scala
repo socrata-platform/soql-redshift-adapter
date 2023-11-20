@@ -294,12 +294,9 @@ class RepsLiterals {
     //   """JSON_PARSE('[text "325-555-5555",text "home"]')""" // not right. Should be array of strings. the text inside will blow everything up
     // )
   }
-
 }
 
 /*
- 1. talk to Dalia about geometry things (they're wrong function calls. Let's make sure they produce the right types too)
- test all geom and interval things
  test column create commands (compressedSubCols and stuff)
  test compression of bag of columns into a super
 

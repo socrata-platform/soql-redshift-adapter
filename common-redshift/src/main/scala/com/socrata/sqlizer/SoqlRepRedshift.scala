@@ -19,10 +19,6 @@ import com.socrata.soql.sqlizer._
 
 
 /*
-n
-
-
-
 Make tests which create a table of every column type
 
 
@@ -42,12 +38,6 @@ I think I can remove all use of indices https://popsql.com/learn-sql/redshift/ho
 add scalafmt
 
  */
-
-
-
-
-
-
 
 abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String})](
   cryptProviders: CryptProviderProvider,
@@ -98,11 +88,11 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         Set(rawId.provenance)
       }
 
-      override def compressedSubColumns(table: String, column: ColumnLabel) = { // TODO: do this
+      override def compressedSubColumns(table: String, column: ColumnLabel) = {
         val sourceName = compressedDatabaseColumn(column)
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
-          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName, // no json
+          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
           d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName,
         )
       }
@@ -454,18 +444,18 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def nullLiteral(e: NullLiteral) =
         exprSqlFactory(Seq(d"null :: text", d"null :: text"), e)
 
-      override def expandedColumnCount = 2
+      override def physicalColumnCount = 2
 
-      override def expandedDatabaseColumns(name: ColumnLabel) = {
+      override def physicalDatabaseColumns(name: ColumnLabel) = {
         val base = namespace.columnBase(name)
         Seq(base ++ d"_number", base ++ d"_type")
       }
 
-      override def expandedDatabaseTypes = Seq(d"text", d"text")
+      override def physicalDatabaseTypes = Seq(d"text", d"text")
 
       override def compressedSubColumns(table: String, column: ColumnLabel) = {
         val sourceName = compressedDatabaseColumn(column)
-        val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
+        val Seq(provenancedName, dataName) = physicalDatabaseColumns(column)
         Seq(
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName, // this is all wrong
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1 AS" +#+ dataName,
@@ -544,13 +534,13 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def nullLiteral(e: NullLiteral) =
         exprSqlFactory(Seq(d"null :: geometry", d"null :: text", d"null :: text", d"null :: text", d"null :: text"), e)
 
-      override def expandedColumnCount = 5
+      override def physicalColumnCount = 5
 
-      override def expandedDatabaseTypes = Seq(d"geometry", d"text", d"text", d"text", d"text")
+      override def physicalDatabaseTypes = Seq(d"geometry", d"text", d"text", d"text", d"text")
 
       override def compressedSubColumns(table: String, column: ColumnLabel) = {
         val sourceName = compressedDatabaseColumn(column)
-        val Seq(ptName, addressName, cityName, stateName, zipName) = expandedDatabaseColumns(column)
+        val Seq(ptName, addressName, cityName, stateName, zipName) = physicalDatabaseColumns(column)
         Seq(
           d"soql_extract_compressed_location_point(" ++ Doc(table) ++ d"." ++ sourceName ++ d") AS" +#+ ptName,
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1 AS" +#+ addressName,
@@ -560,7 +550,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         )
       }
 
-      override def expandedDatabaseColumns(name: ColumnLabel) = {
+      override def physicalDatabaseColumns(name: ColumnLabel) = {
         val base = namespace.columnBase(name)
         Seq(base, base ++ d"_address", base ++ d"_city", base ++ d"_state", base ++ d"_zip")
       }
@@ -592,7 +582,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             compressed
           case expanded: ExprSql.Expanded[MT] =>
             val sqls = expanded.sqls
-            assert(sqls.length == expandedColumnCount)
+            assert(sqls.length == physicalColumnCount)
             exprSqlFactory(Seq(sqls.head).funcall(d"st_asbinary") +: sqls.tail, expanded.expr)
         }
       }
@@ -655,18 +645,18 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def nullLiteral(e: NullLiteral) =
         exprSqlFactory(Seq(d"null :: text", d"null :: text"), e)
 
-      override def expandedColumnCount = 2
+      override def physicalColumnCount = 2
 
-      override def expandedDatabaseColumns(name: ColumnLabel) = {
+      override def physicalDatabaseColumns(name: ColumnLabel) = {
         val base = namespace.columnBase(name)
         Seq(base ++ d"_url", base ++ d"_description")
       }
 
-      override def expandedDatabaseTypes = Seq(d"text", d"text")
+      override def physicalDatabaseTypes = Seq(d"text", d"text")
 
       override def compressedSubColumns(table: String, column: ColumnLabel) = {
         val sourceName = compressedDatabaseColumn(column)
-        val Seq(urlName, descName) = expandedDatabaseColumns(column)
+        val Seq(urlName, descName) = physicalDatabaseColumns(column)
         Seq(
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ urlName,
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1 AS" +#+ descName,
