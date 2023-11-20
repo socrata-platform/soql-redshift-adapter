@@ -285,14 +285,32 @@ class RepsLiterals {
   4326
 )""")
   }
+}
+
+class ColumnCreator {
+  val repProvider = TableCreationTest.TestRepProvider
+  type TestMT = TableCreationTest.TestMT
+
+  def test(`type`: TestMT#ColumnType)(expected: String*) =
+    repProvider
+      .reps(`type`).physicalDatabaseTypes.map(_.toString)
+      .zipExact(expected.toList)
+      .foreach { case (received, expected) => assertEquals(expected, received)}
 
 
-  // untested
   @Test
-  def SoQLPhone(): Unit = {
-    // test(new SoQLPhone(Some("325-555-5555"), Some("home")))(
-    //   """JSON_PARSE('[text "325-555-5555",text "home"]')""" // not right. Should be array of strings. the text inside will blow everything up
-    // )
+  def text(): Unit = {
+    test(SoQLText)("text")
+  }
+
+  @Test
+  def number(): Unit = {
+    test(SoQLNumber)("decimal(30, 7)")
+  }
+
+  @Test
+  def boolean(): Unit = {
+    test(SoQLBoolean)("boolean")
   }
 }
 
@@ -305,4 +323,6 @@ class RepsLiterals {
 
 
 make sure we can read these literals when written to a table. make sure we can read back into a soqlpoint, for exampole
+
+do compound types
  */
