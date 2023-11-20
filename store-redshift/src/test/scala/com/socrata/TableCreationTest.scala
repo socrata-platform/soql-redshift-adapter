@@ -386,4 +386,9 @@ class ColumnCreator {
 make sure we can read these literals when written to a table. make sure we can read back into a soqlpoint, for exampole
 
 do compound types
+do ID and version
+
+
+connect to redshift
+test various soql commands
  */

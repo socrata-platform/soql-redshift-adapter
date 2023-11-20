@@ -71,6 +71,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       exprSqlFactory(raw.compressed.sql.funcall(d"st_asbinary"), raw.expr)
     }
 
+    // TODO: test this
     override def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
       Option(rs.getBytes(dbCol)).flatMap { bytes =>
         t.WkbRep.unapply(bytes) // TODO: this just turns invalid values into null, we should probably be noisier than that
@@ -228,9 +229,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
-
-    // do id and version (more complex because of cryptprovider stuff)
-
 
     // ATOMIC REPS
 
