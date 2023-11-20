@@ -294,9 +294,8 @@ class ColumnCreator {
 
   def testFails[T <: Throwable](`type`: TestMT#ColumnType)(expectedType: Class[T]) = {
     assertThrows(expectedType, () =>
-      println("================", repProvider
+      repProvider
         .reps(`type`).physicalDatabaseTypes)
-    )
   }
 
   @Test
