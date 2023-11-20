@@ -616,14 +616,14 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       // simple casts
 //      TextToBool and BoolToText casting isn't supported in redshift
       TextToBool -> sqlizeCast("boolean"),
-      BoolToText -> sqlizeCast("text"),
+//      BoolToText -> sqlizeCast("text"),
       TextToNumber -> sqlizeCast("decimal(30, 7)"),
       NumberToText -> sqlizeCast("text"),
       TextToFixedTimestamp -> sqlizeCast("timestamp with time zone"),
       TextToFloatingTimestamp -> sqlizeCast("timestamp without time zone"),
       TextToInterval -> sqlizeCast("interval"),
-      TextToBlob -> sqlizeTypechangingIdentityCast,
-      TextToPhoto -> sqlizeTypechangingIdentityCast
+//      TextToBlob -> sqlizeTypechangingIdentityCast,
+//      TextToPhoto -> sqlizeTypechangingIdentityCast
     ) ++ castIdentities.map { f =>
       f -> sqlizeIdentity _
     }
