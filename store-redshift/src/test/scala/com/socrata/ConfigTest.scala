@@ -1,6 +1,7 @@
 package com.socrata
 
 import com.socrata.config.{ConfigProvider, RedshiftSecondaryConfig}
+import com.socrata.datacoordinator.secondary.messaging.eurybates.{EurybatesConfig, MessageProducerConfig, ZookeeperConfig}
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.logging.Log
@@ -21,7 +22,7 @@ class ConfigTest() {
   @DisplayName("one")
   @Test
   def one():Unit = {
-    val redshiftSecondaryConfig = configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
+    val redshiftSecondaryConfig: RedshiftSecondaryConfig = configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
     assert(Duration("5 minutes").equals(redshiftSecondaryConfig.backoffInterval))
     assert(Duration("30 minutes").equals(redshiftSecondaryConfig.claimTimeout))
     assert("collocation-lock".equals(redshiftSecondaryConfig.collocationLockPath))
@@ -32,13 +33,13 @@ class ConfigTest() {
     assert(redshiftSecondaryConfig.maxReplays.contains(200))
     assert(29.equals(redshiftSecondaryConfig.maxRetries))
 
-    val messageProducerConfig = redshiftSecondaryConfig.messageProducerConfig.get
+    val messageProducerConfig:MessageProducerConfig = redshiftSecondaryConfig.messageProducerConfig.get
 
-    val eurybates = messageProducerConfig.eurybates
+    val eurybates:EurybatesConfig = messageProducerConfig.eurybates
     assert("activemq".equals(eurybates.producers))
     assert("tcp://local.dev.socrata.net:61616".equals(eurybates.activemqConnStr))
 
-    val zookeeper = messageProducerConfig.zookeeper
+    val zookeeper:ZookeeperConfig = messageProducerConfig.zookeeper
     assert("local.dev.socrata.net:2181".equals(zookeeper.connSpec))
     assert(zookeeper.sessionTimeout.equals(4))
 
