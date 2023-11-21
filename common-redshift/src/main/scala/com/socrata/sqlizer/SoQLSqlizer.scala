@@ -17,12 +17,7 @@ object RedshiftSqlizer extends Sqlizer[DatabaseNamesMetaTypes](
   _.name.isRollup,
   (sqlizer, physicalTableFor, extraContext) => new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
     extraContext.cryptProviderProvider,
-    sqlizer.exprSqlFactory,
-    sqlizer.namespace,
-    sqlizer.toProvenance,
-    sqlizer.isRollup,
-    extraContext.locationSubcolumns,
-    physicalTableFor
+    sqlizer.exprSqlFactory
   ) {
     override def mkStringLiteral(text: String): Doc = {
       // By default, converting a String to Doc replaces the newlines

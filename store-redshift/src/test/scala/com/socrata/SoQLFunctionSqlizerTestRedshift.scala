@@ -91,12 +91,7 @@ object SoQLFunctionSqlizerTestRedshift {
     (sqlizer, physicalTableFor, extraContext) =>
       new SoQLRepProviderRedshift[TestMT](
         extraContext.cryptProviderProvider,
-        sqlizer.exprSqlFactory,
-        sqlizer.namespace,
-        sqlizer.toProvenance,
-        sqlizer.isRollup,
-        Map.empty,
-        physicalTableFor
+        sqlizer.exprSqlFactory
       ) {
         override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
       }

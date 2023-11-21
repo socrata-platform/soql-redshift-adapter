@@ -100,12 +100,7 @@ object TableCreationTest {
     (sqlizer, physicalTableFor, extraContext) =>
     new SoQLRepProviderRedshift[TestMT](
       extraContext.cryptProviderProvider,
-      sqlizer.exprSqlFactory,
-      sqlizer.namespace,
-      sqlizer.toProvenance,
-      sqlizer.isRollup,
-      Map.empty,
-      physicalTableFor
+      sqlizer.exprSqlFactory
     ) {
       override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
     }
@@ -120,12 +115,7 @@ object TableCreationTest {
 
   val TestRepProvider = new SoQLRepProviderRedshift[TestMT](
     extraContext.cryptProviderProvider,
-    TestSqlizer.exprSqlFactory,
-    TestSqlizer.namespace,
-    TestSqlizer.toProvenance,
-    TestSqlizer.isRollup,
-    Map.empty,
-    Map.empty
+    TestSqlizer.exprSqlFactory
   ) {
     override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
   }
@@ -157,7 +147,22 @@ class RepsLiterals {
     repProvider
       .reps(literal.typ).literal(LiteralValue[TestMT](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
       .zipExact(expected.toList)
-      .foreach { case (received, expected) => assertEquals(expected, received)}
+      .foreach { case (received, expected) => {
+        assertEquals(expected, received)
+        Using.resource(dataSource.getConnection) { conn =>
+          try {
+            Using.resource(conn.createStatement()) { stmt =>
+              stmt.executeUpdate(
+                s"""create table "columncreator" (testcol ${received})""")
+            }
+          } finally {
+            Using.resource(conn.createStatement()) { stmt =>
+              stmt.executeUpdate(
+                s"""drop table "columncreator"""")
+            }
+          }
+        }
+      }}
   }
 
   @Test
@@ -204,7 +209,7 @@ class RepsLiterals {
     test(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
   }
 
-  // probably broken -- think about this
+  // TODO: probably broken -- think about this
   @Test
   def json(): Unit = {
     test(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
@@ -410,5 +415,8 @@ do ID and version
 
 
 connect to redshift
-test various soql commands
+test various soql commands that may fail due to super stuff
+
+why is the rep stuff so tied to the Sqlizer?
+
  */
