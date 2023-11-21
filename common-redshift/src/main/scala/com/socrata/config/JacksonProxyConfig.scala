@@ -77,15 +77,26 @@ case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:O
         case null => throw new NotImplementedError(s"Unsupported method name '$methodName', implement it above (probably)!")
         //Its an object, so instead of using reflection - lets also construct a proxy for this child. This lets us use nested interfaces, neat.
         case value: ObjectNode => method.getReturnType.getName match {
+          //TODO Option of simple vs Option of complex, later check if target class is interface or not, rather than try.
           case "scala.Option" => Try(JacksonProxyConfigProvider(value, objectMapper).proxy(Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)).asInstanceOf[AnyRef]) match {
-            case Failure(exception) => None
+            case Failure(exception) => Try(objectMapper.convertValue(
+              value,
+              Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)
+            ).asInstanceOf[AnyRef]) match {
+              case Failure(exception) => None
+              case Success(value) => Some(value)
+            }
             case Success(value) => Some(value)
           }
           case _ => JacksonProxyConfigProvider(value, objectMapper).proxy(method.getReturnType).asInstanceOf[AnyRef]
         }
         case value: ArrayNode => value.elements().asScala.toList.map {
+          //TODO Array item of simple vs Array item of complex, same here, later check if target class is interface or not, rather than try
           case item: ObjectNode => Try(JacksonProxyConfigProvider(item, objectMapper).proxy(Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)).asInstanceOf[AnyRef]) match {
-            case Failure(exception) => JacksonProxyConfigProvider(item, objectMapper).proxy(Class.forName(method.getGenericReturnType.getTypeName)).asInstanceOf[AnyRef]
+            case Failure(_) => objectMapper.convertValue(
+              item,
+              Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)
+            ).asInstanceOf[AnyRef]
             case Success(value) =>  value
           }
           case item => objectMapper.convertValue(

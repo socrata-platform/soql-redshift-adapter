@@ -68,13 +68,13 @@ class JacksonProxyConfigTest {
         .withSources(JacksonYamlConfigSource("data/recipe2.yaml"))
         .proxy(classOf[Recipe])
 
-    assert(
-      List(
-        Map("name" -> "Tomato", "amount" -> 3),
-        Map("name" -> "Cheese", "amount" -> 32),
-        Map("name" -> "Bread", "amount" -> 1)
-      ).equals(recipe.ingredients())
-    )
+    val ingredients: List[Ingredient] = recipe.ingredients()
+    val tomato: Ingredient = ingredients.filter(_.name().equals("Tomato")).head
+    val cheese: Ingredient = ingredients.filter(_.name().equals("Cheese")).head
+    val bread: Ingredient = ingredients.filter(_.name().equals("Bread")).head
+    assert(3.equals(tomato.amount()))
+    assert(32.equals(cheese.amount()))
+    assert(1.equals(bread.amount()))
   }
 
   @DisplayName("List of super duper complex types")
