@@ -26,21 +26,6 @@ import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test;
 import com.socrata.common.sqlizer._
 
-/*
-
-
-
-
-
-
-
-
-make run against real redshift
-
- */
-
-
-
 object SoQLFunctionSqlizerTestRedshift {
   final abstract class TestMT extends MetaTypes with metatypes.SoQLMetaTypesExt {
     type ColumnType = SoQLType
