@@ -73,9 +73,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       exprSqlFactory(raw.compressed.sql.funcall(d"st_asbinary"), raw.expr)
     }
 
-    // TODO: test this
     override def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
       Option(rs.getBytes(dbCol)).flatMap { bytes =>
+        println("================================", bytes)
         t.WkbRep.unapply(bytes) // TODO: this just turns invalid values into null, we should probably be noisier than that
       }.map(ctor).getOrElse(SoQLNull)
     }

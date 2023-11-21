@@ -1,6 +1,7 @@
 package com.socrata.store.sqlizer
 
-import scala.util.Using
+import scala.util._
+import com.socrata.util.ResultSet
 import com.socrata.common.sqlizer.metatypes._
 
 import com.socrata.store._
@@ -53,18 +54,25 @@ import ZipExt._
 
 object Utils {
 
-  def withTable(dataSource: AgroalDataSource)(columnName: String, columnType: String)(fn: (java.sql.Connection, String) => Unit) =
+  def printTable[T](conn: java.sql.Connection, tableName: String)(fn: java.sql.ResultSet => T) =
+    Using.resource(conn.createStatement()) { stmt =>
+      Using.resource((stmt.executeQuery(s"select * from $tableName"))) { rs =>
+        println(ResultSet.toList(rs)(fn))
+      }
+    }
+
+  def withTable(dataSource: AgroalDataSource, tableName: String)(columnName: String, columnType: String)(fn: (java.sql.Connection, String) => Unit) =
     Using.resource(dataSource.getConnection) { conn =>
       try {
         Using.resource(conn.createStatement()) { stmt =>
           stmt.executeUpdate(
-            s"""create table columncreator ($columnName $columnType)""")
+            s"""create table $tableName ($columnName $columnType)""")
         }
-        fn(conn, "columncreator")
+        fn(conn, tableName)
       } finally {
         Using.resource(conn.createStatement()) { stmt =>
           stmt.executeUpdate(
-            s"""drop table if exists "columncreator"""")
+            s"""drop table if exists "$tableName"""")
         }
       }
     }
@@ -157,34 +165,41 @@ class RepsLiterals {
     )
   }
 
-  def test(literal: DatabaseNamesMetaTypes#ColumnValue)(expected: String*) = {
-    repProvider
-      .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
+  def test(testName: String)(literal: DatabaseNamesMetaTypes#ColumnValue)(expected: String*) = {
+    val rep = repProvider
+      .reps(literal.typ)
+
+    println(s"start $testName")
+    rep.literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
       .zipExact(expected.toList)
       .foreach { case (received, expected) => {
         assertEquals(expected, received)
-        Utils.withTable(dataSource)("foo", "int") { (conn, tableName) =>
-          schema.update(AugmentedTableName(tableName, false), "testcol")(literal.typ).foreach(_.execute(conn))
-          rows.update(AugmentedTableName(tableName, false), "testcol")(literal).foreach(thing => {println(thing.underlying); thing.execute(conn)})
+        Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
+          schema.update(AugmentedTableName(tableName, false), "testcol")(literal.typ).foreach(thing => thing.execute(conn))
+          rows.update(AugmentedTableName(tableName, false), "testcol")(literal).foreach(thing => thing.execute(conn))
+          Utils.printTable(conn, tableName)(rep.extractFrom(false)(_, 2))
         }
       }}
+    println(s"end $testName")
+    println()
+    println()
   }
 
   @Test
   def text(): Unit = {
-    test(SoQLText("here are some words"))("text 'here are some words'")
+    test("text")(SoQLText("here are some words"))("text 'here are some words'")
   }
 
 
   @Test
   def number(): Unit = {
-    test(SoQLNumber(new java.math.BigDecimal(22)))("22 :: decimal(30, 7)")
+    test("number")(SoQLNumber(new java.math.BigDecimal(22)))("22 :: decimal(30, 7)")
   }
 
   @Test
   def boolean(): Unit = {
-    test(SoQLBoolean(false))("false")
-    test(SoQLBoolean(true))("true")
+    test("bool")(SoQLBoolean(false))("false")
+    test("bool")(SoQLBoolean(true))("true")
   }
 
   val dateStr = "2021-06-13 18-14-23CST"
@@ -193,35 +208,35 @@ class RepsLiterals {
   @Test
   def fixedTimestamp(): Unit = {
     val dateTime: DateTime = formatter.parseDateTime(dateStr)
-    test(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
+    test("fixed timestamp")(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
   }
 
   @Test
   def floatingTimestamp(): Unit = {
     val dateTime: LocalDateTime = formatter.parseLocalDateTime(dateStr)
-    test(SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
+    test("floating timestamp")(SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
   }
 
   @Test
   def date(): Unit = {
     val dateTime: LocalDate = formatter.parseLocalDate(dateStr)
-    test(SoQLDate(dateTime))("date '2021-06-13'")
+    test("date")(SoQLDate(dateTime))("date '2021-06-13'")
   }
 
   @Test
   def time(): Unit = {
     val dateTime: LocalTime = formatter.parseLocalTime(dateStr)
-    test(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
+    test("time")(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
   }
 
   // TODO: probably broken -- think about this
   @Test
   def json(): Unit = {
-    test(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
-    test(SoQLJson(JNumber(2.18)))("JSON_PARSE(2.18)")
-    test(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
-    test(SoQLJson(JNull))("JSON_PARSE(null)")
-    test(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
+    test("json")(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
+    test("json")(SoQLJson(JNumber(2.18)))("JSON_PARSE(2.18)")
+    test("json")(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
+    test("json null")(SoQLJson(JNull))("JSON_PARSE(null)")
+    test("json")(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
   }
 
   @Test
@@ -235,14 +250,14 @@ class RepsLiterals {
 
   @Test
   def point(): Unit = {
-    test(SoQLPoint(pt))(
+    test("point")(SoQLPoint(pt))(
       "ST_GeomFromWKB('00000000014059000000000000408f380000000000', 4326)"
     )
   }
 
   @Test
   def multipoint(): Unit = {
-    test(SoQLMultiPoint(new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)))(
+    test("multipoint")(SoQLMultiPoint(new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '00000000040000000300000000014059000000000000408f38000000000000000000014059000000000000408f38000000000000000000014059000000000000408f380000000000',
   4326
@@ -253,7 +268,7 @@ class RepsLiterals {
 
   @Test
   def line(): Unit = {
-    test(SoQLLine(lineString))(
+    test("line")(SoQLLine(lineString))(
       """ST_GeomFromWKB(
   '0000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -262,7 +277,7 @@ class RepsLiterals {
 
   @Test
   def multiline(): Unit = {
-    test(SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
+    test("multiline")(SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '0000000005000000020000000002000000024059000000000000408f3800000000004059000000000000408f3800000000000000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -273,7 +288,7 @@ class RepsLiterals {
 
   @Test
   def polygon(): Unit = {
-    test(SoQLPolygon(poly))(
+    test("polygon")(SoQLPolygon(poly))(
       """ST_GeomFromWKB(
   '000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -282,7 +297,7 @@ class RepsLiterals {
 
   @Test
   def multipolygon(): Unit = {
-    test(SoQLMultiPolygon(new MultiPolygon(Array(poly, poly, poly), precisionModel, Geo.defaultSRID)))(
+    test("polygon")(SoQLMultiPolygon(new MultiPolygon(Array(poly, poly, poly), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '000000000600000003000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -306,11 +321,10 @@ class ColumnCreator {
       .zipExact(expected.toList)
       .foreach { case (received, expected) => {
         assertEquals(expected, received)
-        Utils.withTable(dataSource)("foo", "int") { (conn, tableName) =>
+        Utils.withTable(dataSource, "columnCreator")("foo", "int") { (conn, tableName) =>
           schema.update(AugmentedTableName(tableName, false), "testcol")(`type`).foreach(_.execute(conn))
         }
-      }
-      }
+      }}
 
   def testFails[T <: Throwable](`type`: DatabaseNamesMetaTypes#ColumnType)(expectedType: Class[T]) = {
     assertThrows(expectedType, () =>

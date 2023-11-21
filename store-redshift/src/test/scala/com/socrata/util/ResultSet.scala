@@ -1,23 +1,29 @@
 package com.socrata.util
 
-import java.sql.ResultSet
-
 object ResultSet {
 
-  def extractHeadOption[T](resultSet: ResultSet)(mappingFunction: ResultSet => T): Option[T] = {
+  def extractHeadOption[T](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T): Option[T] = {
     extractThen(resultSet)(mappingFunction)(_.headOption)
   }
 
-  def extractThen[T, M](resultSet: ResultSet)(mappingFunction: ResultSet => T)(collectingFunction: BufferedIterator[T] => M): M = {
+  def extractThen[T, M](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T)(collectingFunction: BufferedIterator[T] => M): M = {
     collectingFunction(extract(resultSet)(mappingFunction))
   }
 
-  def extract[T](resultSet: ResultSet)(mappingFunction: ResultSet => T): BufferedIterator[T] = {
+
+  def extract[T](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T): BufferedIterator[T] =
+    toIterator(resultSet)(mappingFunction).buffered
+
+  def toIterator[T](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T): Iterator[T] = {
     new Iterator[T] {
       def hasNext = resultSet.next()
 
       def next() = mappingFunction(resultSet)
-    }.buffered
+    }
+  }
+
+  def toList[T](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T): List[T] = {
+    toIterator(resultSet)(mappingFunction).toList
   }
 
 }
