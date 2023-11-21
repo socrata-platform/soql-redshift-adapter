@@ -79,8 +79,8 @@ case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:O
         case value: ObjectNode => method.getReturnType.getName match {
           //TODO Option of simple vs Option of complex, later check if target class is interface or not, rather than try.
           case "scala.Option" => Try(JacksonProxyConfigProvider(value, objectMapper).proxy(Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)).asInstanceOf[AnyRef]) match {
-            case Failure(exception) => Try(objectMapper.convertValue(
-              value,
+            case Failure(exception) => Try(objectMapper.readValue(
+              value.toString,
               Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)
             ).asInstanceOf[AnyRef]) match {
               case Failure(exception) => None
@@ -93,20 +93,20 @@ case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:O
         case value: ArrayNode => value.elements().asScala.toList.map {
           //TODO Array item of simple vs Array item of complex, same here, later check if target class is interface or not, rather than try
           case item: ObjectNode => Try(JacksonProxyConfigProvider(item, objectMapper).proxy(Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)).asInstanceOf[AnyRef]) match {
-            case Failure(_) => objectMapper.convertValue(
-              item,
+            case Failure(_) => objectMapper.readValue(
+              item.toString,
               Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)
             ).asInstanceOf[AnyRef]
             case Success(value) =>  value
           }
-          case item => objectMapper.convertValue(
-            item,
+          case item => objectMapper.readValue(
+            item.toString,
             Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)
           ).asInstanceOf[AnyRef]
         }
         //Convert the JsonNode object to something typed, like a TextNode to a String...etc
-        case value => objectMapper.convertValue(
-          value,
+        case value => objectMapper.readValue(
+          value.toString,
           method.getReturnType
         ).asInstanceOf[AnyRef]
       }
