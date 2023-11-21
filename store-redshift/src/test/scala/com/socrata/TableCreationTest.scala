@@ -409,22 +409,8 @@ class ColumnCreator {
 }
 
 /*
- test column create commands (compressedSubCols and stuff)
- test compression of bag of columns into a super
-
- make tests construct real tables and run queries against them
- make tests construct real literals and verify they work
-
-
-make sure we can read these literals when written to a table. make sure we can read back into a soqlpoint, for exampole
-
 do compound types
 do ID and version
 
-
-connect to redshift
 test various soql commands that may fail due to super stuff
-
-why is the rep stuff so tied to the Sqlizer?
-
  */
