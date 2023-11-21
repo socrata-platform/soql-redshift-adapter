@@ -111,4 +111,24 @@ class JacksonProxyConfigTest {
     assert("T".equals(tomatoName.short()))
   }
 
+  @DisplayName("Optional")
+  @Test
+  def optional(): Unit = {
+
+    trait Dog {
+      def name(): String
+    }
+
+    trait Person {
+      def dog(): Option[Dog]
+    }
+
+    val person: Person =
+      JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
+        .withSources(JacksonYamlConfigSource("data/person-dog.yaml"))
+        .proxy("person",classOf[Person])
+
+    assert("Jackson".equals(person.dog().get.name()))
+  }
+
 }
