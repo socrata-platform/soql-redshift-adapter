@@ -306,8 +306,11 @@ class ColumnCreator {
       .zipExact(expected.toList)
       .foreach { case (received, expected) => {
         assertEquals(expected, received)
-        
-      }}
+        Utils.withTable(dataSource)("foo", "int") { (conn, tableName) =>
+          schema.update(AugmentedTableName(tableName, false), "testcol")(`type`).foreach(_.execute(conn))
+        }
+      }
+      }
 
   def testFails[T <: Throwable](`type`: DatabaseNamesMetaTypes#ColumnType)(expectedType: Class[T]) = {
     assertThrows(expectedType, () =>
