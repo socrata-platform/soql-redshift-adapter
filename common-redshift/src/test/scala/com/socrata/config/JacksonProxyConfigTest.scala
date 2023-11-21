@@ -77,4 +77,38 @@ class JacksonProxyConfigTest {
     )
   }
 
+  @DisplayName("List of super duper complex types")
+  @Test
+  def listSuperComplex(): Unit = {
+
+    trait Name{
+      def short(): String
+      def long(): String
+    }
+
+    trait Ingredient {
+      def name(): Name
+
+      def amount(): Int
+    }
+
+    trait Recipe {
+      def ingredients(): List[Ingredient]
+    }
+
+    val recipe: Recipe =
+      JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
+        .withSources(JacksonYamlConfigSource("data/recipe3.yaml"))
+        .proxy(classOf[Recipe])
+
+    val ingredients:List[Ingredient] = recipe.ingredients()
+    val tomato:Ingredient = ingredients.filter(_.name().long().equals("Tomato")).head
+    val cheese:Ingredient = ingredients.filter(_.name().long().equals("Cheese")).head
+    val Bread:Ingredient = ingredients.filter(_.name().long().equals("Bread")).head
+    assert(3.equals(tomato.amount()))
+    val tomatoName:Name = tomato.name()
+    assert("Tomato".equals(tomatoName.long()))
+    assert("T".equals(tomatoName.short()))
+  }
+
 }

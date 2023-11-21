@@ -1,10 +1,14 @@
 package com.socrata.config
 
-import com.fasterxml.jackson.databind.node.{ObjectNode, TextNode}
+import com.fasterxml.jackson.databind.node.{ArrayNode, ObjectNode, TextNode}
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.socrata.config.JacksonProxyConfigBuilder.merge
 
-import java.lang.reflect.{InvocationHandler, Method, Proxy}
+import java.lang.reflect.{InvocationHandler, Method, ParameterizedType, Proxy}
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+
+import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
 
 object JacksonProxyConfigBuilder{
 
@@ -69,10 +73,26 @@ case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:O
       //Simple implementation for toString, when the root interface is accessed directly.
       case "toString" => data.toString //Could also make it pretty?
       //implement others when it becomes important...ie equals/hash...not sure this matters much for our configs yet?
-      case methodName => data.findValue(methodName) match {
+      case methodName => data.findValue(PropertyNamingStrategies.KebabCaseStrategy.INSTANCE.translate(methodName)) match {
         case null => throw new NotImplementedError(s"Unsupported method name '$methodName', implement it above (probably)!")
         //Its an object, so instead of using reflection - lets also construct a proxy for this child. This lets us use nested interfaces, neat.
-        case value: ObjectNode => JacksonProxyConfigProvider(value, objectMapper).proxy(method.getReturnType).asInstanceOf[AnyRef]
+        case value: ObjectNode => method.getReturnType.getName match {
+          case "scala.Option" => Try(JacksonProxyConfigProvider(value, objectMapper).proxy(Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)).asInstanceOf[AnyRef]) match {
+            case Failure(exception) => None
+            case Success(value) => Some(value)
+          }
+          case _ => JacksonProxyConfigProvider(value, objectMapper).proxy(method.getReturnType).asInstanceOf[AnyRef]
+        }
+        case value: ArrayNode => value.elements().asScala.toList.map {
+          case item: ObjectNode => Try(JacksonProxyConfigProvider(item, objectMapper).proxy(Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)).asInstanceOf[AnyRef]) match {
+            case Failure(exception) => JacksonProxyConfigProvider(item, objectMapper).proxy(Class.forName(method.getGenericReturnType.getTypeName)).asInstanceOf[AnyRef]
+            case Success(value) =>  value
+          }
+          case item => objectMapper.convertValue(
+            item,
+            Class.forName(method.getGenericReturnType.asInstanceOf[ParameterizedType].getActualTypeArguments.head.getTypeName)
+          ).asInstanceOf[AnyRef]
+        }
         //Convert the JsonNode object to something typed, like a TextNode to a String...etc
         case value => objectMapper.convertValue(
           value,

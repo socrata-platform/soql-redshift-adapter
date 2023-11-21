@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.yaml.{YAMLFactory, YAMLGenerator}
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.datatype.jsr310.{JSR310Module, JavaTimeModule}
 import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule}
 import io.quarkus.jackson.ObjectMapperCustomizer
 import jakarta.inject.Singleton
@@ -13,6 +13,7 @@ object CommonObjectMapperCustomizer {
 
   def customize(objectMapper: ObjectMapper): Unit = {
     objectMapper
+      .registerModule(new JavaTimeModule())
       .registerModule(DefaultScalaModule)
       .configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
       .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)

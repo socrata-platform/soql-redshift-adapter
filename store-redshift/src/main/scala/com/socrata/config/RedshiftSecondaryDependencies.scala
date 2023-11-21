@@ -20,7 +20,9 @@ import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.BoundedExponentialBackoffRetry
 import org.eclipse.microprofile.config.ConfigProvider
 import com.socrata.service.RedshiftSecondary
+import io.quarkus.arc.All
 
+import scala.collection.JavaConverters._
 import java.io.{File, OutputStream}
 import java.sql.Connection
 import java.util.{Properties, UUID}
@@ -39,16 +41,27 @@ class RedshiftSecondaryDependencies {
   @Produces
   def objectMapperCustomizer(): ObjectMapperCustomizer = new CommonObjectMapperCustomizer
 
+
+  @Produces
+  def configSource():ConfigSource = JacksonYamlConfigSource("application.yaml")
+
+  @Produces
+  def configProvider
+  (
+    objectMapper:ObjectMapper,
+    @All
+    configSources: java.util.List[ConfigSource]
+  ): ConfigProvider={
+    JacksonProxyConfigBuilder(objectMapper)
+      .withSources(configSources.asScala.toArray:_*)
+  }
+
   @Produces
   def redshiftSecondaryConfig
   (
-  objectMapper:ObjectMapper
+    configProvider:ConfigProvider
   ): RedshiftSecondaryConfig = {
-    //Seems to be tricky to implement scala -> java config types via "static" config. This is because of spi generic parameter limitations, type erasure and no arg constructor requirements.
-    //Lets simply read it as json. At this point we are past the "static" config bootstrap.
-    val asJson = ConfigProvider.getConfig().getValue("redshift",classOf[JsonObject])
-    //And use our configured objectMapper to marshall it. Our objectMapper knows how to convert scala -> java.
-    objectMapper.convertValue(asJson,classOf[RedshiftSecondaryConfig])
+    configProvider.proxy("redshift",classOf[RedshiftSecondaryConfig])
   }
 
   @Produces
