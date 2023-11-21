@@ -2,12 +2,14 @@ package com.socrata.common.sqlizer
 
 import java.sql.ResultSet
 
+import com.vividsolutions.jts.io.{WKBWriter, WKBReader, WKTReader}
+
 import com.rojoma.json.v3.ast._
 import com.rojoma.json.v3.io.CompactJsonWriter
 import com.rojoma.json.v3.interpolation._
 import com.rojoma.json.v3.util.JsonUtil
 import com.rojoma.json.v3.util.OrJNull.implicits._
-import com.vividsolutions.jts.geom.{Geometry, Point}
+import com.vividsolutions.jts.geom.{Geometry, Point, GeometryFactory}
 import org.joda.time.Period
 
 import com.socrata.prettyprint.prelude._
@@ -75,7 +77,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
     override def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
       Option(rs.getBytes(dbCol)).flatMap { bytes =>
-        println("================================", bytes)
         t.WkbRep.unapply(bytes) // TODO: this just turns invalid values into null, we should probably be noisier than that
       }.map(ctor).getOrElse(SoQLNull)
     }
@@ -376,5 +377,17 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLMultiPolygon].value
       override def isPotentiallyLarge = true
     }
+  )
+}
+
+
+object Casts {
+  val casts: Map[SoQLType, String] = Map(
+    SoQLPoint -> "st_asbinary",
+    SoQLMultiPoint -> "st_asbinary",
+    SoQLLine -> "st_asbinary",
+    SoQLMultiLine -> "st_asbinary",
+    SoQLPolygon -> "st_asbinary",
+    SoQLMultiPolygon -> "st_asbinary",
   )
 }

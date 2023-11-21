@@ -54,12 +54,15 @@ import ZipExt._
 
 object Utils {
 
-  def printTable[T](conn: java.sql.Connection, tableName: String)(fn: java.sql.ResultSet => T) =
+  def printTable[T](conn: java.sql.Connection, tableName: String, transform: Option[String])(fn: java.sql.ResultSet => T) = {
+    val col = transform.fold("testcol")(transform => s"""${transform}(testcol)""")
+    val query = s"select $col from $tableName"
     Using.resource(conn.createStatement()) { stmt =>
-      Using.resource((stmt.executeQuery(s"select * from $tableName"))) { rs =>
+      Using.resource((stmt.executeQuery(query))) { rs =>
         println(ResultSet.toList(rs)(fn))
       }
     }
+  }
 
   def withTable(dataSource: AgroalDataSource, tableName: String)(columnName: String, columnType: String)(fn: (java.sql.Connection, String) => Unit) =
     Using.resource(dataSource.getConnection) { conn =>
@@ -177,7 +180,7 @@ class RepsLiterals {
         Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
           schema.update(AugmentedTableName(tableName, false), "testcol")(literal.typ).foreach(thing => thing.execute(conn))
           rows.update(AugmentedTableName(tableName, false), "testcol")(literal).foreach(thing => thing.execute(conn))
-          Utils.printTable(conn, tableName)(rep.extractFrom(false)(_, 2))
+          Utils.printTable(conn, tableName, Casts.casts.get(literal.typ))(rep.extractFrom(false)(_, 1))
         }
       }}
     println(s"end $testName")
