@@ -1,7 +1,9 @@
 package com.socrata.store.sqlizer
 
 import scala.util.Using
+import com.socrata.common.sqlizer.metatypes._
 
+import com.socrata.store._
 import com.vividsolutions.jts.geom.{LineString, LinearRing, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, Coordinate, PrecisionModel}
 import com.socrata.soql.parsing._
 import com.rojoma.json.v3.ast._
@@ -49,32 +51,42 @@ The dark fire will not avail you, flame of Udûn. """)
 
 import ZipExt._
 
+object Utils {
+
+  def withTable(dataSource: AgroalDataSource)(columnName: String, columnType: String)(fn: (java.sql.Connection, String) => Unit) =
+    Using.resource(dataSource.getConnection) { conn =>
+      try {
+        Using.resource(conn.createStatement()) { stmt =>
+          stmt.executeUpdate(
+            s"""create table columncreator ($columnName $columnType)""")
+        }
+        fn(conn, "columncreator")
+      } finally {
+        Using.resource(conn.createStatement()) { stmt =>
+          stmt.executeUpdate(
+            s"""drop table if exists "columncreator"""")
+        }
+      }
+    }
+}
 
 object TableCreationTest {
-  final abstract class TestMT extends MetaTypes with metatypes.SoQLMetaTypesExt {
-    type ColumnType = SoQLType
-    type ColumnValue = SoQLValue
-    type ResourceNameScope = Int
-    type DatabaseTableNameImpl = String
-    type DatabaseColumnNameImpl = String
-  }
-
-  object ProvenanceMapper extends types.ProvenanceMapper[TestMT] {
-    def toProvenance(dtn: types.DatabaseTableName[TestMT]): Provenance = {
+  object ProvenanceMapper extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
+    def toProvenance(dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]): Provenance = {
       val DatabaseTableName(name) = dtn
-      Provenance(name)
+      Provenance(name.name)
     }
 
-    def fromProvenance(prov: Provenance): types.DatabaseTableName[TestMT] = {
+    def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseNamesMetaTypes] = {
       val Provenance(name) = prov
-      DatabaseTableName(name)
+      DatabaseTableName(AugmentedTableName(name, false))
     }
   }
 
-  object TestNamespaces extends SqlNamespaces[TestMT] {
+  object TestNamespaces extends SqlNamespaces[DatabaseNamesMetaTypes] {
     override def rawDatabaseTableName(dtn: DatabaseTableName) = {
       val DatabaseTableName(name) = dtn
-      name
+      name.name
     }
 
     override def rawDatabaseColumnBase(dcn: DatabaseColumnName) = {
@@ -88,18 +100,19 @@ object TableCreationTest {
     protected override def autoColumnPrefix: String = "i"
   }
 
-  val TestFuncallSqlizer = new SoQLFunctionSqlizerRedshift[TestMT]
+  val TestFuncallSqlizer = new SoQLFunctionSqlizerRedshift[DatabaseNamesMetaTypes]
 
-  val TestSqlizer = new Sqlizer[TestMT](
+  val TestSqlizer = new Sqlizer[DatabaseNamesMetaTypes](
     TestFuncallSqlizer,
-    new RedshiftExprSqlFactory[TestMT],
+    new RedshiftExprSqlFactory[DatabaseNamesMetaTypes],
     TestNamespaces,
-    new SoQLRewriteSearch[TestMT](searchBeforeQuery = true),
+    new SoQLRewriteSearch[DatabaseNamesMetaTypes](searchBeforeQuery = true),
     ProvenanceMapper,
     _ => false,
     (sqlizer, physicalTableFor, extraContext) =>
-    new SoQLRepProviderRedshift[TestMT](
+    new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
       extraContext.cryptProviderProvider,
+      sqlizer.namespace,
       sqlizer.exprSqlFactory
     ) {
       override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
@@ -113,17 +126,17 @@ object TableCreationTest {
     s => s"'$s'"
   )
 
-  val TestRepProvider = new SoQLRepProviderRedshift[TestMT](
+  val TestRepProvider = new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
     extraContext.cryptProviderProvider,
+    TestSqlizer.namespace,
     TestSqlizer.exprSqlFactory
   ) {
     override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
   }
 
-  implicit val hasType: HasType[TableCreationTest.TestMT#ColumnValue, TableCreationTest.TestMT#ColumnType]  = new HasType[TableCreationTest.TestMT#ColumnValue, TableCreationTest.TestMT#ColumnType] {
-      def typeOf(cv: TableCreationTest.TestMT#ColumnValue): TableCreationTest.TestMT#ColumnType = cv.typ
+  implicit val hasType: HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType]  = new HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType] {
+      def typeOf(cv: DatabaseNamesMetaTypes#ColumnValue): DatabaseNamesMetaTypes#ColumnType = cv.typ
     }
-
 }
 
 
@@ -134,33 +147,25 @@ class RepsLiterals {
   var dataSource: AgroalDataSource = _
 
   val repProvider = TableCreationTest.TestRepProvider
-  type TestMT = TableCreationTest.TestMT
+  val schema = SchemaImpl(repProvider)
+  val rows = RowsImpl(repProvider)
 
-  def testFails[T <: Throwable](literal: TestMT#ColumnValue)(expectedType: Class[T]) = {
+  def testFails[T <: Throwable](literal: DatabaseNamesMetaTypes#ColumnValue)(expectedType: Class[T]) = {
     assertThrows(expectedType, () =>
       repProvider
-        .reps(literal.typ).literal(LiteralValue[TestMT](literal)(AtomicPositionInfo.None))
+        .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None))
     )
   }
 
-  def test(literal: TestMT#ColumnValue)(expected: String*) = {
+  def test(literal: DatabaseNamesMetaTypes#ColumnValue)(expected: String*) = {
     repProvider
-      .reps(literal.typ).literal(LiteralValue[TestMT](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
+      .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
       .zipExact(expected.toList)
       .foreach { case (received, expected) => {
         assertEquals(expected, received)
-        Using.resource(dataSource.getConnection) { conn =>
-          try {
-            Using.resource(conn.createStatement()) { stmt =>
-              stmt.executeUpdate(
-                s"""create table "columncreator" (testcol ${received})""")
-            }
-          } finally {
-            Using.resource(conn.createStatement()) { stmt =>
-              stmt.executeUpdate(
-                s"""drop table "columncreator"""")
-            }
-          }
+        Utils.withTable(dataSource)("foo", "int") { (conn, tableName) =>
+          schema.update(AugmentedTableName(tableName, false), "testcol")(literal.typ).foreach(_.execute(conn))
+          rows.update(AugmentedTableName(tableName, false), "testcol")(literal).foreach(thing => {println(thing.underlying); thing.execute(conn)})
         }
       }}
   }
@@ -242,8 +247,6 @@ class RepsLiterals {
   '00000000040000000300000000014059000000000000408f38000000000000000000014059000000000000408f38000000000000000000014059000000000000408f380000000000',
   4326
 )""")
-
-
   }
 
   val lineString = new LineString(Array(coordinate, coordinate), precisionModel, Geo.defaultSRID)
@@ -294,30 +297,19 @@ class ColumnCreator {
   var dataSource: AgroalDataSource = _
 
   val repProvider = TableCreationTest.TestRepProvider
-  type TestMT = TableCreationTest.TestMT
 
-  def test(`type`: TestMT#ColumnType)(expected: String*) =
+  val schema = SchemaImpl(repProvider)
+
+  def test(`type`: DatabaseNamesMetaTypes#ColumnType)(expected: String*) =
     repProvider
       .reps(`type`).physicalDatabaseTypes.map(_.toString)
       .zipExact(expected.toList)
       .foreach { case (received, expected) => {
         assertEquals(expected, received)
-        Using.resource(dataSource.getConnection) { conn =>
-          try {
-            Using.resource(conn.createStatement()) { stmt =>
-              stmt.executeUpdate(
-                s"""create table "columncreator" (testcol ${received})""")
-            }
-          } finally {
-            Using.resource(conn.createStatement()) { stmt =>
-              stmt.executeUpdate(
-                s"""drop table "columncreator"""")
-            }
-          }
-        }
+        
       }}
 
-  def testFails[T <: Throwable](`type`: TestMT#ColumnType)(expectedType: Class[T]) = {
+  def testFails[T <: Throwable](`type`: DatabaseNamesMetaTypes#ColumnType)(expectedType: Class[T]) = {
     assertThrows(expectedType, () =>
       repProvider
         .reps(`type`).physicalDatabaseTypes)
@@ -327,7 +319,6 @@ class ColumnCreator {
   def text(): Unit = {
     test(SoQLText)("text")
   }
-
 
   @Test
   def number(): Unit = {

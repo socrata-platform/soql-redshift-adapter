@@ -40,11 +40,11 @@ add scalafmt
 
 abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String})](
   cryptProviders: CryptProviderProvider,
+  override val namespace: SqlNamespaces[MT],
   override val exprSqlFactory: ExprSqlFactory[MT],
 ) extends Rep.Provider[MT] {
     // TODO: obvious not good
     override val isRollup = _ => ???
-    override lazy val namespace = ???
     override val toProvenance = _ => ???
 
 

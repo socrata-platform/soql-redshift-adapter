@@ -17,6 +17,7 @@ object RedshiftSqlizer extends Sqlizer[DatabaseNamesMetaTypes](
   _.name.isRollup,
   (sqlizer, physicalTableFor, extraContext) => new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
     extraContext.cryptProviderProvider,
+    sqlizer.namespace,
     sqlizer.exprSqlFactory
   ) {
     override def mkStringLiteral(text: String): Doc = {
