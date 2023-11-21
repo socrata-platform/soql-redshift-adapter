@@ -54,12 +54,12 @@ import ZipExt._
 
 object Utils {
 
-  def printTable[T](conn: java.sql.Connection, tableName: String, transform: Option[String])(fn: java.sql.ResultSet => T) = {
+  def results[T](conn: java.sql.Connection, tableName: String, transform: Option[String])(fn: java.sql.ResultSet => T) = {
     val col = transform.fold("testcol")(transform => s"""${transform}(testcol)""")
     val query = s"select $col from $tableName"
     Using.resource(conn.createStatement()) { stmt =>
       Using.resource((stmt.executeQuery(query))) { rs =>
-        println(ResultSet.toList(rs)(fn))
+        ResultSet.toList(rs)(fn)
       }
     }
   }
@@ -172,7 +172,6 @@ class RepsLiterals {
     val rep = repProvider
       .reps(literal.typ)
 
-    println(s"start $testName")
     rep.literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
       .zipExact(expected.toList)
       .foreach { case (received, expected) => {
@@ -180,12 +179,11 @@ class RepsLiterals {
         Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
           schema.update(AugmentedTableName(tableName, false), "testcol")(literal.typ).foreach(thing => thing.execute(conn))
           rows.update(AugmentedTableName(tableName, false), "testcol")(literal).foreach(thing => thing.execute(conn))
-          Utils.printTable(conn, tableName, Casts.casts.get(literal.typ))(rep.extractFrom(false)(_, 1))
+          val (_, fromDB) :: Nil = Utils.results(conn, tableName, Casts.casts.get(literal.typ))(rep.extractFrom(false)(_, 1))
+          println(s"$fromDB <===> $literal")
+          assertEquals(fromDB, literal)
         }
       }}
-    println(s"end $testName")
-    println()
-    println()
   }
 
   @Test
@@ -232,11 +230,10 @@ class RepsLiterals {
     test("time")(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
   }
 
-  // TODO: probably broken -- think about this
   @Test
   def json(): Unit = {
     test("json")(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
-    test("json")(SoQLJson(JNumber(2.18)))("JSON_PARSE(2.18)")
+    test("json")(SoQLJson(JNumber(BigDecimal(2.18))))("JSON_PARSE(2.18)")
     test("json")(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
     test("json null")(SoQLJson(JNull))("JSON_PARSE(null)")
     test("json")(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
