@@ -883,8 +883,8 @@ class SoQLFunctionSqlizerTestRedshift  {
 //  tests for simple casts
 
   @Test
-  def`bla`(): Unit = {
-    analyzeStatement("SELECT ('TR' || 'UE') :: boolean")
+  def`text to boolean cast works`(): Unit = {
+    assertEquals(analyzeStatement("SELECT ('TR' || 'UE') :: boolean"), """SELECT (/* TextToBool */ (case when lower((text 'TR') || (text 'UE')) = 'true' then true else false end)) AS i1 FROM table1 AS x1""")
   }
 
   @Test
