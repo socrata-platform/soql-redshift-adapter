@@ -10,7 +10,6 @@ import com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes
 class SoQLExtraContext(
   val systemContext: Map[String, String],
   val cryptProviderProvider: CryptProviderProvider,
-  val locationSubcolumns: SoQLExtraContext.LocationSubcolumns,
   val escapeString: String => String
 ) extends ExtraContext[SoQLExtraContext.Result] {
   val now = DateTime.now()

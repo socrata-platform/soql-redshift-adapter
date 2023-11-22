@@ -9,7 +9,7 @@ import com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes
 object RedshiftNamespaces extends SqlNamespaces[DatabaseNamesMetaTypes] {
   override def rawDatabaseTableName(dtn: DatabaseTableName) = {
     val DatabaseTableName(dataTableName) = dtn
-    dataTableName.name
+    dataTableName
   }
 
   override def rawDatabaseColumnBase(dcn: DatabaseColumnName) = {

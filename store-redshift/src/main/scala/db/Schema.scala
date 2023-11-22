@@ -12,12 +12,12 @@ trait Schema[MT <: MetaTypes] {
 }
 
 case class SchemaImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes]) extends Schema[metatypes.DatabaseNamesMetaTypes] {
-  def update(table: metatypes.AugmentedTableName, column: String)(ct: SoQLType)= {
+  def update(table: String, column: String)(ct: SoQLType): Seq[UpdateCommand] = {
     val rep = repProvider(ct)
     val physicalTypes = rep.physicalDatabaseTypes
     val names = rep.physicalDatabaseColumns(DatabaseColumnName(column))
     physicalTypes.zip(names).map { case (typ, name) =>
-      UpdateCommand(table.name, name.toString(), typ.toString())
+      UpdateCommand(table, name.toString(), typ.toString())
     }
   }
 }

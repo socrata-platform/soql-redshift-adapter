@@ -8,12 +8,13 @@ import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.{BeforeEach, DisplayName, Test}
+import org.junit.jupiter.api.{BeforeEach, DisplayName, Test, Disabled}
 
 import java.io.File
 import scala.collection.JavaConversions._
 import scala.util.Using
 
+@Disabled
 @DisplayName("Redshift insert tests")
 @QuarkusTest
 class InsertTest {

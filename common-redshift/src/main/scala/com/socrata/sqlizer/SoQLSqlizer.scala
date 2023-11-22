@@ -14,7 +14,7 @@ object RedshiftSqlizer extends Sqlizer[DatabaseNamesMetaTypes](
   RedshiftNamespaces,
   new SoQLRewriteSearch[DatabaseNamesMetaTypes](searchBeforeQuery = true),
   DatabaseNamesMetaTypes.provenanceMapper,
-  _.name.isRollup,
+  _ => false, // remove this
   (sqlizer, physicalTableFor, extraContext) => new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
     extraContext.cryptProviderProvider,
     sqlizer.namespace,
