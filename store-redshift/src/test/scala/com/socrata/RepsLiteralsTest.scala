@@ -42,7 +42,7 @@ import ZipExt._
 
 
 @QuarkusTest
-class RepsLiterals {
+class RepsLiteralsTest {
   @DataSource("store")
   @Inject
   var dataSource: AgroalDataSource = _

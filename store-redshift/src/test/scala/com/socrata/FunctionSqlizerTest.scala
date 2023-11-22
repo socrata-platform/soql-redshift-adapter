@@ -28,7 +28,7 @@ import com.socrata.common.sqlizer._
 import com.socrata.common.sqlizer.metatypes._
 
 
-object SoQLFunctionSqlizerTestRedshift {
+object FunctionSqlizerTest {
 
   object ProvenanceMapper extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
     def toProvenance(dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]): Provenance = {
@@ -80,10 +80,10 @@ object SoQLFunctionSqlizerTestRedshift {
 }
 
 @QuarkusTest
-class SoQLFunctionSqlizerTestRedshift  {
+class FunctionSqlizerTest  {
 
-  val sqlizer = SoQLFunctionSqlizerTestRedshift.TestSqlizer
-  val funcallSqlizer = SoQLFunctionSqlizerTestRedshift.TestFuncallSqlizer
+  val sqlizer = FunctionSqlizerTest.TestSqlizer
+  val funcallSqlizer = FunctionSqlizerTest.TestFuncallSqlizer
 
   def extraContext = new SoQLExtraContext(
     Map.empty,
@@ -96,7 +96,7 @@ class SoQLFunctionSqlizerTestRedshift  {
 
   def tableFinder(items: ((Int, String), Thing[Int, SoQLType])*) =
     new MockTableFinder[DatabaseNamesMetaTypes](items.toMap)
-  val analyzer = new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, SoQLFunctionSqlizerTestRedshift.ProvenanceMapper)
+  val analyzer = new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, FunctionSqlizerTest.ProvenanceMapper)
   def analyze(soqlexpr: String): String = {
     val s = analyzeStatement(s"SELECT ($soqlexpr)")
     val prefix = "SELECT "
