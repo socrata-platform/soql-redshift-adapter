@@ -20,24 +20,9 @@ import com.socrata.soql.sqlizer._
 
 
 /*
-Make tests which create a table of every column type
-
-
-
-ids, money, url, etc..
-
- ensure literals can be construced.
  Ensure compressedSubColumns works in all cases
- ensure doExtractFrom works
-
->
-not sure how to test compression and stuff like that. How do I know
-
-I think I can remove all use of indices https://popsql.com/learn-sql/redshift/how-to-create-an-index-in-redshift
-
-
-add scalafmt
-
+ Use the extractor in soqlreference
+ add scalafmt
  */
 
 abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String})](
@@ -48,8 +33,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
     // TODO: obvious not good
     override val isRollup = _ => ???
     override val toProvenance = _ => ???
-
-
 
   def apply(typ: SoQLType) = reps(typ)
 
@@ -95,6 +78,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val sourceName = compressedDatabaseColumn(column)
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
+          //this'll need to be using our special compression thing
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
           d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName,
         )
