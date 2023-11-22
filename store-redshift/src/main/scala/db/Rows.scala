@@ -7,6 +7,8 @@ import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
 import com.socrata.soql.sqlizer._
 
+// use the COPY functionality
+
 trait Rows[MT <: MetaTypes] {
   def update(table: MT#DatabaseTableNameImpl, column: MT#DatabaseColumnNameImpl)(cv: MT#ColumnValue): Seq[InsertCommand]
 }

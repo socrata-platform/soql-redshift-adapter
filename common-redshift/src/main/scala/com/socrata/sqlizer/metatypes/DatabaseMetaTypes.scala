@@ -46,22 +46,4 @@ final class DatabaseMetaTypes extends MetaTypes {
       }
     }
   }
-
-  def rewriteFrom[MT <: MetaTypes with ({ type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = UserColumnId })](
-    analysis: SoQLAnalysis[MT],
-    copyCache: CopyCache[MT],
-    fromProv: types.FromProvenance[MT]
-  )(implicit changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseMetaTypes])
-      : SoQLAnalysis[DatabaseMetaTypes] =
-  {
-    analysis.rewriteDatabaseNames[DatabaseMetaTypes](
-      { dtn => DatabaseTableName(copyCache(dtn).get._1) }, // TODO proper error
-      { case (dtn, DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(copyCache(dtn).get._2.get(userColumnId).get) // TODO proper errors
-      },
-      fromProv,
-      provenanceMapper,
-      typeInfo.updateProvenance
-    )
-  }
 }

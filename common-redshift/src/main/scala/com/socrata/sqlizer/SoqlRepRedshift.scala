@@ -30,7 +30,7 @@ ids, money, url, etc..
  Ensure compressedSubColumns works in all cases
  ensure doExtractFrom works
 
-
+>
 not sure how to test compression and stuff like that. How do I know
 
 I think I can remove all use of indices https://popsql.com/learn-sql/redshift/how-to-create-an-index-in-redshift
@@ -377,17 +377,5 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLMultiPolygon].value
       override def isPotentiallyLarge = true
     }
-  )
-}
-
-
-object Casts {
-  val casts: Map[SoQLType, String] = Map(
-    SoQLPoint -> "st_asbinary",
-    SoQLMultiPoint -> "st_asbinary",
-    SoQLLine -> "st_asbinary",
-    SoQLMultiLine -> "st_asbinary",
-    SoQLPolygon -> "st_asbinary",
-    SoQLMultiPolygon -> "st_asbinary",
   )
 }

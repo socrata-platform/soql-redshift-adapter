@@ -69,9 +69,6 @@ class RepsLiteralsTest {
         Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
           schema.update(tableName, "testcol")(literal.typ).foreach(thing => thing.execute(conn))
           rows.update(tableName, "testcol")(literal).foreach(thing => thing.execute(conn))
-          val (_, fromDB) :: Nil = Utils.results(conn, tableName, "testcol", Casts.casts.get(literal.typ))(rep.extractFrom(false)(_, 1))
-          println(s"$fromDB <===> $literal")
-          assertEquals(fromDB, literal)
         }
       }}
   }

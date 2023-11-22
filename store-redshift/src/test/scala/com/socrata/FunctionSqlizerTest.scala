@@ -83,7 +83,6 @@ object FunctionSqlizerTest {
 class FunctionSqlizerTest  {
 
   val sqlizer = FunctionSqlizerTest.TestSqlizer
-  val funcallSqlizer = FunctionSqlizerTest.TestFuncallSqlizer
 
   def extraContext = new SoQLExtraContext(
     Map.empty,
@@ -96,18 +95,13 @@ class FunctionSqlizerTest  {
 
   def tableFinder(items: ((Int, String), Thing[Int, SoQLType])*) =
     new MockTableFinder[DatabaseNamesMetaTypes](items.toMap)
+
+
   val analyzer = new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, FunctionSqlizerTest.ProvenanceMapper)
-  def analyze(soqlexpr: String): String = {
-    val s = analyzeStatement(s"SELECT ($soqlexpr)")
-    val prefix = "SELECT "
-    val suffix = " AS i1 FROM table1 AS x1"
-    if(s.startsWith(prefix) && s.endsWith(suffix)) {
-      s.dropRight(suffix.length).drop(prefix.length)
-    } else {
-      s
-    }
-  }
-  def analyzeStatement(stmt: String, useSelectListReferences: Boolean = false): String = {
+
+  def analyzeStatement(stmt: String) = analyze(stmt).sql.layoutSingleLine.toString
+
+  def analyze(stmt: String): com.socrata.soql.sqlizer.Sqlizer.Result[DatabaseNamesMetaTypes] = {
     val tf = MockTableFinder[DatabaseNamesMetaTypes](
       (0, "table1") -> D(
         "text" -> SoQLText,
@@ -129,9 +123,7 @@ class FunctionSqlizerTest  {
         case Left(err) => fail("Bad query: " + err)
       }
 
-    if(useSelectListReferences) analysis = analysis.useSelectListReferences
-
-    sqlizer(analysis, extraContext).getOrElse { fail("analysis failed") }.sql.layoutSingleLine.toString
+    sqlizer.apply(analysis, extraContext).getOrElse { fail("analysis failed") }
   }
 
   def test(generated: String, expected: String) = {
@@ -447,107 +439,107 @@ class FunctionSqlizerTest  {
 
   @Test
   def `ToFloatingTimestamp`: Unit = {
-    test(analyze("""to_floating_timestamp("2022-12-31T23:59:59Z", "America/New_York")"""), """(timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')""")
+    test(analyzeStatement("""select to_floating_timestamp("2022-12-31T23:59:59Z", "America/New_York")"""), """SELECT (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York') AS i1 FROM table1 AS x1""")
   }
 
   @Test
   def `FloatingTimeStampTruncYmd`: Unit = {
-    test(analyze("date_trunc_ymd('2022-12-31T23:59:59')"), ("""date_trunc('day', timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_trunc_ymd('2022-12-31T23:59:59')"), ("""SELECT date_trunc('day', timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampTruncYm`: Unit = {
-    test(analyze("date_trunc_ym('2022-12-31T23:59:59')"), ("""date_trunc('month', timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_trunc_ym('2022-12-31T23:59:59')"), ("""SELECT date_trunc('month', timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampTruncY`: Unit = {
-    test(analyze("date_trunc_y('2022-12-31T23:59:59')"), ("""date_trunc('year', timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_trunc_y('2022-12-31T23:59:59')"), ("""SELECT date_trunc('year', timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FixedTimeStampZTruncYmd`: Unit = {
-    test(analyze("datez_trunc_ymd('2022-12-31T23:59:59Z')"), ("""date_trunc('day', timestamp with time zone '2022-12-31T23:59:59.000Z')"""))
+    test(analyzeStatement("select datez_trunc_ymd('2022-12-31T23:59:59Z')"), ("""SELECT date_trunc('day', timestamp with time zone '2022-12-31T23:59:59.000Z') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FixedTimeStampZTruncYm`: Unit = {
-    test(analyze("datez_trunc_ym('2022-12-31T23:59:59Z')"), ("""date_trunc('month', timestamp with time zone '2022-12-31T23:59:59.000Z')"""))
+    test(analyzeStatement("select datez_trunc_ym('2022-12-31T23:59:59Z')"), ("""SELECT date_trunc('month', timestamp with time zone '2022-12-31T23:59:59.000Z') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FixedTimeStampZTruncY`: Unit = {
-    test(analyze("datez_trunc_y('2022-12-31T23:59:59Z')"), ("""date_trunc('year', timestamp with time zone '2022-12-31T23:59:59.000Z')"""))
+    test(analyzeStatement("select datez_trunc_y('2022-12-31T23:59:59Z')"), ("""SELECT date_trunc('year', timestamp with time zone '2022-12-31T23:59:59.000Z') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FixedTimeStampTruncYmdAtTimeZone`: Unit = {
-    test(analyze("date_trunc_ymd('2022-12-31T23:59:59Z', 'America/New_York')"), ("""date_trunc('day', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York'))"""))
+    test(analyzeStatement("select date_trunc_ymd('2022-12-31T23:59:59Z', 'America/New_York')"), ("""SELECT date_trunc('day', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')) AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FixedTimeStampTruncYmAtTimeZone`: Unit = {
-    test(analyze("date_trunc_ym('2022-12-31T23:59:59Z', 'America/New_York')"), ("""date_trunc('month', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York'))"""))
+    test(analyzeStatement("select date_trunc_ym('2022-12-31T23:59:59Z', 'America/New_York')"), ("""SELECT date_trunc('month', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')) AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FixedTimeStampTruncYAtTimeZone`: Unit = {
-    test(analyze("date_trunc_y('2022-12-31T23:59:59Z', 'America/New_York')"), ("""date_trunc('year', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York'))"""))
+    test(analyzeStatement("select date_trunc_y('2022-12-31T23:59:59Z', 'America/New_York')"), ("""SELECT date_trunc('year', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')) AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractY`: Unit = {
-    test(analyze("date_extract_y('2022-12-31T23:59:59')"), ("""extract(year from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_y('2022-12-31T23:59:59')"), ("""SELECT extract(year from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractM`: Unit = {
-    test(analyze("date_extract_m('2022-12-31T23:59:59')"), ("""extract(month from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_m('2022-12-31T23:59:59')"), ("""SELECT extract(month from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractD`: Unit = {
-    test(analyze("date_extract_d('2022-12-31T23:59:59')"), ("""extract(day from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_d('2022-12-31T23:59:59')"), ("""SELECT extract(day from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractHh`: Unit = {
-    test(analyze("date_extract_hh('2022-12-31T23:59:59')"), ("""extract(hour from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_hh('2022-12-31T23:59:59')"), ("""SELECT extract(hour from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractMm`: Unit = {
-    test(analyze("date_extract_mm('2022-12-31T23:59:59')"), ("""extract(minute from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_mm('2022-12-31T23:59:59')"), ("""SELECT extract(minute from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractSs`: Unit = {
-    test(analyze("date_extract_ss('2022-12-31T23:59:59')"), ("""extract(second from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_ss('2022-12-31T23:59:59')"), ("""SELECT extract(second from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractDow`: Unit = {
-    test(analyze("date_extract_dow('2022-12-31T23:59:59')"), ("""extract(dayofweek from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_dow('2022-12-31T23:59:59')"), ("""SELECT extract(dayofweek from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimeStampExtractWoy`: Unit = {
-    test(analyze("date_extract_woy('2022-12-31T23:59:59')"), ("""extract(week from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_woy('2022-12-31T23:59:59')"), ("""SELECT extract(week from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `FloatingTimestampExtractIsoY`: Unit = {
-    test(analyze("date_extract_iso_y('2022-12-31T23:59:59')"), ("""extract(year from timestamp without time zone '2022-12-31T23:59:59.000')"""))
+    test(analyzeStatement("select date_extract_iso_y('2022-12-31T23:59:59')"), ("""SELECT extract(year from timestamp without time zone '2022-12-31T23:59:59.000') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `EpochSeconds`: Unit = {
-    test(analyze("epoch_seconds('2022-12-31T23:59:59Z')"), ("""extract(epoch from timestamp with time zone '2022-12-31T23:59:59.000Z')"""))
+    test(analyzeStatement("select epoch_seconds('2022-12-31T23:59:59Z')"), ("""SELECT extract(epoch from timestamp with time zone '2022-12-31T23:59:59.000Z') AS i1 FROM table1 AS x1"""))
   }
 
   @Test
   def `TimeStampDiffD`: Unit = {
-    test(analyze("date_diff_d('2022-12-31T23:59:59Z', '2022-01-01T00:00:00Z')"), ("""datediff(day, timestamp with time zone '2022-12-31T23:59:59.000Z' at time zone (text 'UTC'), timestamp with time zone '2022-01-01T00:00:00.000Z' at time zone (text 'UTC'))"""))
+    test(analyzeStatement("select date_diff_d('2022-12-31T23:59:59Z', '2022-01-01T00:00:00Z')"), ("""SELECT datediff(day, timestamp with time zone '2022-12-31T23:59:59.000Z' at time zone (text 'UTC'), timestamp with time zone '2022-01-01T00:00:00.000Z' at time zone (text 'UTC')) AS i1 FROM table1 AS x1"""))
   }
 
   @Test
@@ -562,7 +554,7 @@ class FunctionSqlizerTest  {
 
   @Test
   def `GetUtcDate`: Unit = {
-    test(analyze("get_utc_date()"), ("""current_date at time zone 'UTC'"""))
+    test(analyzeStatement("select get_utc_date()"), ("""SELECT current_date at time zone 'UTC' AS i1 FROM table1 AS x1"""))
   }
 
 //  tests for aggregate functions
