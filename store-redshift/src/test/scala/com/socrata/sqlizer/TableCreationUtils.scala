@@ -12,7 +12,7 @@ import com.socrata.soql.environment.Provenance
 
 import com.socrata.common.sqlizer._
 
-object TableCreationTest {
+trait TableCreationUtils {
   object ProvenanceMapper extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
     def toProvenance(dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]): Provenance = {
       val DatabaseTableName(name) = dtn

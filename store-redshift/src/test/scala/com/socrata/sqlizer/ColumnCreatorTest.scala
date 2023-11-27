@@ -16,12 +16,12 @@ import org.junit.jupiter.api.Test;
 import ZipExt._
 
 @QuarkusTest
-class ColumnCreatorTest {
+class ColumnCreatorTest extends TableCreationUtils {
   @DataSource("store")
   @Inject
   var dataSource: AgroalDataSource = _
 
-  val repProvider = TableCreationTest.TestRepProvider
+  val repProvider = TestRepProvider
 
   val schema = SchemaImpl(repProvider)
 
