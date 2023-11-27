@@ -44,10 +44,3 @@ class RedshiftSecondary(
   override def dropCopy(datasetInfo: DatasetInfo, copyInfo: CopyInfo, cookie: Cookie, isLatestCopy: Boolean): Cookie =
     ???
 }
-
-/*
- get soqlversion and soqlid working
- get all tests running against real redshift
- get tests around/talk to rjmac about SUPER incompat.
-
- */
