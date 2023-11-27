@@ -1,3 +1,5 @@
+package com.socrata
+
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
 import com.socrata.datacoordinator.secondary.{SecondaryWatcherApp, SecondaryWatcherAppConfig}
 import com.socrata.thirdparty.metrics.MetricsReporter

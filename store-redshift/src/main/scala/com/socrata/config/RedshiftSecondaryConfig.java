@@ -1,4 +1,4 @@
-package config;
+package com.socrata.config;
 
 
 import com.socrata.datacoordinator.secondary.SecondaryWatcherAppConfig;

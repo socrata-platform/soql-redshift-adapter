@@ -1,4 +1,4 @@
-package db.meta.entity
+package com.socrata.db.meta.entity
 
 import jakarta.persistence.Entity
 

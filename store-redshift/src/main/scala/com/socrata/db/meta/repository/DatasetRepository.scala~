@@ -1,4 +1,4 @@
-package db.meta.repository
+package com.socrata.db.meta.repository
 
 import db.meta.entity.Dataset
 import io.quarkus.hibernate.orm.panache.PanacheRepository
