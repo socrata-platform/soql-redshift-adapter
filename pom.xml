@@ -270,6 +270,20 @@
           </args>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.40.0</version>
+        <configuration>
+          <scala>
+            <scalafmt>
+              <version>3.4.3</version>              <!-- optional -->
+              <file>scalafmt.conf</file> <!-- optional -->
+              <scalaMajorVersion>2.12</scalaMajorVersion> <!-- optional -->
+            </scalafmt>
+          </scala>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <profiles>
