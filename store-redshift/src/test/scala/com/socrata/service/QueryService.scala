@@ -1,7 +1,7 @@
 package com.socrata.service
 
 import io.quarkus.logging.Log
-import com.socrata.util.ResultSet.{extract, extractHeadOption}
+import com.socrata.util.ResultSet.extractHeadOption
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped

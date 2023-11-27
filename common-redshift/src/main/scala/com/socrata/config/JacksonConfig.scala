@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule}
 import io.quarkus.jackson.ObjectMapperCustomizer
-import jakarta.inject.Singleton
 
 object JacksonConfig {
 
