@@ -2,15 +2,10 @@ package com.socrata.common.sqlizer
 
 import java.sql.ResultSet
 
-import com.vividsolutions.jts.io.{WKBWriter, WKBReader, WKTReader}
-
 import com.rojoma.json.v3.ast._
 import com.rojoma.json.v3.io.CompactJsonWriter
-import com.rojoma.json.v3.interpolation._
 import com.rojoma.json.v3.util.JsonUtil
-import com.rojoma.json.v3.util.OrJNull.implicits._
-import com.vividsolutions.jts.geom.{Geometry, Point, GeometryFactory}
-import org.joda.time.Period
+import com.vividsolutions.jts.geom.{Geometry}
 
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.analyzer2._
@@ -40,7 +35,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
   override def mkByteaLiteral(bytes: Array[Byte]): Doc =
     mkStringLiteral(bytes.iterator.map { b => "%02x".format(b & 0xff) }.mkString)
 
-  abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV, name: String) extends SingleColumnRep(t, d"geometry") {
+  abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV) extends SingleColumnRep(t, d"geometry") {
     private val open = d"ST_GeomFromWKB"
 
     override def literal(e: LiteralValue) = {
@@ -337,26 +332,26 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
 
-    SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_), "point") {
+    SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLPoint].value
     },
-    SoQLMultiPoint -> new GeometryRep(SoQLMultiPoint, SoQLMultiPoint(_), "mpoint") {
+    SoQLMultiPoint -> new GeometryRep(SoQLMultiPoint, SoQLMultiPoint(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLMultiPoint].value
       override def isPotentiallyLarge = true
     },
-    SoQLLine -> new GeometryRep(SoQLLine, SoQLLine(_), "line") {
+    SoQLLine -> new GeometryRep(SoQLLine, SoQLLine(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLLine].value
       override def isPotentiallyLarge = true
     },
-    SoQLMultiLine -> new GeometryRep(SoQLMultiLine, SoQLMultiLine(_), "mline") {
+    SoQLMultiLine -> new GeometryRep(SoQLMultiLine, SoQLMultiLine(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLMultiLine].value
       override def isPotentiallyLarge = true
     },
-    SoQLPolygon -> new GeometryRep(SoQLPolygon, SoQLPolygon(_), "polygon") {
+    SoQLPolygon -> new GeometryRep(SoQLPolygon, SoQLPolygon(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLPolygon].value
       override def isPotentiallyLarge = true
     },
-    SoQLMultiPolygon -> new GeometryRep(SoQLMultiPolygon, SoQLMultiPolygon(_), "mpoly") {
+    SoQLMultiPolygon -> new GeometryRep(SoQLMultiPolygon, SoQLMultiPolygon(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLMultiPolygon].value
       override def isPotentiallyLarge = true
     }

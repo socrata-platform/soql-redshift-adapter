@@ -2,15 +2,13 @@ package com.socrata.common.sqlizer.metatypes
 
 import scala.collection.{mutable => scm}
 
-import com.socrata.prettyprint.prelude._
 
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
-import com.socrata.datacoordinator.id.{DatasetInternalName, DatasetId, CopyId, UserColumnId}
+import com.socrata.datacoordinator.id.{DatasetId, CopyId}
 
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.{SoQLType, SoQLValue}
-import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.functions.SoQLTypeInfo2
 
 // delete this file

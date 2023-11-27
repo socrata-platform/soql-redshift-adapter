@@ -3,8 +3,7 @@ package com.socrata.store
 import scala.util.Using
 import com.socrata.soql.analyzer2._
 import com.socrata.common.sqlizer.metatypes
-import com.socrata.soql.types.{SoQLType, SoQLValue}
-import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
+import com.socrata.soql.types.{SoQLType}
 import com.socrata.soql.sqlizer._
 
 trait Schema[MT <: MetaTypes] {

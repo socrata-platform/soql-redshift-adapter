@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
 import com.socrata.datacoordinator.secondary.Secondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
-import com.socrata.datacoordinator.secondary.messaging.eurybates.MessageProducerConfig
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.thirdparty.metrics.{Metrics, MetricsOptions, MetricsReporter}
 import com.socrata.config.RedshiftSecondaryDependencies.{SecondaryBundle, SecondaryMap}
@@ -20,11 +19,9 @@ import org.apache.curator.retry.BoundedExponentialBackoffRetry
 import org.eclipse.microprofile.config.ConfigProvider
 import com.socrata.service.RedshiftSecondary
 
-import java.io.{File, OutputStream}
+import java.io.{OutputStream}
 import java.sql.Connection
-import java.util.{Properties, UUID}
 import javax.sql.{DataSource => JavaDataSource}
-import scala.concurrent.duration.FiniteDuration
 
 object RedshiftSecondaryDependencies {
   type SecondaryBundle = (DSInfo, MetricsReporter, CuratorFramework)

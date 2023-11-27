@@ -7,14 +7,14 @@ import com.socrata.soql.analyzer2._
 import com.socrata.soql.collection.NonEmptySeq
 import com.socrata.soql.types._
 import com.socrata.soql.functions.SoQLFunctions._
-import com.socrata.soql.functions.{Function, MonomorphicFunction, SoQLTypeInfo}
+import com.socrata.soql.functions.Function
 import com.socrata.soql.sqlizer._
 import SoQLFunctionSqlizerRedshift._
 
 
 // move over tests as well
 class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({ type ColumnType = SoQLType; type ColumnValue = SoQLValue })] extends FuncallSqlizer[MT] {
-  import SoQLTypeInfo.hasType
+  import com.socrata.soql.functions.SoQLTypeInfo.hasType
 
   override val exprSqlFactory = new RedshiftExprSqlFactory[MT]
 
@@ -28,7 +28,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
   implicit class ExprInterpolator(sc: StringContext) {
     def expr(args: ExprArg*): OrdinaryFunctionSqlizer =
-      ofs { (f, runtimeArgs, ctx) =>
+      ofs { (f, runtimeArgs, _) =>
         assert(args.length >= f.function.minArity)
         assert(f.function.allParameters.startsWith(runtimeArgs.map(_.typ)))
 
@@ -70,14 +70,14 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     exprSqlFactory(e.compressed.sql.parenthesized +#+ d":: $numericType", f)
   }
 
-  def extractDatePart(datePart: String)= ofs { (e, args, ctx) =>
+  def extractDatePart(datePart: String)= ofs { (e, args, _) =>
     assert(args.length == 1)
     val extractFunc = d"extract"
     val preparedArgs = d"$datePart" +#+ d"from" +#+ args.head.compressed.sql
     exprSqlFactory(preparedArgs.funcall(extractFunc).group, e)
   }
 
-  def dateDiffIn(datePart:String, timeZone:String) = ofs { (e, args, ctx) =>
+  def dateDiffIn(datePart:String, timeZone:String) = ofs { (e, args, _) =>
     assert(args.length == 2)
     val extractFunc = d"datediff"
     val preparedArgs = d"$datePart" +: args.take(2).map(_.compressed.sql +#+ d"at time zone (text '$timeZone')")
@@ -90,7 +90,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     prefixArgs: Seq[Doc] = Nil
   ) = {
     val funcName = Doc(sqlFunctionName)
-    ofs { (e, args, ctx) =>
+    ofs { (e, args, _) =>
       assert(args.length==2)
       val lhs = args(0).compressed.sql.parenthesized
       val rhs = args(1).compressed.sql.parenthesized
@@ -125,7 +125,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     wrap(f, wrap(f, exprSql, "st_buffer", d"0.0"), "st_multi")
   }
 
-  def sqlizeGeomCast(sqlFunctionName: String) = ofs { (f, args, ctx) =>
+  def sqlizeGeomCast(sqlFunctionName: String) = ofs { (f, args, _) =>
     // Just like a normal ordinary function call, but with an
     // additional synthetic parameter for SRID
     //
@@ -142,7 +142,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     exprSqlFactory(sql.group, f)
   }
 
-  def sqlizeCase = ofs { (f, args, ctx) =>
+  def sqlizeCase = ofs { (f, args, _) =>
     assert(f.function.function eq Case)
     assert(args.length % 2 == 0)
     assert(args.length >= 2)
@@ -189,7 +189,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     }
   }
 
-  def sqlizeIif = ofs { (f, args, ctx) =>
+  def sqlizeIif = ofs { (f, args, _) =>
     assert(f.function.function eq Iif)
     assert(args.length == 3)
 
@@ -211,7 +211,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
         .withExpr(f)
 
     f.args(0) match {
-      case lit@LiteralValue(SoQLText(key)) =>
+      case LiteralValue(SoQLText(key)) =>
         ctx.extraContext.systemContext.get(key) match {
           case Some(value) =>
             ctx.repFor(SoQLText).literal(LiteralValue[MT](SoQLText(value))(f.position.asAtomic))
@@ -219,7 +219,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
           case None =>
             nullLiteral
         }
-      case e@NullLiteral(typ) =>
+      case NullLiteral(_) =>
         nullLiteral
       case _ =>
         ctx.extraContext.nonliteralSystemContextLookupFound = true
@@ -250,7 +250,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     }
   }
 
-  def sqlizeLocationHumanAddress = ofs { (f, args, ctx) =>
+  def sqlizeLocationHumanAddress = ofs { (f, args, _) =>
     assert(args.length == 1)
     assert(args(0).typ == SoQLLocation)
     assert(f.typ == SoQLText)
@@ -265,7 +265,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     exprSqlFactory(sqls.funcall(d"soql_human_address"), f)
   }
 
-  def sqlizeLocation = ofs { (f, args, ctx) =>
+  def sqlizeLocation = ofs { (f, args, _) =>
     assert(f.typ == SoQLLocation)
     assert(args.length == 5)
     assert(args(0).typ == SoQLPoint)
@@ -296,7 +296,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       withExpr(f)
   }
 
-  def sqlizeIsEmpty = ofs { (f, args, ctx) =>
+  def sqlizeIsEmpty = ofs { (f, args, _) =>
     assert(f.typ == SoQLBoolean)
     assert(args.length == 1)
 
@@ -333,14 +333,14 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     }
   }
 
-  def sqlizeAntinegate = ofs { (f, args, ctx) =>
+  def sqlizeAntinegate = ofs { (_, args, _) =>
     assert(args.length == 1)
     // this operator only exists for symmetry with unary -, so just
     // get rid of it
     args(0)
   }
 
-  def sqlizeExtractDateSubfield(field: Doc) = ofs { (f, args, ctx) =>
+  def sqlizeExtractDateSubfield(field: Doc) = ofs { (f, args, _) =>
     assert(args.length == 1)
     assert(args(0).typ == SoQLFloatingTimestamp)
     assert(f.typ == SoQLNumber)

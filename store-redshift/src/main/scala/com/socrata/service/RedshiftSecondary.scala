@@ -1,26 +1,22 @@
 package com.socrata.service
 
-import com.socrata.config.RedshiftSecondaryConfig
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.truth.metadata.IndexDirective
 import com.socrata.datacoordinator.util.collection.ColumnIdMap
 import com.socrata.soql.types.{SoQLType, SoQLValue}
-import com.socrata.db.meta.service.MetaService
-import io.agroal.api.AgroalDataSource
-import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
 
 
 @ApplicationScoped
 class RedshiftSecondary(
                          //This represents the meta datasource, our metadata is easy to fit into orm
-                         metaService: MetaService,
+//                         metaService: MetaService,
                          //Possibly no orm? Unclear so far, lets just use a datasource for now.
-                         @DataSource("store")
-                         storeDatasource: AgroalDataSource,
-                         config: RedshiftSecondaryConfig
+//                         @DataSource("store")
+//                         storeDatasource: AgroalDataSource,
+//                         config: RedshiftSecondaryConfig
                        ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 

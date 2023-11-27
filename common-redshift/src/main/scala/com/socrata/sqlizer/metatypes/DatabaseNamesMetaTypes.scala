@@ -1,13 +1,7 @@
 package com.socrata.common.sqlizer.metatypes
 
-import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
-import com.socrata.datacoordinator.id.UserColumnId
-import com.socrata.prettyprint.prelude._
-
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
-import com.socrata.soql.types.SoQLValue
-import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.functions.SoQLTypeInfo2
 
 final abstract class DatabaseNamesMetaTypes extends MetaTypes with SoQLMetaTypesExt {
@@ -39,7 +33,7 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
   def rewriteFrom(dmtState: DatabaseMetaTypes, analysis: SoQLAnalysis[DatabaseMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
     analysis.rewriteDatabaseNames[DatabaseNamesMetaTypes](
       rewriteDTN,
-      { case (dtn, DatabaseColumnName(columnInfo)) => DatabaseColumnName(columnInfo.physicalColumnBase) },
+      { case (_, DatabaseColumnName(columnInfo)) => DatabaseColumnName(columnInfo.physicalColumnBase) },
       dmtState.provenanceMapper,
       provenanceMapper,
       typeInfo.updateProvenance

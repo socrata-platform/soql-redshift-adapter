@@ -1,6 +1,5 @@
 package com.socrata.common.sqlizer
 
-import com.socrata.prettyprint.prelude._
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.sqlizer._
 
