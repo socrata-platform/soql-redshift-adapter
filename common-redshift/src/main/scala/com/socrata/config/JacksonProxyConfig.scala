@@ -8,10 +8,23 @@ import java.lang.reflect.{InvocationHandler, Method, ParameterizedType, Proxy}
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.socrata.config.JsonNodeBackedJacksonInvocationHandler.{innerGenericClass, kebab}
 
+import java.util.Properties
 import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConverters._
 
 object JacksonProxyConfigBuilder{
+
+  def merge(envSources: Seq[EnvSource], start: Properties): Properties = {
+    envSources.foldLeft(
+      start
+    )(
+      (acc, item) => {
+        //https://github.com/scala/bug/issues/10418
+        item.read().forEach((k,v)=>acc.put(k,v))
+        acc
+      }
+    )
+  }
 
   //Merges ConfigSources into a JsonNode (folding), taking the starting node
    def merge(configSources: Seq[ConfigSource], start: JsonNode): JsonNode = {
@@ -45,6 +58,11 @@ trait ConfigSource {
   def read(): JsonNode
 }
 
+trait EnvSource {
+  //Anything that can produce json
+  def read(): Properties
+}
+
 trait ConfigProvider{
   //Get a prefixed config interface/trait.
   def proxy[T](path: String, clazz: Class[T]): T
@@ -57,15 +75,24 @@ trait ConfigProvider{
 trait ConfigBuilder{
   //Allows you to either continue adding sources, or complete the proxying via the provider
   def withSources(configSources: ConfigSource*): ConfigBuilder with ConfigProvider
+  def withEnvs(configEnvs: EnvSource*): ConfigBuilder with ConfigProvider
 }
 
 case class JacksonProxyConfigBuilder(private val objectMapper:ObjectMapper) extends ConfigBuilder {
-  def withSources(configSources: ConfigSource*): JacksonProxyConfigProvider =
+  override def withSources(configSources: ConfigSource*): JacksonProxyConfigProvider =
     JacksonProxyConfigProvider(
       //Merges config sources into a JsonNode, starting from a blank empty JsonNode
       merge(configSources,objectMapper.createObjectNode().asInstanceOf[JsonNode]),
-      objectMapper
+      objectMapper,
+      new Properties()
     )
+
+  override def withEnvs(configEnvs: EnvSource*): JacksonProxyConfigProvider =
+    JacksonProxyConfigProvider(
+    objectMapper.createObjectNode().asInstanceOf[JsonNode],
+    objectMapper,
+    merge(configEnvs,new Properties())
+  )
 }
 
 object JsonNodeBackedJacksonInvocationHandler{
@@ -80,7 +107,7 @@ object JsonNodeBackedJacksonInvocationHandler{
 }
 
 //Uses Jackson to delegate method calls of a proxy, backed by a JsonNode. Uses an ObjectMapper to convert/marshall stuff.
-case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:ObjectMapper) extends InvocationHandler {
+case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:ObjectMapper, env:Properties) extends InvocationHandler {
   def invoke(proxy: scala.AnyRef, method: Method, args: Array[AnyRef]): AnyRef = {
     val out = method.getName match{
       //Simple implementation for toString, when the root interface is accessed directly.
@@ -137,26 +164,41 @@ case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:O
 
   //Convert the JsonNode to something else
   private def doConvert[T](value:String, returning: Class[T]):T={
-    objectMapper.readValue(value,returning)
+    val pattern = "\\$\\{([^}]+)}".r
+    val replaced = pattern.findAllIn(value).matchData.foldLeft(value){
+      (str,matchData)=>
+        val target = matchData.group(1).trim
+        str.replaceAllLiterally(matchData.matched,env.getProperty(target,System.getProperty(target,System.getenv(target))))
+    }
+    objectMapper.readValue(replaced,returning)
   }
 
   //Proxy the JsonNode as an interface
   private def doProxy[T](data: JsonNode, target: Class[T]): T = {
-    JacksonProxyConfigProvider(data, objectMapper).proxy(target)
+    JacksonProxyConfigProvider(data, objectMapper,env).proxy(target)
   }
 
 }
 
-case class JacksonProxyConfigProvider(private val data: JsonNode, private val objectMapper:ObjectMapper) extends ConfigProvider with ConfigBuilder {
+case class JacksonProxyConfigProvider(private val data: JsonNode, private val objectMapper:ObjectMapper, private val env:Properties) extends ConfigProvider with ConfigBuilder {
 
-  def withSources(configSources: ConfigSource*): JacksonProxyConfigProvider =
+  override def withSources(configSources: ConfigSource*): JacksonProxyConfigProvider =
     JacksonProxyConfigProvider(
       //Merge new sources with existing JsonNode
       merge(configSources,data),
-      objectMapper
+      objectMapper,
+      env
     )
 
-  def chunk(path:String): JacksonProxyConfigProvider = JacksonProxyConfigProvider(data.findValue(path),objectMapper)
+  override def withEnvs(configEnvs: EnvSource*): ConfigBuilder with ConfigProvider =
+    JacksonProxyConfigProvider(
+      //Merge new sources with existing JsonNode
+      data,
+      objectMapper,
+      merge(configEnvs,env)
+    )
+
+  def chunk(path:String): JacksonProxyConfigProvider = JacksonProxyConfigProvider(data.findValue(path),objectMapper,env)
 
   private def proxy[T](clazz: Class[T], newData: JsonNode): T = {
     //We will return a proxy that will delegate method calls that are backed by a JsonNode and Jackson
@@ -168,7 +210,9 @@ case class JacksonProxyConfigProvider(private val data: JsonNode, private val ob
       //Uses Jackson to delegate method calls backed by a JsonNode
       JsonNodeBackedJacksonInvocationHandler(
         newData,
-        objectMapper)
+        objectMapper,
+        env
+      )
       //Our proxy will implement our target interface/trait (clazz), so we will force cast it to look like this type
     ).asInstanceOf[T]
   }

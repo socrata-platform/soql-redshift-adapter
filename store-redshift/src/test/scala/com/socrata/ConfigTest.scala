@@ -27,7 +27,7 @@ class ConfigTest() {
     assert(Duration("30 minutes").equals(redshiftSecondaryConfig.claimTimeout))
     assert("collocation-lock".equals(redshiftSecondaryConfig.collocationLockPath))
     assert(Duration("10s").equals(redshiftSecondaryConfig.collocationLockTimeout))
-    assert("${TRUTH_CLUSTER}".equals(redshiftSecondaryConfig.instance))
+    assert("alpha".equals(redshiftSecondaryConfig.instance))
     //log4j todo
     assert(Duration("2 hours").equals(redshiftSecondaryConfig.maxReplayWait))
     assert(redshiftSecondaryConfig.maxReplays.contains(200))
@@ -44,7 +44,7 @@ class ConfigTest() {
     assert(zookeeper.sessionTimeout.equals(4))
 
     assert(Duration("2 minutes").equals(redshiftSecondaryConfig.replayWait))
-
+    assert(redshiftSecondaryConfig.tmpdir!=null)
 
   }
 

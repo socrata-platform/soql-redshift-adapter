@@ -46,14 +46,20 @@ class RedshiftSecondaryDependencies {
   def configSource():ConfigSource = JacksonYamlConfigSource("application.yaml")
 
   @Produces
+  def envSource(): EnvSource = PropertiesFileEnvSource(".env")
+
+  @Produces
   def configProvider
   (
     objectMapper:ObjectMapper,
     @All
-    configSources: java.util.List[ConfigSource]
+    configSources: java.util.List[ConfigSource],
+    @All
+    envSources: java.util.List[EnvSource]
   ): ConfigProvider={
     JacksonProxyConfigBuilder(objectMapper)
       .withSources(configSources.asScala.toArray:_*)
+      .withEnvs(envSources.asScala.toArray:_*)
   }
 
   @Produces

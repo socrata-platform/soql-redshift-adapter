@@ -1,0 +1,2 @@
+server:
+  data-dir: ${java.io.tmpdir}

@@ -2,6 +2,10 @@ package com.socrata.config
 
 import org.junit.jupiter.api.{DisplayName, Test}
 
+import java.io.File
+import java.util.Properties
+import scala.collection.JavaConverters._
+
 
 @DisplayName("Jackson Proxy Config Tests")
 class JacksonProxyConfigTest {
@@ -129,6 +133,49 @@ class JacksonProxyConfigTest {
         .proxy("person",classOf[Person])
 
     assert("Jackson".equals(person.dog().get.name()))
+  }
+
+  @DisplayName("Interpolation")
+  @Test
+  def interpolation(): Unit = {
+
+    trait Server {
+      def dataDir(): File
+    }
+
+    val server: Server =
+      JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
+        .withSources(JacksonYamlConfigSource("data/server.yaml"))
+        .proxy("server", classOf[Server])
+
+    assert(server.dataDir()!=null)
+  }
+
+  @DisplayName("Environment")
+  @Test
+  def environment(): Unit = {
+
+    trait Resources {
+      def cpu(): Int
+      def gpu(): Int
+      def storage(): Int
+    }
+
+    val resources: Resources =
+      JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
+        .withSources(JacksonYamlConfigSource("data/resources.yaml"))
+        .withEnvs(() => {
+          new Properties(){{
+            setProperty("CPU_AMOUNT","1")
+            setProperty("GPU_AMOUNT","2")
+            setProperty("STORAGE_AMOUNT","3")
+          }}
+        })
+        .proxy( classOf[Resources])
+
+    assert(1.equals(resources.cpu()))
+    assert(2.equals(resources.gpu()))
+    assert(3.equals(resources.storage()))
   }
 
 }
