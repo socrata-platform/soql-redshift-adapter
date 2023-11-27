@@ -1,6 +1,6 @@
 package com.socrata.config
 
-import com.fasterxml.jackson.databind.node.{ArrayNode, ObjectNode, TextNode}
+import com.fasterxml.jackson.databind.node.{ArrayNode, ObjectNode}
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.socrata.config.JacksonProxyConfigBuilder.merge
 
@@ -126,11 +126,11 @@ case class JsonNodeBackedJacksonInvocationHandler(data: JsonNode, objectMapper:O
     out.asInstanceOf[AnyRef]
   }
 
-  private def handleObject[T](data: JsonNode, method: Method): Any = {
+  private def handleObject(data: JsonNode, method: Method): Any = {
     method.getReturnType.getName match {
       //TODO Option of simple vs Option of complex, later check if target class is interface or not, rather than try.
       case "scala.Option" => Try(doProxy(data, innerGenericClass(method))) match {
-        case Failure(exception) => Try(doConvert(
+        case Failure(_) => Try(doConvert(
           data.toString,
           innerGenericClass(method)
         )) match {
