@@ -8,9 +8,9 @@ import com.socrata.soql.sqlizer.ExtraContext
 import com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes
 
 class SoQLExtraContext(
-  val systemContext: Map[String, String],
-  val cryptProviderProvider: CryptProviderProvider,
-  val escapeString: String => String
+    val systemContext: Map[String, String],
+    val cryptProviderProvider: CryptProviderProvider,
+    val escapeString: String => String
 ) extends ExtraContext[SoQLExtraContext.Result] {
   val now = DateTime.now()
   var nonliteralSystemContextLookupFound: Boolean = false
@@ -19,7 +19,7 @@ class SoQLExtraContext(
   override def finish() =
     SoQLExtraContext.Result(
       nonliteralSystemContextLookupFound,
-      if(nowUsed) Some(now) else None
+      if (nowUsed) Some(now) else None
     )
 }
 

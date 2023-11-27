@@ -10,11 +10,10 @@ import io.quarkus.runtime.annotations.QuarkusMain
 import org.apache.curator.framework.CuratorFramework
 
 @QuarkusMain
-class Application
-(
-  secondaryBundle: (DSInfo, MetricsReporter, CuratorFramework),
-  secondaryWatcherAppConfig: RedshiftSecondaryConfig,
-  secondaryMap: SecondaryMap
+class Application(
+    secondaryBundle: (DSInfo, MetricsReporter, CuratorFramework),
+    secondaryWatcherAppConfig: RedshiftSecondaryConfig,
+    secondaryMap: SecondaryMap
 ) extends QuarkusApplication {
   override def run(args: String*): Int = {
     println(args)

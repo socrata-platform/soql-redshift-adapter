@@ -13,19 +13,23 @@ import java.util.UUID
 import scala.util.Using
 
 @ApplicationScoped
-class InsertService
-(
-  @DataSource("store")
-  dataSource: AgroalDataSource,
-  s3: AmazonS3,
-  awsCredentials: AWSCredentials
+class InsertService(
+    @DataSource("store")
+    dataSource: AgroalDataSource,
+    s3: AmazonS3,
+    awsCredentials: AWSCredentials
 ) {
 
-  def insertJdbc[T](tableName: String, columnNames: Array[String], batchSize: Long, iterator: Iterator[Array[T]]): Unit = {
+  def insertJdbc[T](
+      tableName: String,
+      columnNames: Array[String],
+      batchSize: Long,
+      iterator: Iterator[Array[T]]): Unit = {
     assert(batchSize >= 1)
     Log.info(s"Batch size: $batchSize")
     val width = columnNames.length
-    val sql = s"""insert into "$tableName"(${columnNames.mkString(",")}) values(${List.fill(width)("?").mkString(",")});"""
+    val sql =
+      s"""insert into "$tableName"(${columnNames.mkString(",")}) values(${List.fill(width)("?").mkString(",")});"""
     Using.resource(dataSource.getConnection) { conn =>
       conn.setAutoCommit(false)
       var currentBatch = 0L
@@ -68,13 +72,13 @@ class InsertService
   def insertS3(bucketName: String, tableName: String, file: File): Unit = {
     val uuid = UUID.randomUUID()
     val fileName = s"upload/$uuid"
-    Timing.timed{
+    Timing.timed {
       s3.putObject(bucketName, fileName, file);
-    }{elapsed=>
+    } { elapsed =>
       Log.info(s"Uploading file ${file.getAbsolutePath} to $bucketName/$fileName took $elapsed")
     }
     try {
-      Timing.timed{
+      Timing.timed {
         Using.resource(dataSource.getConnection) { conn =>
           Using.resource(conn.prepareStatement(
             s"""
@@ -84,17 +88,18 @@ class InsertService
                |secret_access_key '${awsCredentials.getAWSSecretKey}'
                |format as csv
                |ignoreheader 1;
-               |""".stripMargin)) { stmt =>
+               |""".stripMargin
+          )) { stmt =>
             stmt.executeUpdate()
           }
         }
-      }{elapsed=>
+      } { elapsed =>
         Log.info(s"""Coping $bucketName/$fileName to table "$tableName" took $elapsed""")
       }
     } finally {
-      Timing.timed{
+      Timing.timed {
         s3.deleteObject(bucketName, fileName);
-      }{elapsed=>
+      } { elapsed =>
         Log.info(s"Deleting $bucketName/$fileName took $elapsed")
       }
     }

@@ -12,27 +12,24 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 class AwsConfig {
 
   @Produces
-  def awsCredentials
-  (
-    @ConfigProperty(name = "aws.accessKey") accessKey: String,
-    @ConfigProperty(name = "aws.secretKey") secretKey: String
+  def awsCredentials(
+      @ConfigProperty(name = "aws.accessKey") accessKey: String,
+      @ConfigProperty(name = "aws.secretKey") secretKey: String
   ): AWSCredentials = {
     new BasicAWSCredentials(accessKey, secretKey)
   }
 
   @Produces
-  def awsCredentialsProvider
-  (
-    credentials: AWSCredentials
+  def awsCredentialsProvider(
+      credentials: AWSCredentials
   ): AWSCredentialsProvider = {
     new AWSStaticCredentialsProvider(credentials)
   }
 
   @Produces
-  def awsS3
-  (
-    credentialsProvider: AWSCredentialsProvider,
-    @ConfigProperty(name = "aws.region") region: String
+  def awsS3(
+      credentialsProvider: AWSCredentialsProvider,
+      @ConfigProperty(name = "aws.region") region: String
   ): AmazonS3 = {
     AmazonS3ClientBuilder.standard()
       .withRegion(Regions.fromName(region))
@@ -41,10 +38,9 @@ class AwsConfig {
   }
 
   @Produces
-  def awsRedshift
-  (
-    credentialsProvider: AWSCredentialsProvider,
-    @ConfigProperty(name = "aws.region") region: String
+  def awsRedshift(
+      credentialsProvider: AWSCredentialsProvider,
+      @ConfigProperty(name = "aws.region") region: String
   ): AmazonRedshift = {
     AmazonRedshiftClientBuilder.standard()
       .withCredentials(credentialsProvider)

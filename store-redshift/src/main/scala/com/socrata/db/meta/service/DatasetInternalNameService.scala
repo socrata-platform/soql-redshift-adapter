@@ -6,9 +6,6 @@ import jakarta.transaction.Transactional
 
 @Transactional
 @ApplicationScoped
-class DatasetInternalNameService
-(
-  val datasetInternalNameRepository: DatasetInternalNameRepository
-) {
-
-}
+class DatasetInternalNameService(
+    val datasetInternalNameRepository: DatasetInternalNameRepository
+) {}

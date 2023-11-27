@@ -2,7 +2,6 @@ package com.socrata.common.sqlizer.metatypes
 
 import scala.collection.{mutable => scm}
 
-
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
 import com.socrata.datacoordinator.id.{DatasetId, CopyId}
 

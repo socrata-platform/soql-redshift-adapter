@@ -13,20 +13,21 @@ import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types._
 import com.socrata.soql.sqlizer._
 
-
 /*
  Ensure compressedSubColumns works in all cases
  Use the extractor in soqlreference
  */
 
-abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String})](
-  cryptProviders: CryptProviderProvider,
-  override val namespace: SqlNamespaces[MT],
-  override val exprSqlFactory: ExprSqlFactory[MT],
+abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
+  type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String
+})](
+    cryptProviders: CryptProviderProvider,
+    override val namespace: SqlNamespaces[MT],
+    override val exprSqlFactory: ExprSqlFactory[MT]
 ) extends Rep.Provider[MT] {
-    // TODO: obvious not good
-    override val isRollup = _ => ???
-    override val toProvenance = _ => ???
+  // TODO: obvious not good
+  override val isRollup = _ => ???
+  override val toProvenance = _ => ???
 
   def apply(typ: SoQLType) = reps(typ)
 
@@ -35,13 +36,13 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
   override def mkByteaLiteral(bytes: Array[Byte]): Doc =
     mkStringLiteral(bytes.iterator.map { b => "%02x".format(b & 0xff) }.mkString)
 
-  abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV) extends SingleColumnRep(t, d"geometry") {
+  abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV)
+      extends SingleColumnRep(t, d"geometry") {
     private val open = d"ST_GeomFromWKB"
 
     override def literal(e: LiteralValue) = {
       val geo = downcast(e.value)
-      exprSqlFactory(Seq(mkByteaLiteral(t.WkbRep(geo)), Geo.defaultSRIDLiteral).funcall(open
-      ), e)
+      exprSqlFactory(Seq(mkByteaLiteral(t.WkbRep(geo)), Geo.defaultSRIDLiteral).funcall(open), e)
     }
 
     protected def downcast(v: SoQLValue): T
@@ -54,7 +55,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
     override def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
       Option(rs.getBytes(dbCol)).flatMap { bytes =>
-        t.WkbRep.unapply(bytes) // TODO: this just turns invalid values into null, we should probably be noisier than that
+        t.WkbRep.unapply(
+          bytes
+        ) // TODO: this just turns invalid values into null, we should probably be noisier than that
       }.map(ctor).getOrElse(SoQLNull)
     }
 
@@ -72,9 +75,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val sourceName = compressedDatabaseColumn(column)
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
-          //this'll need to be using our special compression thing
+          // this'll need to be using our special compression thing
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
-          d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName,
+          d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName
         )
       }
 
@@ -107,7 +110,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val provenance = Option(rs.getString(dbCol)).map(Provenance(_))
         val valueRaw = rs.getLong(dbCol + 1)
 
-        if(rs.wasNull) {
+        if (rs.wasNull) {
           SoQLNull
         } else {
           val result = SoQLID(valueRaw)
@@ -148,7 +151,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
         Seq(
           d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
-          d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName,
+          d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName
         )
       }
 
@@ -181,7 +184,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         val provenance = Option(rs.getString(dbCol)).map(Provenance(_))
         val valueRaw = rs.getLong(dbCol + 1)
 
-        if(rs.wasNull) {
+        if (rs.wasNull) {
           SoQLNull
         } else {
           val result = SoQLVersion(valueRaw)
@@ -243,11 +246,11 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
     SoQLBoolean -> new SingleColumnRep(SoQLBoolean, d"boolean") {
       def literal(e: LiteralValue) = {
         val SoQLBoolean(b) = e.value
-        exprSqlFactory(if(b) d"true" else d"false", e)
+        exprSqlFactory(if (b) d"true" else d"false", e)
       }
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         val v = rs.getBoolean(dbCol)
-        if(rs.wasNull) {
+        if (rs.wasNull) {
           SoQLNull
         } else {
           SoQLBoolean(v)
@@ -315,7 +318,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
 
     },
-
     SoQLDocument -> new SingleColumnRep(SoQLDocument, d"super") {
       override def literal(e: LiteralValue) = ???
       override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
@@ -331,7 +333,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
-
     SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLPoint].value
     },

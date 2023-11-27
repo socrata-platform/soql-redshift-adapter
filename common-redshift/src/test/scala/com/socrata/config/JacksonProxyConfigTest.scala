@@ -5,13 +5,12 @@ import org.junit.jupiter.api.{DisplayName, Test}
 import java.io.File
 import java.util.Properties
 
-
 @DisplayName("Jackson Proxy Config Tests")
 class JacksonProxyConfigTest {
 
   @DisplayName("Nested traits")
   @Test
-  def person():Unit={
+  def person(): Unit = {
 
     trait Address {
       def country(): String
@@ -48,16 +47,16 @@ class JacksonProxyConfigTest {
     val recipe: Recipe =
       JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
         .withSources(JacksonYamlConfigSource("data/recipe.yaml"))
-        .proxy( classOf[Recipe])
+        .proxy(classOf[Recipe])
 
-    assert(List("Tomato","Cheese","Bread").equals(recipe.ingredients()))
+    assert(List("Tomato", "Cheese", "Bread").equals(recipe.ingredients()))
   }
 
   @DisplayName("List of complex type")
   @Test
   def listComplex(): Unit = {
 
-    trait Ingredient{
+    trait Ingredient {
       def name(): String
       def amount(): Int
     }
@@ -84,7 +83,7 @@ class JacksonProxyConfigTest {
   @Test
   def listSuperComplex(): Unit = {
 
-    trait Name{
+    trait Name {
       def short(): String
       def long(): String
     }
@@ -104,12 +103,12 @@ class JacksonProxyConfigTest {
         .withSources(JacksonYamlConfigSource("data/recipe3.yaml"))
         .proxy(classOf[Recipe])
 
-    val ingredients:List[Ingredient] = recipe.ingredients()
-    val tomato:Ingredient = ingredients.filter(_.name().long().equals("Tomato")).head
-    val cheese:Ingredient = ingredients.filter(_.name().long().equals("Cheese")).head
-    val bread:Ingredient = ingredients.filter(_.name().long().equals("Bread")).head
+    val ingredients: List[Ingredient] = recipe.ingredients()
+    val tomato: Ingredient = ingredients.filter(_.name().long().equals("Tomato")).head
+    val cheese: Ingredient = ingredients.filter(_.name().long().equals("Cheese")).head
+    val bread: Ingredient = ingredients.filter(_.name().long().equals("Bread")).head
     assert(3.equals(tomato.amount()))
-    val tomatoName:Name = tomato.name()
+    val tomatoName: Name = tomato.name()
     assert("Tomato".equals(tomatoName.long()))
     assert("T".equals(tomatoName.short()))
 
@@ -139,7 +138,7 @@ class JacksonProxyConfigTest {
     val person: Person =
       JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
         .withSources(JacksonYamlConfigSource("data/person-dog.yaml"))
-        .proxy("person",classOf[Person])
+        .proxy("person", classOf[Person])
 
     assert("Jackson".equals(person.dog().get.name()))
   }
@@ -157,7 +156,7 @@ class JacksonProxyConfigTest {
         .withSources(JacksonYamlConfigSource("data/server.yaml"))
         .proxy("server", classOf[Server])
 
-    assert(server.dataDir()!=null)
+    assert(server.dataDir() != null)
   }
 
   @DisplayName("Environment")
@@ -174,13 +173,15 @@ class JacksonProxyConfigTest {
       JacksonProxyConfigBuilder(CommonObjectMapperCustomizer.Default)
         .withSources(JacksonYamlConfigSource("data/resources.yaml"))
         .withEnvs(() => {
-          new Properties(){{
-            setProperty("CPU_AMOUNT","1")
-            setProperty("GPU_AMOUNT","2")
-            setProperty("STORAGE_AMOUNT","3")
-          }}
+          new Properties() {
+            {
+              setProperty("CPU_AMOUNT", "1")
+              setProperty("GPU_AMOUNT", "2")
+              setProperty("STORAGE_AMOUNT", "3")
+            }
+          }
         })
-        .proxy( classOf[Resources])
+        .proxy(classOf[Resources])
 
     assert(1.equals(resources.cpu()))
     assert(2.equals(resources.gpu()))

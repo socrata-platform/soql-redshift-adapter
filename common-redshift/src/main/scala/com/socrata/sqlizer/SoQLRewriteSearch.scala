@@ -8,7 +8,10 @@ import com.socrata.soql.functions.{Function, MonomorphicFunction, FunctionType, 
 import com.socrata.soql.types.{SoQLType, SoQLValue, SoQLText, SoQLBoolean, SoQLUrl}
 import com.socrata.soql.sqlizer._
 
-class SoQLRewriteSearch[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({ type ColumnType = SoQLType; type ColumnValue = SoQLValue })](override val searchBeforeQuery: Boolean) extends RewriteSearch[MT] {
+class SoQLRewriteSearch[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
+  type ColumnType = SoQLType; type ColumnValue = SoQLValue
+})](override val searchBeforeQuery: Boolean)
+    extends RewriteSearch[MT] {
   import SoQLTypeInfo.hasType
 
   override def litText(s: String): Expr = LiteralValue[MT](SoQLText(s))(AtomicPositionInfo.None)
@@ -64,7 +67,7 @@ class SoQLRewriteSearch[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({ 
         Seq(col, d"''").funcall(d"coalesce")
       }
 
-    if(term.nonEmpty) {
+    if (term.nonEmpty) {
       Some(term.concatWith { (a: Doc[Nothing], b: Doc[Nothing]) => a +#+ d"|| ' ' ||" +#+ b })
     } else {
       None
@@ -85,11 +88,11 @@ class SoQLRewriteSearch[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({ 
 
 object SoQLRewriteSearch {
   private def mf(
-    identity: String,
-    name: FunctionName,
-    params: Seq[SoQLType],
-    varargs: Seq[SoQLType],
-    result: SoQLType
+      identity: String,
+      name: FunctionName,
+      params: Seq[SoQLType],
+      varargs: Seq[SoQLType],
+      result: SoQLType
   ) =
     new MonomorphicFunction(identity, name, params, varargs, result, FunctionType.Normal)(Function.Doc.empty).function
 

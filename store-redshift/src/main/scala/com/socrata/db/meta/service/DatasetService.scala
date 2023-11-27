@@ -6,9 +6,6 @@ import jakarta.transaction.Transactional
 
 @Transactional
 @ApplicationScoped
-class DatasetService
-(
-  val datasetRepository: DatasetRepository
-) {
-
-}
+class DatasetService(
+    val datasetRepository: DatasetRepository
+) {}

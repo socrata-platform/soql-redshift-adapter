@@ -35,44 +35,40 @@ class RedshiftSecondaryDependencies {
   @Produces
   def objectMapperCustomizer(): ObjectMapperCustomizer = new CommonObjectMapperCustomizer
 
-
   @Produces
-  def configSource():ConfigSource = JacksonYamlConfigSource("application.yaml")
+  def configSource(): ConfigSource = JacksonYamlConfigSource("application.yaml")
 
   @Produces
   def envSource(): EnvSource = PropertiesFileEnvSource(".env")
 
   @Produces
-  def configProvider
-  (
-    objectMapper:ObjectMapper,
-    @All
-    configSources: java.util.List[ConfigSource],
-    @All
-    envSources: java.util.List[EnvSource]
-  ): ConfigProvider={
+  def configProvider(
+      objectMapper: ObjectMapper,
+      @All
+      configSources: java.util.List[ConfigSource],
+      @All
+      envSources: java.util.List[EnvSource]
+  ): ConfigProvider = {
     JacksonProxyConfigBuilder(objectMapper)
-      .withSources(configSources.asScala.toArray:_*)
-      .withEnvs(envSources.asScala.toArray:_*)
+      .withSources(configSources.asScala.toArray: _*)
+      .withEnvs(envSources.asScala.toArray: _*)
   }
 
   @Produces
-  def redshiftSecondaryConfig
-  (
-    configProvider:ConfigProvider
+  def redshiftSecondaryConfig(
+      configProvider: ConfigProvider
   ): RedshiftSecondaryConfig = {
-    configProvider.proxy("redshift",classOf[RedshiftSecondaryConfig])
+    configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
   }
 
   @Produces
-  def dsInfo
-  (
-    @DataSource("store")
-    storeDataSource: AgroalDataSource
+  def dsInfo(
+      @DataSource("store")
+      storeDataSource: AgroalDataSource
   ): DSInfo = {
     new DSInfo {
       override val dataSource: JavaDataSource = storeDataSource
-      //TODO ??
+      // TODO ??
       override val copyIn = RedshiftCopyIn
     }
   }
@@ -88,10 +84,9 @@ class RedshiftSecondaryDependencies {
   }
 
   @Produces
-  def metricsReporter
-  (
-    metricsOptions: MetricsOptions,
-    metricRegistry: MetricRegistry
+  def metricsReporter(
+      metricsOptions: MetricsOptions,
+      metricRegistry: MetricRegistry
   ): MetricsReporter = {
     new MetricsReporter(metricsOptions, metricRegistry)
   }
@@ -103,28 +98,28 @@ class RedshiftSecondaryDependencies {
       new BoundedExponentialBackoffRetry(
         zkConfig.baseSleepTimeMs,
         zkConfig.maxSleepTimeMs,
-        zkConfig.maxRetries))
+        zkConfig.maxRetries
+      )
+    )
     curator.start()
     curator
   }
 
   @Produces
-  def coreBundle
-  (
-    dsInfo: DSInfo,
-    metricsReporter: MetricsReporter,
-    curatorFramework: CuratorFramework
+  def coreBundle(
+      dsInfo: DSInfo,
+      metricsReporter: MetricsReporter,
+      curatorFramework: CuratorFramework
   ): SecondaryBundle = (dsInfo, metricsReporter, curatorFramework)
 
   @Produces
   def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> (secondary, 1))
 
-  //TODO: Map keys will need to be dynamic
+  // TODO: Map keys will need to be dynamic
 
   object RedshiftCopyIn extends ((Connection, String, OutputStream => Unit) => Long) {
     def apply(conn: Connection, sql: String, output: OutputStream => Unit): Long =
       ???
   }
-
 
 }

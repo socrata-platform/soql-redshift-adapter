@@ -6,12 +6,8 @@ import jakarta.persistence.Entity
 import java.time.ZonedDateTime
 
 @Entity
-class DatasetInternalName
-(
-  val dataset: Dataset,
-  val name: String,
-  val disabled: ZonedDateTime
-
-) extends PanacheEntity {
-
-}
+class DatasetInternalName(
+    val dataset: Dataset,
+    val name: String,
+    val disabled: ZonedDateTime
+) extends PanacheEntity {}

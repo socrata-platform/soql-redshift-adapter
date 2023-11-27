@@ -9,7 +9,6 @@ import com.socrata.soql.sqlizer._
 
 import com.socrata.soql.environment.Provenance
 
-
 import com.socrata.common.sqlizer._
 
 trait TableCreationUtils {
@@ -37,7 +36,7 @@ trait TableCreationUtils {
     }
 
     override def gensymPrefix: String = "g"
-    protected override def idxPrefix: String ="idx"
+    protected override def idxPrefix: String = "idx"
     protected override def autoTablePrefix: String = "x"
     protected override def autoColumnPrefix: String = "i"
   }
@@ -52,13 +51,13 @@ trait TableCreationUtils {
     ProvenanceMapper,
     _ => false,
     (sqlizer, _, extraContext) =>
-    new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
-      extraContext.cryptProviderProvider,
-      sqlizer.namespace,
-      sqlizer.exprSqlFactory
-    ) {
-      override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
-    }
+      new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
+        extraContext.cryptProviderProvider,
+        sqlizer.namespace,
+        sqlizer.exprSqlFactory
+      ) {
+        override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
+      }
   )
 
   def extraContext = new SoQLExtraContext(
@@ -75,7 +74,8 @@ trait TableCreationUtils {
     override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
   }
 
-  implicit val hasType: HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType]  = new HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType] {
+  implicit val hasType: HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType] =
+    new HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType] {
       def typeOf(cv: DatabaseNamesMetaTypes#ColumnValue): DatabaseNamesMetaTypes#ColumnType = cv.typ
     }
 }

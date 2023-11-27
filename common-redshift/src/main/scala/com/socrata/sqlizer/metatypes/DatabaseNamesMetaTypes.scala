@@ -30,7 +30,9 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
       case DatabaseTableName(copyInfo) => DatabaseTableName(copyInfo.dataTableName)
     }
 
-  def rewriteFrom(dmtState: DatabaseMetaTypes, analysis: SoQLAnalysis[DatabaseMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
+  def rewriteFrom(
+      dmtState: DatabaseMetaTypes,
+      analysis: SoQLAnalysis[DatabaseMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
     analysis.rewriteDatabaseNames[DatabaseNamesMetaTypes](
       rewriteDTN,
       { case (_, DatabaseColumnName(columnInfo)) => DatabaseColumnName(columnInfo.physicalColumnBase) },

@@ -6,13 +6,22 @@ import org.joda.time.format.{DateTimeFormat}
 import com.socrata.common.sqlizer.metatypes._
 
 import com.socrata.store._
-import com.vividsolutions.jts.geom.{LineString, LinearRing, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, Coordinate, PrecisionModel}
+import com.vividsolutions.jts.geom.{
+  LineString,
+  LinearRing,
+  MultiLineString,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  Polygon,
+  Coordinate,
+  PrecisionModel
+}
 import com.rojoma.json.v3.ast._
 import com.rojoma.json.v3.interpolation._
 
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
-
 
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
@@ -25,7 +34,6 @@ import com.socrata.common.sqlizer._
 
 import ZipExt._
 
-
 @QuarkusTest
 class RepsLiteralsTest extends TableCreationUtils {
   @DataSource("store")
@@ -37,9 +45,11 @@ class RepsLiteralsTest extends TableCreationUtils {
   val rows = RowsImpl(repProvider)
 
   def testFails[T <: Throwable](literal: DatabaseNamesMetaTypes#ColumnValue)(expectedType: Class[T]) = {
-    assertThrows(expectedType, () =>
-      repProvider
-        .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None))
+    assertThrows(
+      expectedType,
+      () =>
+        repProvider
+          .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None))
     )
   }
 
@@ -49,20 +59,21 @@ class RepsLiteralsTest extends TableCreationUtils {
 
     rep.literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
       .zipExact(expected.toList)
-      .foreach { case (received, expected) => {
-        assertEquals(expected, received)
-        Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
-          schema.update(tableName, "testcol")(literal.typ).foreach(thing => thing.execute(conn))
-          rows.update(tableName, "testcol")(literal).foreach(thing => thing.execute(conn))
+      .foreach {
+        case (received, expected) => {
+          assertEquals(expected, received)
+          Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
+            schema.update(tableName, "testcol")(literal.typ).foreach(thing => thing.execute(conn))
+            rows.update(tableName, "testcol")(literal).foreach(thing => thing.execute(conn))
+          }
         }
-      }}
+      }
   }
 
   @Test
   def text(): Unit = {
     test("text")(SoQLText("here are some words"))("text 'here are some words'")
   }
-
 
   @Test
   def number(): Unit = {
@@ -133,7 +144,8 @@ class RepsLiteralsTest extends TableCreationUtils {
       """ST_GeomFromWKB(
   '00000000040000000300000000014059000000000000408f38000000000000000000014059000000000000408f38000000000000000000014059000000000000408f380000000000',
   4326
-)""")
+)"""
+    )
   }
 
   val lineString = new LineString(Array(coordinate, coordinate), precisionModel, Geo.defaultSRID)
@@ -144,7 +156,8 @@ class RepsLiteralsTest extends TableCreationUtils {
       """ST_GeomFromWKB(
   '0000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
-)""")
+)"""
+    )
   }
 
   @Test
@@ -153,10 +166,15 @@ class RepsLiteralsTest extends TableCreationUtils {
       """ST_GeomFromWKB(
   '0000000005000000020000000002000000024059000000000000408f3800000000004059000000000000408f3800000000000000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
-)""")
+)"""
+    )
   }
 
-  val poly = new Polygon(new LinearRing(Array(coordinate, coordinate, coordinate, coordinate), precisionModel, Geo.defaultSRID), precisionModel, Geo.defaultSRID)
+  val poly = new Polygon(
+    new LinearRing(Array(coordinate, coordinate, coordinate, coordinate), precisionModel, Geo.defaultSRID),
+    precisionModel,
+    Geo.defaultSRID
+  )
 
   @Test
   def polygon(): Unit = {
@@ -164,7 +182,8 @@ class RepsLiteralsTest extends TableCreationUtils {
       """ST_GeomFromWKB(
   '000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
-)""")
+)"""
+    )
   }
 
   @Test
@@ -173,6 +192,7 @@ class RepsLiteralsTest extends TableCreationUtils {
       """ST_GeomFromWKB(
   '000000000600000003000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
-)""")
+)"""
+    )
   }
 }

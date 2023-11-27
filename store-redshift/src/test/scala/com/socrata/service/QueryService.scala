@@ -9,10 +9,9 @@ import jakarta.enterprise.context.ApplicationScoped
 import scala.util.Using
 
 @ApplicationScoped
-class QueryService
-(
-  @DataSource("store")
-  dataSource: AgroalDataSource,
+class QueryService(
+    @DataSource("store")
+    dataSource: AgroalDataSource
 ) {
 
   def getTableRowCount(tableName: String): Option[Long] = {

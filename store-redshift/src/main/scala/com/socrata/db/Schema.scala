@@ -10,7 +10,8 @@ trait Schema[MT <: MetaTypes] {
   def update(table: MT#DatabaseTableNameImpl, column: MT#DatabaseColumnNameImpl)(ct: MT#ColumnType): Seq[UpdateCommand]
 }
 
-case class SchemaImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes]) extends Schema[metatypes.DatabaseNamesMetaTypes] {
+case class SchemaImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes])
+    extends Schema[metatypes.DatabaseNamesMetaTypes] {
   def update(table: String, column: String)(ct: SoQLType): Seq[UpdateCommand] = {
     val rep = repProvider(ct)
     val physicalTypes = rep.physicalDatabaseTypes
@@ -21,12 +22,13 @@ case class SchemaImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes
   }
 }
 
-class UpdateCommand private(val underlying: String) extends AnyVal {
+class UpdateCommand private (val underlying: String) extends AnyVal {
   def execute(conn: java.sql.Connection) =
     Using.resource(conn.createStatement()) { stmt =>
       stmt.executeUpdate(underlying)
     }
 }
 object UpdateCommand {
-  def apply(table: String, columnName: String, columnType: String) = new UpdateCommand(f"ALTER TABLE ${table} ADD ${columnName} ${columnType}")
+  def apply(table: String, columnName: String, columnType: String) =
+    new UpdateCommand(f"ALTER TABLE ${table} ADD ${columnName} ${columnType}")
 }

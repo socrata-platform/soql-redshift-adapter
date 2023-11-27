@@ -6,7 +6,8 @@ object ResultSet {
     extractThen(resultSet)(mappingFunction)(_.headOption)
   }
 
-  def extractThen[T, M](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T)(collectingFunction: BufferedIterator[T] => M): M = {
+  def extractThen[T, M](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T)(
+      collectingFunction: BufferedIterator[T] => M): M = {
     collectingFunction(extract(resultSet)(mappingFunction))
   }
 

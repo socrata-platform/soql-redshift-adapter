@@ -13,10 +13,11 @@ trait Rows[MT <: MetaTypes] {
 }
 
 case class RowsImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes])(
-  implicit val hasType: HasType[metatypes.DatabaseNamesMetaTypes#ColumnValue, metatypes.DatabaseNamesMetaTypes#ColumnType]) extends Rows[metatypes.DatabaseNamesMetaTypes] {
+    implicit
+    val hasType: HasType[metatypes.DatabaseNamesMetaTypes#ColumnValue, metatypes.DatabaseNamesMetaTypes#ColumnType])
+    extends Rows[metatypes.DatabaseNamesMetaTypes] {
 
-
-  def update(table: String, column: String)(cv: SoQLValue)= {
+  def update(table: String, column: String)(cv: SoQLValue) = {
     val rep = repProvider(cv.typ)
 
     val names = rep.physicalDatabaseColumns(DatabaseColumnName(column))
@@ -27,12 +28,13 @@ case class RowsImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes])
   }
 }
 
-class InsertCommand private(val underlying: String) extends AnyVal {
+class InsertCommand private (val underlying: String) extends AnyVal {
   def execute(conn: java.sql.Connection) =
     Using.resource(conn.createStatement()) { stmt =>
       stmt.executeUpdate(underlying)
     }
 }
 object InsertCommand {
-  def apply(table: String, columnName: String, value: String) = new InsertCommand(f"INSERT INTO $table ($columnName) values ($value)")
+  def apply(table: String, columnName: String, value: String) =
+    new InsertCommand(f"INSERT INTO $table ($columnName) values ($value)")
 }
