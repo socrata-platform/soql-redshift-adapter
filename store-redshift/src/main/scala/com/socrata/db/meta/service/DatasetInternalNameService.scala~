@@ -1,6 +1,6 @@
 package com.socrata.db.meta.service
 
-import db.meta.repository.DatasetInternalNameRepository
+import com.socrata.db.meta.repository.DatasetInternalNameRepository
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.transaction.Transactional
 

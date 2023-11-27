@@ -1,0 +1,13 @@
+ingredients:
+  - name:
+      short: T
+      long: Tomato
+    amount: 3
+  - name:
+      short: C
+      long: Cheese
+    amount: 32
+  - name:
+      short: B
+      long: Bread
+    amount: 1

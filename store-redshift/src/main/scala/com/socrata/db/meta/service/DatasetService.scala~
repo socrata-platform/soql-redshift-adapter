@@ -1,6 +1,6 @@
 package com.socrata.db.meta.service
 
-import db.meta.repository.DatasetRepository
+import com.socrata.db.meta.repository.DatasetRepository
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.transaction.Transactional
 
