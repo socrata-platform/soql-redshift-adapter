@@ -22,7 +22,6 @@ import com.socrata.soql.sqlizer._
 /*
  Ensure compressedSubColumns works in all cases
  Use the extractor in soqlreference
- add scalafmt
  */
 
 abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String})](
