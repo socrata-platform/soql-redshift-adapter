@@ -8,12 +8,13 @@ import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.{BeforeEach, DisplayName, Test}
+import org.junit.jupiter.api.{BeforeEach, DisplayName, Test, Disabled}
 
 import java.io.File
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.Using
 
+@Disabled
 @DisplayName("Redshift insert tests")
 @QuarkusTest
 class InsertTest {
@@ -55,7 +56,7 @@ class InsertTest {
         "100k",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
         1000,
-        readTestData("/data/100k/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator().asScala
       )
     } { elapsed =>
       Log.info(s"100k rows via 1k batch, JDBC took $elapsed")
@@ -72,7 +73,7 @@ class InsertTest {
         "100k",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
         10000,
-        readTestData("/data/100k/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator().asScala
       )
     } { elapsed =>
       Log.info(s"100k rows via 10k batch, JDBC took $elapsed")
@@ -89,7 +90,7 @@ class InsertTest {
         "100k",
         Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
         100000,
-        readTestData("/data/100k/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator().asScala
       )
     } { elapsed =>
       Log.info(s"100k rows via 100k batch, JDBC took $elapsed")

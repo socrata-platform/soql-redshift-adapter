@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.dataformat.yaml.{YAMLFactory, YAMLGenerator}
-import com.fasterxml.jackson.datatype.jsr310.{JSR310Module, JavaTimeModule}
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule}
 import com.socrata.converter.FiniteDurationDeserializer
 import io.quarkus.jackson.ObjectMapperCustomizer
-import jakarta.inject.Singleton
 
 import scala.concurrent.duration.FiniteDuration
 

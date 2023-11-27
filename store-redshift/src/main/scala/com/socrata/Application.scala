@@ -1,10 +1,10 @@
 package com.socrata
 
-import com.socrata.config.RedshiftSecondaryConfig
-import com.socrata.config.RedshiftSecondaryDependencies.SecondaryMap
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
-import com.socrata.datacoordinator.secondary.SecondaryWatcherApp
+import com.socrata.datacoordinator.secondary.{SecondaryWatcherApp}
 import com.socrata.thirdparty.metrics.MetricsReporter
+import config.RedshiftSecondaryConfig
+import config.RedshiftSecondaryDependencies.SecondaryMap
 import io.quarkus.runtime.QuarkusApplication
 import io.quarkus.runtime.annotations.QuarkusMain
 import org.apache.curator.framework.CuratorFramework
@@ -17,6 +17,7 @@ class Application
   secondaryMap: SecondaryMap
 ) extends QuarkusApplication {
   override def run(args: String*): Int = {
+    println(args)
     val (dsInfo: DSInfo, reporter: MetricsReporter, curator: CuratorFramework) = secondaryBundle
     SecondaryWatcherApp(dsInfo, reporter, curator)(secondaryWatcherAppConfig)(secondaryMap)
     0

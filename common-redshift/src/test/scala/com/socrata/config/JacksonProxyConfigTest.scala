@@ -4,7 +4,6 @@ import org.junit.jupiter.api.{DisplayName, Test}
 
 import java.io.File
 import java.util.Properties
-import scala.collection.JavaConverters._
 
 
 @DisplayName("Jackson Proxy Config Tests")
@@ -108,11 +107,21 @@ class JacksonProxyConfigTest {
     val ingredients:List[Ingredient] = recipe.ingredients()
     val tomato:Ingredient = ingredients.filter(_.name().long().equals("Tomato")).head
     val cheese:Ingredient = ingredients.filter(_.name().long().equals("Cheese")).head
-    val Bread:Ingredient = ingredients.filter(_.name().long().equals("Bread")).head
+    val bread:Ingredient = ingredients.filter(_.name().long().equals("Bread")).head
     assert(3.equals(tomato.amount()))
     val tomatoName:Name = tomato.name()
     assert("Tomato".equals(tomatoName.long()))
     assert("T".equals(tomatoName.short()))
+
+    assert(32.equals(cheese.amount()))
+    val cheeseName: Name = cheese.name()
+    assert("Cheese".equals(cheeseName.long()))
+    assert("C".equals(cheeseName.short()))
+
+    assert(1.equals(bread.amount()))
+    val breadName: Name = bread.name()
+    assert("Bread".equals(breadName.long()))
+    assert("B".equals(breadName.short()))
   }
 
   @DisplayName("Optional")

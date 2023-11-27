@@ -1,10 +1,7 @@
 package com.socrata.common.sqlizer
 
 import com.socrata.prettyprint.prelude._
-import com.socrata.soql.analyzer2._
-import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.sqlizer._
-import com.socrata.datacoordinator.common
 
 import com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes
 
@@ -14,15 +11,11 @@ object RedshiftSqlizer extends Sqlizer[DatabaseNamesMetaTypes](
   RedshiftNamespaces,
   new SoQLRewriteSearch[DatabaseNamesMetaTypes](searchBeforeQuery = true),
   DatabaseNamesMetaTypes.provenanceMapper,
-  _.name.isRollup,
-  (sqlizer, physicalTableFor, extraContext) => new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
+  _ => false, // remove this
+  (sqlizer, _, extraContext) => new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
     extraContext.cryptProviderProvider,
-    sqlizer.exprSqlFactory,
     sqlizer.namespace,
-    sqlizer.toProvenance,
-    sqlizer.isRollup,
-    extraContext.locationSubcolumns,
-    physicalTableFor
+    sqlizer.exprSqlFactory
   ) {
     override def mkStringLiteral(text: String): Doc = {
       // By default, converting a String to Doc replaces the newlines
