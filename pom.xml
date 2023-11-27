@@ -266,7 +266,6 @@
             <arg>-feature</arg>
             <arg>-explaintypes</arg>
             <arg>-Ywarn-unused</arg>
-            <arg>-Ywarn-unused</arg>
             <arg>-Xfatal-warnings</arg>
           </args>
         </configuration>

@@ -10,7 +10,6 @@ object ResultSet {
     collectingFunction(extract(resultSet)(mappingFunction))
   }
 
-
   def extract[T](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T): BufferedIterator[T] =
     toIterator(resultSet)(mappingFunction).buffered
 
@@ -21,9 +20,4 @@ object ResultSet {
       def next() = mappingFunction(resultSet)
     }
   }
-
-  def toList[T](resultSet: java.sql.ResultSet)(mappingFunction: java.sql.ResultSet => T): List[T] = {
-    toIterator(resultSet)(mappingFunction).toList
-  }
-
 }
