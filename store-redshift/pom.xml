@@ -12,7 +12,6 @@
     <artifactId>soql-redshift-adapter-store</artifactId>
 
     <properties>
-        <secondarylib.version>4.2.18</secondarylib.version>
         <guava.version>19.0</guava.version>
         <aws-java-sdk-redshift.version>1.12.565</aws-java-sdk-redshift.version>
     </properties>
@@ -21,18 +20,6 @@
             <artifactId>soql-redshift-adapter-common</artifactId>
             <groupId>com.socrata</groupId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.socrata</groupId>
-            <artifactId>secondarylib_2.12</artifactId>
-            <version>${secondarylib.version}</version>
-            <exclusions>
-                <exclusion>
-<!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
-                    <groupId>org.liquibase</groupId>
-                    <artifactId>liquibase-plugin</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

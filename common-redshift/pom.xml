@@ -16,7 +16,6 @@
         <openapi-generator.version>7.0.0</openapi-generator.version>
     </properties>
     <dependencies>
-
     </dependencies>
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>

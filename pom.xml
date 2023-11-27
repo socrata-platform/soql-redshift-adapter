@@ -28,9 +28,10 @@
     <scala.version>2.12.18</scala.version>
     <skipITs>true</skipITs>
     <skipTests>true</skipTests>
-    <soql.std.version>4.14.9</soql.std.version>
+    <soql.std.version>4.14.28</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
     <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
+    <secondarylib.version>4.2.18</secondarylib.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -44,6 +45,28 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-sqlizer_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-stdlib_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-utils_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.socrata</groupId>
+        <artifactId>soql-sqlizer_2.12</artifactId>
+        <version>${soql.std.version}</version>
+      </dependency>
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-reactive</artifactId>
@@ -78,7 +101,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-postgresql</artifactId>
+      <artifactId>quarkus-jdbc-postgresql</artifactId> <!--needed for the metadata DB-->
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -118,10 +141,17 @@
       <version>${jackson-module-scala.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.socrata</groupId>
-      <artifactId>soql-stdlib_2.12</artifactId>
-      <version>${soql.std.version}</version>
-    </dependency>
+            <groupId>com.socrata</groupId>
+            <artifactId>secondarylib_2.12</artifactId>
+            <version>${secondarylib.version}</version>
+            <exclusions>
+                <exclusion>
+<!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
+                    <groupId>org.liquibase</groupId>
+                    <artifactId>liquibase-plugin</artifactId>
+                </exclusion>
+            </exclusions>
+    </dependency>        
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc42</artifactId>
