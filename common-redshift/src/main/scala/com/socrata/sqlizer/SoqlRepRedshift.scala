@@ -3,7 +3,6 @@ package com.socrata.common.sqlizer
 import java.sql.ResultSet
 
 import com.rojoma.json.v3.ast._
-import com.rojoma.json.v3.io.CompactJsonWriter
 import com.rojoma.json.v3.util.JsonUtil
 import com.vividsolutions.jts.geom.{Geometry}
 
@@ -12,11 +11,6 @@ import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types._
 import com.socrata.soql.sqlizer._
-
-/*
- Ensure compressedSubColumns works in all cases
- Use the extractor in soqlreference
- */
 
 abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
   type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = String
@@ -300,38 +294,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
 
-    },
-    SoQLJson -> new SingleColumnRep(SoQLJson, d"super") { // this'll need to be super
-      def literal(e: LiteralValue) = {
-        val SoQLJson(j) = e.value
-
-        val stringRepr = j match {
-          case _: JNumber | JNull => Doc(CompactJsonWriter.toString(j))
-          case _ => mkStringLiteral(CompactJsonWriter.toString(j))
-        }
-
-        exprSqlFactory(stringRepr.funcall(d"JSON_PARSE"), e)
-      }
-      protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("").fromResultSet(rs, dbCol)
-      }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
-    },
-    SoQLDocument -> new SingleColumnRep(SoQLDocument, d"super") {
-      override def literal(e: LiteralValue) = ???
-      override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
-        Option(rs.getString(dbCol)) match {
-          case Some(s) =>
-            JsonUtil.parseJson[SoQLDocument](s) match {
-              case Right(doc) => doc
-              case Left(err) => throw new Exception("Unexpected document json from database: " + err.english)
-            }
-          case None =>
-            SoQLNull
-        }
-      }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLPoint].value

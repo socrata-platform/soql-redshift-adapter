@@ -11,7 +11,6 @@ import com.socrata.soql.functions.Function
 import com.socrata.soql.sqlizer._
 import SoQLFunctionSqlizerRedshift._
 
-// move over tests as well
 class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
   type ColumnType = SoQLType; type ColumnValue = SoQLValue
 })] extends FuncallSqlizer[MT] {
@@ -114,32 +113,9 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     wrap(f, exprSql, wrapper)
   }
 
-  def sqlizeNormalWindowedWithWrapper(name: String, wrapper: String) =
-    wfs { (f, args, filter, partitionBy, orderBy, ctx) =>
-      val exprSql = sqlizeNormalWindowedFuncall(name)(f, args, filter, partitionBy, orderBy, ctx)
-      wrap(f, exprSql, wrapper)
-    }
-
   def sqlizeMultiBuffered(name: String) = ofs { (f, args, ctx) =>
     val exprSql = sqlizeNormalOrdinaryFuncall(name)(f, args, ctx)
     wrap(f, wrap(f, exprSql, "st_buffer", d"0.0"), "st_multi")
-  }
-
-  def sqlizeGeomCast(sqlFunctionName: String) = ofs { (f, args, _) =>
-    // Just like a normal ordinary function call, but with an
-    // additional synthetic parameter for SRID
-    //
-    // TODO: these casts return NULL on
-    // valid-but-not-actually-this-type WKT.  Might be better to raise
-    // an error then?  Would have to create a temporary for the
-    // argument if it's nontrivial.  Won't happen if the cast is being
-    // introduced implicitly.
-    assert(f.function.minArity == 1 && !f.function.isVariadic)
-    assert(f.function.allParameters == args.map(_.typ))
-
-    val sql = (args.map(_.compressed.sql) :+ Geo.defaultSRIDLiteral).funcall(Doc(sqlFunctionName))
-
-    exprSqlFactory(sql.group, f)
   }
 
   def sqlizeCase = ofs { (f, args, _) =>
@@ -230,75 +206,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     }
   }
 
-  // Like "sqlNormalOrdinaryFunction" but it extracts the point
-  // subcolumn from any locations passed in.
-  def sqlizeLocationPointOrdinaryFunction(
-      sqlFunctionName: String,
-      prefixArgs: Seq[Doc] = Nil,
-      suffixArgs: Seq[Doc] = Nil) = {
-    val funcName = Doc(sqlFunctionName)
-    ofs { (f, args, ctx) =>
-      assert(args.length >= f.function.minArity)
-      assert(f.function.allParameters.startsWith(args.map(_.typ)))
-
-      val pointExtractedArgs = args.map { e =>
-        e.typ match {
-          case SoQLLocation => ctx.repFor(SoQLLocation).subcolInfo("point").extractor(e)
-          case _ => e.compressed.sql
-        }
-      }
-      val sql = (prefixArgs ++ pointExtractedArgs ++ suffixArgs).funcall(funcName)
-
-      exprSqlFactory(sql.group, f)
-    }
-  }
-
-  def sqlizeLocationHumanAddress = ofs { (f, args, _) =>
-    assert(args.length == 1)
-    assert(args(0).typ == SoQLLocation)
-    assert(f.typ == SoQLText)
-
-    val sqls = args(0) match {
-      case expanded: ExprSql.Expanded[MT] =>
-        expanded.sqls.drop(1)
-      case compressed: ExprSql.Compressed[MT] =>
-        (1 to 4).map { i => compressed.sql +#+ d"->>" +#+ Doc(i) }
-    }
-
-    exprSqlFactory(sqls.funcall(d"soql_human_address"), f)
-  }
-
-  def sqlizeLocation = ofs { (f, args, _) =>
-    assert(f.typ == SoQLLocation)
-    assert(args.length == 5)
-    assert(args(0).typ == SoQLPoint)
-    for (i <- 1 to 4) {
-      assert(args(i).typ == SoQLText)
-    }
-    // We're given the five subcolumns that make up a fake-location,
-    // so just pass them on through.
-    exprSqlFactory(args.map(_.compressed.sql), f)
-  }
-
-  def sqlizeSimpleCompoundColumn(typ: SoQLType) = ofs { (f, args, ctx) =>
-    assert(f.typ == typ)
-    assert(args.length == ctx.repFor(typ).expandedColumnCount)
-    assert(args.forall(_.typ == SoQLText))
-    // We're given all the subcolumns that make up a `typ`, so just
-    // pass them on through.
-    exprSqlFactory(args.map(_.compressed.sql), f)
-  }
-
-  def sqlizeGetUtcDate = ofs { (f, args, ctx) =>
-    assert(f.typ == SoQLFixedTimestamp)
-    assert(args.length == 0)
-
-    ctx.extraContext.nowUsed = true
-    ctx.repFor(f.typ).literal(
-      LiteralValue[MT](SoQLFixedTimestamp(ctx.extraContext.now))(AtomicPositionInfo.None)
-    ).withExpr(f)
-  }
-
   def sqlizeIsEmpty = ofs { (f, args, _) =>
     assert(f.typ == SoQLBoolean)
     assert(args.length == 1)
@@ -344,16 +251,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     // this operator only exists for symmetry with unary -, so just
     // get rid of it
     args(0)
-  }
-
-  def sqlizeExtractDateSubfield(field: Doc) = ofs { (f, args, _) =>
-    assert(args.length == 1)
-    assert(args(0).typ == SoQLFloatingTimestamp)
-    assert(f.typ == SoQLNumber)
-
-    // EXTRACT returns numeric; there's no need to cast to keep soqlnumber's representation correct
-    val sql = Seq(field +#+ d"from" +#+ args(0).compressed.sql.parenthesized).funcall(d"extract")
-    exprSqlFactory(sql, f)
   }
 
   // Given an ordinary function sqlizer, returns a new ordinary
@@ -552,8 +449,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       TextToMultiLine -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
       TextToPolygon -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
       TextToMultiPolygon -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
-      //    TODO implement TextToLocation
-      TextToLocation -> sqlizeNormalOrdinaryFuncall("soql_text_to_location", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
 
       // Geo
       Union2Pt -> sqlizeNormalOrdinaryWithWrapper("st_union", "st_multi"),
@@ -596,45 +491,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
         expr"case when st_npoints(${0}) > ${1} then 'too complex' when st_xmin(${0}) < -180 or st_xmax(${0}) > 180 or st_ymin(${0}) < -90 or st_ymax(${0}) > 90 then 'out of bounds' when not st_isvalid(${0}) then 'invalid geography data' when ${0} is null then 'empty' end",
         comment = "soql_curated_region_test"
       ),
-
-      // Fake location
-      LocationToLatitude -> numericize(sqlizeLocationPointOrdinaryFunction("st_y")),
-      LocationToLongitude -> numericize(sqlizeLocationPointOrdinaryFunction("st_x")),
-      LocationToAddress -> sqlizeLocationHumanAddress,
-      LocationToPoint -> sqlizeSubcol(SoQLLocation, "point"),
-      Location -> sqlizeLocation,
-      HumanAddress -> sqlizeNormalOrdinaryFuncall("soql_human_address"),
-      LocationWithinPolygon -> sqlizeLocationPointOrdinaryFunction("st_within"),
-      LocationWithinCircle -> sqlizeLocationPointOrdinaryFunction(
-        "soql_within_circle",
-        suffixArgs = Seq(Geo.defaultSRIDLiteral)
-      ),
-      LocationWithinBox -> sqlizeLocationPointOrdinaryFunction(
-        "soql_within_box",
-        suffixArgs = Seq(Geo.defaultSRIDLiteral)
-      ),
-      LocationDistanceInMeters -> sqlizeLocationPointOrdinaryFunction("soql_distance_in_meters"),
-
-      // URL
-      UrlToUrl -> sqlizeSubcol(SoQLUrl, "url"),
-      UrlToDescription -> sqlizeSubcol(SoQLUrl, "description"),
-      Url -> sqlizeSimpleCompoundColumn(SoQLUrl),
-
-      // Phone
-      PhoneToPhoneNumber -> sqlizeSubcol(SoQLPhone, "phone_number"),
-      PhoneToPhoneType -> sqlizeSubcol(SoQLPhone, "phone_type"),
-      Phone -> sqlizeSimpleCompoundColumn(SoQLPhone),
-
-      // Document
-      DocumentToFilename -> sqlizeJsonSubcol(SoQLDocument, "'filename'", SoQLText),
-      DocumentToFileId -> sqlizeJsonSubcol(SoQLDocument, "'file_id'", SoQLText),
-      DocumentToContentType -> sqlizeJsonSubcol(SoQLDocument, "'content_type'", SoQLText),
-
-      // json
-      JsonProp -> sqlizeBinaryOp("->"),
-      JsonIndex -> sqlizeBinaryOp("->"),
-//      TextToJson -> sqlizeCast("jsonb"),
-      JsonToText -> sqlizeCast("text"),
 
       // conditional
       Nullif -> sqlizeNormalOrdinaryFuncall("nullif"),
@@ -758,10 +614,8 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       LastValue -> sqlizeNormalWindowedFuncall("last_value"),
       Lead -> sqlizeLeadLag("lead"),
       LeadOffset -> sqlizeLeadLag("lead"),
-//      LeadOffsetDefault -> sqlizeLeadLag("lead"),
       Lag -> sqlizeLeadLag("lag"),
       LagOffset -> sqlizeLeadLag("lag"),
-//      LagOffsetDefault -> sqlizeLeadLag("lag"),
       Ntile -> sqlizeNtile("ntile"),
 
       // aggregate functions, used in a windowed way
@@ -773,17 +627,9 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       Sum -> sqlizeNormalWindowedFuncall("sum"),
       Avg -> sqlizeNormalWindowedFuncall("avg"),
       Median -> sqlizeNormalWindowedFuncall("median"),
-//      MedianDisc -> sqlizeNormalWindowedFuncall("median_disc_ulib_agg"),
-//      RegrIntercept -> sqlizeNormalWindowedFuncall("regr_intercept"),
-//      RegrR2 -> sqlizeNormalWindowedFuncall("regr_r2"),
-//      RegrSlope -> sqlizeNormalWindowedFuncall("regr_slope"),
       StddevPop -> sqlizeNormalWindowedFuncall("stddev_pop"),
       StddevSamp -> sqlizeNormalWindowedFuncall("stddev_samp")
 
-//      UnionAggPt -> sqlizeNormalWindowedWithWrapper("st_union", "st_multi"),
-//      UnionAggLine -> sqlizeNormalWindowedWithWrapper("st_union", "st_multi"),
-//      UnionAggPoly -> sqlizeNormalWindowedWithWrapper("st_union", "st_multi"),
-//      Extent -> sqlizeNormalWindowedWithWrapper("st_extent", "st_multi")
     )
   ).map { case (f, sqlizer) =>
     f.identity -> sqlizer

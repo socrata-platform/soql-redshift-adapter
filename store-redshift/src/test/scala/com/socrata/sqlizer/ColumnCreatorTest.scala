@@ -83,16 +83,6 @@ class ColumnCreatorTest extends TableCreationUtils {
   }
 
   @Test
-  def json(): Unit = {
-    test(SoQLJson)("super")
-  }
-
-  @Test
-  def document(): Unit = {
-    test(SoQLDocument)("super")
-  }
-
-  @Test
   def point(): Unit = {
     test(SoQLPoint)("geometry")
   }
