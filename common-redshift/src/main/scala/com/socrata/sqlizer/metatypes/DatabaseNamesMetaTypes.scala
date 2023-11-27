@@ -5,7 +5,6 @@ import com.socrata.soql.environment.Provenance
 import com.socrata.soql.functions.SoQLTypeInfo2
 import com.socrata.soql.types._
 
-
 final abstract class DatabaseNamesMetaTypes extends MetaTypes with SoQLMetaTypesExt {
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType

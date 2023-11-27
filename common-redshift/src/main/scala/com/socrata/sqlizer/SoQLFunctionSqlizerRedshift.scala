@@ -628,7 +628,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       Median -> sqlizeNormalWindowedFuncall("median"),
       StddevPop -> sqlizeNormalWindowedFuncall("stddev_pop"),
       StddevSamp -> sqlizeNormalWindowedFuncall("stddev_samp")
-
     )
   ).map { case (f, sqlizer) =>
     f.identity -> sqlizer

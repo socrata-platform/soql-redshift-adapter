@@ -196,7 +196,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
-
     SoQLText -> new SingleColumnRep(SoQLText, d"text") {
       override def literal(e: LiteralValue) = {
         val SoQLText(s) = e.value
