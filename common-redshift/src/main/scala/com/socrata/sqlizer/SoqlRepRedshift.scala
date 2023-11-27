@@ -51,8 +51,8 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       Option(rs.getBytes(dbCol)).flatMap { bytes =>
         t.WkbRep.unapply(
           bytes
-        ) // TODO: this just turns invalid values into null, we should probably be noisier than that
-      }.map(ctor).getOrElse(SoQLNull)
+        )
+      }.map(ctor).get
     }
 
     override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
@@ -60,19 +60,13 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
   val reps = Map[SoQLType, Rep](
     SoQLID -> new ProvenancedRep(SoQLID, d"bigint") {
-      override def provenanceOf(e: LiteralValue) = { // test this
+      override def provenanceOf(e: LiteralValue) = {
         val rawId = e.value.asInstanceOf[SoQLID]
         Set(rawId.provenance)
       }
 
       override def compressedSubColumns(table: String, column: ColumnLabel) = {
-        val sourceName = compressedDatabaseColumn(column)
-        val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
-        Seq(
-          // this'll need to be using our special compression thing
-          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
-          d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName
-        )
+        Seq.empty
       }
 
       override def literal(e: LiteralValue) = {
@@ -141,12 +135,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
 
       override def compressedSubColumns(table: String, column: ColumnLabel) = {
-        val sourceName = compressedDatabaseColumn(column)
-        val Seq(provenancedName, dataName) = expandedDatabaseColumns(column)
-        Seq(
-          d"(" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 0 AS" +#+ provenancedName,
-          d"((" ++ Doc(table) ++ d"." ++ sourceName ++ d") ->> 1) :: bigint AS" +#+ dataName
-        )
+        Seq.empty
       }
 
       override def literal(e: LiteralValue) = {
@@ -207,8 +196,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
       override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
-
-    // ATOMIC REPS
 
     SoQLText -> new SingleColumnRep(SoQLText, d"text") {
       override def literal(e: LiteralValue) = {

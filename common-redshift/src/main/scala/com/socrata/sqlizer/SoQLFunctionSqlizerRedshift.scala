@@ -57,7 +57,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     exprSqlFactory(e.compressed.sql.parenthesized +#+ d":: $numericType", f)
   }
 
-  // need to change this
   def numericize(sqlizer: AggregateFunctionSqlizer) = afs { (f, args, filter, ctx) =>
     val e = sqlizer(f, args, filter, ctx)
     assert(e.typ == SoQLNumber)
