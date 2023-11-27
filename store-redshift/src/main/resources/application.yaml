@@ -47,7 +47,7 @@ quarkus:
     #   store is our data store, our redshift
     store:
       db-kind: other
-      username: masteruser
+      username: ${REDSHIFT_USER}
       password: ${REDSHIFT_PASSWORD}
       jdbc:
         driver: com.amazon.redshift.jdbc.Driver
