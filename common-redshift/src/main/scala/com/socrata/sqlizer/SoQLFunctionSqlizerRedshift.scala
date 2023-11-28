@@ -649,9 +649,9 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       SoQLRewriteSearch.TsSearch -> sqlizeBinaryOp("@@"),
 
       // simple casts
-      TextToBool -> sqlizeCast("boolean"),
-      BoolToText -> sqlizeCast("text"),
-      TextToNumber -> sqlizeCast("numeric"),
+      TextToBool -> comment(expr"(case when lower(${0}) = 'true' then true else false end)", comment = "TextToBool"),
+//      BoolToText -> sqlizeCast("text"),
+      TextToNumber -> sqlizeCast("decimal(30, 7)"),
       NumberToText -> sqlizeCast("text"),
       TextToFixedTimestamp -> sqlizeCast("timestamp with time zone"),
       TextToFloatingTimestamp -> sqlizeCast("timestamp without time zone"),
