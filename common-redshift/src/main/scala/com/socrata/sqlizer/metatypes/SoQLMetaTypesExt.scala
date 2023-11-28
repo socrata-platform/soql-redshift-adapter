@@ -2,7 +2,6 @@ package com.socrata.common.sqlizer.metatypes
 
 import com.socrata.soql.analyzer2.MetaTypes
 import com.socrata.soql.sqlizer.MetaTypesExt
-import com.socrata.soql.types.{SoQLType, SoQLValue}
 
 import com.socrata.common.sqlizer._
 

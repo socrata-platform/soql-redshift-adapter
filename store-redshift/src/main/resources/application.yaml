@@ -14,11 +14,10 @@ redshift:
   message-producer-config:
     eurybates:
       producers: activemq
-      activemq:
-        connection-string: tcp://local.dev.socrata.net:61616
+      activemq-conn-str: tcp://local.dev.socrata.net:61616
     zookeeper:
       conn-spec: local.dev.socrata.net:2181
-      session-timeout: 4s
+      session-timeout: 4
   replay-wait: 2 minutes
   tmpdir: ${java.io.tmpdir}
   watcher-id: ${quarkus.uuid}
@@ -48,7 +47,7 @@ quarkus:
     #   store is our data store, our redshift
     store:
       db-kind: other
-      username: masteruser
+      username: ${REDSHIFT_USER}
       password: ${REDSHIFT_PASSWORD}
       jdbc:
         driver: com.amazon.redshift.jdbc.Driver

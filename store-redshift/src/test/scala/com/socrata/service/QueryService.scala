@@ -1,7 +1,7 @@
 package com.socrata.service
 
 import io.quarkus.logging.Log
-import com.socrata.util.ResultSet.{extract, extractHeadOption}
+import com.socrata.util.ResultSet.extractHeadOption
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import jakarta.enterprise.context.ApplicationScoped
@@ -9,10 +9,9 @@ import jakarta.enterprise.context.ApplicationScoped
 import scala.util.Using
 
 @ApplicationScoped
-class QueryService
-(
-  @DataSource("store")
-  dataSource: AgroalDataSource,
+class QueryService(
+    @DataSource("store")
+    dataSource: AgroalDataSource
 ) {
 
   def getTableRowCount(tableName: String): Option[Long] = {

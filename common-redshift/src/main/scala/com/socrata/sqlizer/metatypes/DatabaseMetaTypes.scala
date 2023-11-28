@@ -2,17 +2,15 @@ package com.socrata.common.sqlizer.metatypes
 
 import scala.collection.{mutable => scm}
 
-import com.socrata.prettyprint.prelude._
-
 import com.socrata.datacoordinator.truth.metadata.{CopyInfo, ColumnInfo}
-import com.socrata.datacoordinator.id.{DatasetInternalName, DatasetId, CopyId, UserColumnId}
+import com.socrata.datacoordinator.id.{DatasetId, CopyId}
 
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.{SoQLType, SoQLValue}
-import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.functions.SoQLTypeInfo2
 
+// delete this file
 final class DatabaseMetaTypes extends MetaTypes {
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
@@ -44,23 +42,5 @@ final class DatabaseMetaTypes extends MetaTypes {
           prov
       }
     }
-  }
-
-  def rewriteFrom[MT <: MetaTypes with ({ type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = UserColumnId })](
-    analysis: SoQLAnalysis[MT],
-    copyCache: CopyCache[MT],
-    fromProv: types.FromProvenance[MT]
-  )(implicit changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseMetaTypes])
-      : SoQLAnalysis[DatabaseMetaTypes] =
-  {
-    analysis.rewriteDatabaseNames[DatabaseMetaTypes](
-      { dtn => DatabaseTableName(copyCache(dtn).get._1) }, // TODO proper error
-      { case (dtn, DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(copyCache(dtn).get._2.get(userColumnId).get) // TODO proper errors
-      },
-      fromProv,
-      provenanceMapper,
-      typeInfo.updateProvenance
-    )
   }
 }

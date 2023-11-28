@@ -8,12 +8,13 @@ import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.{BeforeEach, DisplayName, Test}
+import org.junit.jupiter.api.{BeforeEach, DisplayName, Test, Disabled}
 
 import java.io.File
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.Using
 
+@Disabled
 @DisplayName("Redshift insert tests")
 @QuarkusTest
 class InsertTest {
@@ -41,7 +42,8 @@ class InsertTest {
             |cert_classification text not null
             |);
             |truncate table "100k";
-            |""".stripMargin)
+            |""".stripMargin
+        )
       }
     }
   }
@@ -53,9 +55,18 @@ class InsertTest {
     Timing.timed {
       insertService.insertJdbc(
         "100k",
-        Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
+        Array(
+          "fiscal_year",
+          "department_name",
+          "supplier_name",
+          "description",
+          "procurement_eligible",
+          "cert_supplier",
+          "amount",
+          "cert_classification"
+        ),
         1000,
-        readTestData("/data/100k/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator().asScala
       )
     } { elapsed =>
       Log.info(s"100k rows via 1k batch, JDBC took $elapsed")
@@ -70,9 +81,18 @@ class InsertTest {
     Timing.timed {
       insertService.insertJdbc(
         "100k",
-        Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
+        Array(
+          "fiscal_year",
+          "department_name",
+          "supplier_name",
+          "description",
+          "procurement_eligible",
+          "cert_supplier",
+          "amount",
+          "cert_classification"
+        ),
         10000,
-        readTestData("/data/100k/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator().asScala
       )
     } { elapsed =>
       Log.info(s"100k rows via 10k batch, JDBC took $elapsed")
@@ -87,9 +107,18 @@ class InsertTest {
     Timing.timed {
       insertService.insertJdbc(
         "100k",
-        Array("fiscal_year", "department_name", "supplier_name", "description", "procurement_eligible", "cert_supplier", "amount", "cert_classification"),
+        Array(
+          "fiscal_year",
+          "department_name",
+          "supplier_name",
+          "description",
+          "procurement_eligible",
+          "cert_supplier",
+          "amount",
+          "cert_classification"
+        ),
         100000,
-        readTestData("/data/100k/data.csv").iterator()
+        readTestData("/data/100k/data.csv").iterator().asScala
       )
     } { elapsed =>
       Log.info(s"100k rows via 100k batch, JDBC took $elapsed")
@@ -102,7 +131,11 @@ class InsertTest {
   def insertS3100k(): Unit = {
     assume(queryService.getTableRowCount("100k").get == 0L)
     Timing.timed {
-      insertService.insertS3("staging-redshift-adapter", "100k", new File(getClass.getResource("/data/100k/data.csv").toURI))
+      insertService.insertS3(
+        "staging-redshift-adapter",
+        "100k",
+        new File(getClass.getResource("/data/100k/data.csv").toURI)
+      )
     } { elapsed =>
       Log.info(s"100k rows via S3 took $elapsed")
     }

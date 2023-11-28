@@ -8,5 +8,9 @@ import java.{lang, util}
 
 @ApplicationScoped
 class RollupsController extends RollupsApi {
-  override def rollupsGet(ds: String, rn: String, copy: String, includeUnmaterialized: lang.Boolean): util.List[RollupInfo] = ???
+  override def rollupsGet(
+      ds: String,
+      rn: String,
+      copy: String,
+      includeUnmaterialized: lang.Boolean): util.List[RollupInfo] = ???
 }
