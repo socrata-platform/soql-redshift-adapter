@@ -60,6 +60,7 @@
                                 <asyncNative>true</asyncNative>
                                 <library>quarkus</library>
                                 <serializationLibrary>jackson</serializationLibrary>
+                                <useOptional>true</useOptional>
                             </configOptions>
                             <apiPackage>com.socrata.api</apiPackage>
                             <modelPackage>com.socrata.model</modelPackage>

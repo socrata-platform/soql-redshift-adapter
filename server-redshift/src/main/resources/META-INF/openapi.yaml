@@ -184,12 +184,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-  /query/{dataset}:
+  /query:
     get:
       summary: "Execute a SOQL query using GET"
       parameters:
         - name: "dataset"
-          in: "path"
+          in: "query"
           required: true
           description: "The identifier of the dataset to query."
           schema:
@@ -263,44 +263,9 @@ paths:
       summary: "Execute a SOQL query using POST"
       parameters:
         - name: "dataset"
-          in: "path"
+          in: "query"
           required: true
           description: "The identifier of the dataset to query."
-          schema:
-            type: "string"
-        - name: "rowCount"
-          in: "query"
-          description: "The maximum number of rows to return."
-          schema:
-            type: "integer"
-        - name: "copy"
-          in: "query"
-          description: "Identifier to reference an existing copy."
-          schema:
-            type: "string"
-        - name: "rollupName"
-          in: "query"
-          description: "The name of the rollup to use."
-          schema:
-            type: "string"
-        - name: "obfuscatedId"
-          in: "query"
-          description: "Boolean flag indicating whether to obfuscate identifiers."
-          schema:
-            type: "boolean"
-        - name: "queryTimeoutSeconds"
-          in: "query"
-          description: "The maximum time to wait for the query to execute, in seconds."
-          schema:
-            type: "integer"
-        - name: "X-Socrata-Debug"
-          in: "query"
-          description: "Debug parameter for Socrata."
-          schema:
-            type: "string"
-        - name: "X-Socrata-Analyze"
-          in: "header"
-          description: "Analyze parameter for Socrata."
           schema:
             type: "string"
         - name: "context"
@@ -308,21 +273,40 @@ paths:
           description: "Contextual information for the query."
           schema:
             type: "string"
+        - name: "schemaHash"
+          in: "query"
+          description: "the schema hash"
+          schema:
+            type: "string"
+        - name: "queryTimeoutSeconds"
+          in: "query"
+          description: "query timeout seconds"
+          schema:
+            type: "integer"
+        - name: "copy"
+          in: "query"
+          description: "The copy"
+          schema:
+            type: "string"
+        - name: "X-Socrata-Debug"
+          in: "query"
+          description: "Debug parameter for Socrata."
+          schema:
+            type: "string"
+            nullable: true
       requestBody:
         required: true
         content:
-          application/json:
+          application/octet-stream:
             schema:
-              $ref: "#/components/schemas/QueryRequest"
+              type: "string"
       responses:
         '200':
           description: "Query executed successfully"
           content:
             application/json:
               schema:
-                type: "array"
-                items:
-                  $ref: "#/components/schemas/QueryResponse"
+                $ref: "#/components/schemas/ResponseSpec"
         '400':
           description: "Bad Request"
           content:
@@ -511,3 +495,39 @@ components:
         error:
           type: "string"
           description: "Error message describing the reason for the failure."
+    ColumnSpec:
+      type: "object"
+      properties:
+        c:
+          type: "string"
+          description: "The name of the column."
+        t:
+          type: "string"
+          description: "The type of the column."
+    SchemaSpec:
+      type: "array"
+      items:
+        $ref: "#/components/schemas/ColumnSpec"
+    MetaDataSpec:
+      type: "object"
+      properties:
+        data_version:
+          type: "integer"
+          description: "The data version."
+        last_modified:
+          type: "string"
+          description: "The last modified time."
+        locale:
+          type: "string"
+          description: "The locale."
+        schema:
+          $ref: "#/components/schemas/SchemaSpec"
+    DataSpec:
+      type: array
+      items: {}
+    ResponseSpec:
+      type: "array"
+      items:
+        oneOf:
+          - $ref: "#/components/schemas/MetaDataSpec"
+          - $ref: "#/components/schemas/DataSpec"
