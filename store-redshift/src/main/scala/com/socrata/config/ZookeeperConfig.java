@@ -6,11 +6,11 @@ import io.smallrye.config.ConfigMapping;
 @StaticInitSafe
 @ConfigMapping(prefix = "zookeeper")
 public interface ZookeeperConfig {
-    String ensemble();
+	String ensemble();
 
-    Integer baseSleepTimeMs();
+	Integer baseSleepTimeMs();
 
-    Integer maxSleepTimeMs();
+	Integer maxSleepTimeMs();
 
-    Integer maxRetries();
+	Integer maxRetries();
 }
