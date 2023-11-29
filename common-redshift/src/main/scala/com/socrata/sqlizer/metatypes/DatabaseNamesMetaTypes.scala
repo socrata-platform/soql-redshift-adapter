@@ -3,11 +3,12 @@ package com.socrata.common.sqlizer.metatypes
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.functions.SoQLTypeInfo2
+import com.socrata.soql.types._
 
 final abstract class DatabaseNamesMetaTypes extends MetaTypes with SoQLMetaTypesExt {
-  override type ResourceNameScope = DatabaseMetaTypes#ResourceNameScope
-  override type ColumnType = DatabaseMetaTypes#ColumnType
-  override type ColumnValue = DatabaseMetaTypes#ColumnValue
+  override type ResourceNameScope = Int
+  override type ColumnType = SoQLType
+  override type ColumnValue = SoQLValue
   override type DatabaseTableNameImpl = String
   override type DatabaseColumnNameImpl = String
 }
@@ -24,20 +25,4 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
         case DatabaseTableName(name) => Provenance(name)
       }
   }
-
-  def rewriteDTN(dtn: types.DatabaseTableName[DatabaseMetaTypes]): types.DatabaseTableName[DatabaseNamesMetaTypes] =
-    dtn match {
-      case DatabaseTableName(copyInfo) => DatabaseTableName(copyInfo.dataTableName)
-    }
-
-  def rewriteFrom(
-      dmtState: DatabaseMetaTypes,
-      analysis: SoQLAnalysis[DatabaseMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
-    analysis.rewriteDatabaseNames[DatabaseNamesMetaTypes](
-      rewriteDTN,
-      { case (_, DatabaseColumnName(columnInfo)) => DatabaseColumnName(columnInfo.physicalColumnBase) },
-      dmtState.provenanceMapper,
-      provenanceMapper,
-      typeInfo.updateProvenance
-    )
 }

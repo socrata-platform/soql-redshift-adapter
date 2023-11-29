@@ -79,10 +79,3 @@ trait TableCreationUtils {
       def typeOf(cv: DatabaseNamesMetaTypes#ColumnValue): DatabaseNamesMetaTypes#ColumnType = cv.typ
     }
 }
-
-/*
-do compound types
-do ID and version
-
-test various soql commands that may fail due to super stuff
- */

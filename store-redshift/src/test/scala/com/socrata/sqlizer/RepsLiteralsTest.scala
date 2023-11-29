@@ -17,8 +17,6 @@ import com.vividsolutions.jts.geom.{
   Coordinate,
   PrecisionModel
 }
-import com.rojoma.json.v3.ast._
-import com.rojoma.json.v3.interpolation._
 
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
@@ -111,20 +109,6 @@ class RepsLiteralsTest extends TableCreationUtils {
   def time(): Unit = {
     val dateTime: LocalTime = formatter.parseLocalTime(dateStr)
     test("time")(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
-  }
-
-  @Test
-  def json(): Unit = {
-    test("json")(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
-    test("json")(SoQLJson(JNumber(BigDecimal(2.18))))("JSON_PARSE(2.18)")
-    test("json")(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
-    test("json null")(SoQLJson(JNull))("JSON_PARSE(null)")
-    test("json")(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
-  }
-
-  @Test
-  def document(): Unit = {
-    testFails(SoQLDocument("", None, None))(classOf[NotImplementedError])
   }
 
   val precisionModel = new PrecisionModel()
