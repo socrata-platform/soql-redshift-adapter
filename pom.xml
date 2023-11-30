@@ -274,12 +274,25 @@
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>2.40.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
         <configuration>
+          <java>
+            <removeUnusedImports />
+            <formatAnnotations />
+            <eclipse />
+            <importOrder />
+          </java>
           <scala>
             <scalafmt>
-              <version>3.4.3</version>              <!-- optional -->
-              <file>scalafmt.conf</file> <!-- optional -->
-              <scalaMajorVersion>2.12</scalaMajorVersion> <!-- optional -->
+              <version>3.4.3</version>
+              <file>scalafmt.conf</file>
             </scalafmt>
           </scala>
         </configuration>

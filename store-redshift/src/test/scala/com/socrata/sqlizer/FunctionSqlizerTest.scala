@@ -1161,62 +1161,96 @@ class FunctionSqlizerTest {
     )
   }
 
-    //  tests for geo-casts
-    @Test
-    def `geo cast text to point works`: Unit = {
-      assertEquals(analyzeStatement("SELECT ('POINT' || '(0 9)') :: point"), ("""SELECT st_asbinary(st_geomfromtext((text 'POINT') || (text '(0 9)'), 4326)) AS i1 FROM table1 AS x1"""))
-    }
+  //  tests for geo-casts
+  @Test
+  def `geo cast text to point works`: Unit = {
+    assertEquals(
+      analyzeStatement("SELECT ('POINT' || '(0 9)') :: point"),
+      ("""SELECT st_asbinary(st_geomfromtext((text 'POINT') || (text '(0 9)'), 4326)) AS i1 FROM table1 AS x1""")
+    )
+  }
 
-    @Test
-    def `geo cast text to multipoint works`: Unit = {
-      assertEquals(analyzeStatement("SELECT ('MULTIPOINT' || '((0 0), (1 1))') :: multipoint"), ("""SELECT st_asbinary(st_geomfromtext((text 'MULTIPOINT') || (text '((0 0), (1 1))'), 4326)) AS i1 FROM table1 AS x1"""))
-    }
+  @Test
+  def `geo cast text to multipoint works`: Unit = {
+    assertEquals(
+      analyzeStatement("SELECT ('MULTIPOINT' || '((0 0), (1 1))') :: multipoint"),
+      ("""SELECT st_asbinary(st_geomfromtext((text 'MULTIPOINT') || (text '((0 0), (1 1))'), 4326)) AS i1 FROM table1 AS x1""")
+    )
+  }
 
-    @Test
-    def `geo cast text to line works`: Unit = {
-      assertEquals(analyzeStatement("SELECT ('LINESTRING' || '(0 0, 0 1, 1 2)') :: line"), ("""SELECT st_asbinary(st_geomfromtext((text 'LINESTRING') || (text '(0 0, 0 1, 1 2)'), 4326)) AS i1 FROM table1 AS x1"""))
-    }
+  @Test
+  def `geo cast text to line works`: Unit = {
+    assertEquals(
+      analyzeStatement("SELECT ('LINESTRING' || '(0 0, 0 1, 1 2)') :: line"),
+      ("""SELECT st_asbinary(st_geomfromtext((text 'LINESTRING') || (text '(0 0, 0 1, 1 2)'), 4326)) AS i1 FROM table1 AS x1""")
+    )
+  }
 
-    @Test
-    def `geo cast text to multiline works`: Unit = {
-      assertEquals(analyzeStatement("SELECT ('MULTILINESTRING' || '((0 0, 1 1), (2 2, 3 3))') :: multiline"), ("""SELECT st_asbinary(st_geomfromtext((text 'MULTILINESTRING') || (text '((0 0, 1 1), (2 2, 3 3))'), 4326)) AS i1 FROM table1 AS x1"""))
-    }
+  @Test
+  def `geo cast text to multiline works`: Unit = {
+    assertEquals(
+      analyzeStatement("SELECT ('MULTILINESTRING' || '((0 0, 1 1), (2 2, 3 3))') :: multiline"),
+      ("""SELECT st_asbinary(st_geomfromtext((text 'MULTILINESTRING') || (text '((0 0, 1 1), (2 2, 3 3))'), 4326)) AS i1 FROM table1 AS x1""")
+    )
+  }
 
-    @Test
-    def `geo cast text to polygon works`: Unit = {
-      assertEquals(analyzeStatement("SELECT ('POLYGON' || '((0 0, 1 0, 1 1, 0 1, 0 0))') :: polygon"), ("""SELECT st_asbinary(st_geomfromtext((text 'POLYGON') || (text '((0 0, 1 0, 1 1, 0 1, 0 0))'), 4326)) AS i1 FROM table1 AS x1"""))
-    }
+  @Test
+  def `geo cast text to polygon works`: Unit = {
+    assertEquals(
+      analyzeStatement("SELECT ('POLYGON' || '((0 0, 1 0, 1 1, 0 1, 0 0))') :: polygon"),
+      ("""SELECT st_asbinary(st_geomfromtext((text 'POLYGON') || (text '((0 0, 1 0, 1 1, 0 1, 0 0))'), 4326)) AS i1 FROM table1 AS x1""")
+    )
+  }
 
-    @Test
-    def `geo cast text to multipolygon works`: Unit = {
-      assertEquals(analyzeStatement("SELECT ('MULTIPOLYGON' || '(((1 1, 1 3, 3 3, 3 1, 1 1)), ((4 3, 6 3, 6 1, 4 1, 4 3)))') :: multipolygon"), ("""SELECT st_asbinary(st_geomfromtext((text 'MULTIPOLYGON') || (text '(((1 1, 1 3, 3 3, 3 1, 1 1)), ((4 3, 6 3, 6 1, 4 1, 4 3)))'), 4326)) AS i1 FROM table1 AS x1"""))
-    }
-
+  @Test
+  def `geo cast text to multipolygon works`: Unit = {
+    assertEquals(
+      analyzeStatement(
+        "SELECT ('MULTIPOLYGON' || '(((1 1, 1 3, 3 3, 3 1, 1 1)), ((4 3, 6 3, 6 1, 4 1, 4 3)))') :: multipolygon"
+      ),
+      ("""SELECT st_asbinary(st_geomfromtext((text 'MULTIPOLYGON') || (text '(((1 1, 1 3, 3 3, 3 1, 1 1)), ((4 3, 6 3, 6 1, 4 1, 4 3)))'), 4326)) AS i1 FROM table1 AS x1""")
+    )
+  }
 
   //  tests for simple casts
 
   @Test
   def `text to boolean cast works`(): Unit = {
-    assertEquals(analyzeStatement("SELECT ('TR' || 'UE') :: boolean"), """SELECT (/* TextToBool */ (case when lower((text 'TR') || (text 'UE')) = 'true' then true else false end)) AS i1 FROM table1 AS x1""")
+    assertEquals(
+      analyzeStatement("SELECT ('TR' || 'UE') :: boolean"),
+      """SELECT (/* TextToBool */ (case when lower((text 'TR') || (text 'UE')) = 'true' then true else false end)) AS i1 FROM table1 AS x1"""
+    )
   }
 
   @Test
   def `text to numeric cast works`(): Unit = {
-    assertEquals(analyzeStatement("SELECT ('5' || '4') :: number"), """SELECT ((text '5') || (text '4')) :: decimal(30, 7) AS i1 FROM table1 AS x1""")
+    assertEquals(
+      analyzeStatement("SELECT ('5' || '4') :: number"),
+      """SELECT ((text '5') || (text '4')) :: decimal(30, 7) AS i1 FROM table1 AS x1"""
+    )
   }
 
   @Test
   def `number to text cast works`(): Unit = {
-    assertEquals(analyzeStatement("SELECT (5 + 4) :: text"), """SELECT ((5 :: decimal(30, 7)) + (4 :: decimal(30, 7))) :: text AS i1 FROM table1 AS x1""")
+    assertEquals(
+      analyzeStatement("SELECT (5 + 4) :: text"),
+      """SELECT ((5 :: decimal(30, 7)) + (4 :: decimal(30, 7))) :: text AS i1 FROM table1 AS x1"""
+    )
   }
 
   @Test
   def `text to fixed timestamp works`(): Unit = {
-    assertEquals(analyzeStatement("Select ('2022-12-31T' || '23:59:59Z') :: fixed_timestamp"), """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp with time zone AS i1 FROM table1 AS x1""")
+    assertEquals(
+      analyzeStatement("Select ('2022-12-31T' || '23:59:59Z') :: fixed_timestamp"),
+      """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp with time zone AS i1 FROM table1 AS x1"""
+    )
   }
 
   @Test
   def `text to floating timestamp works`(): Unit = {
-    assertEquals(analyzeStatement("SELECT ('2022-12-31T' || '23:59:59Z') :: floating_timestamp"), """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp without time zone AS i1 FROM table1 AS x1""")
+    assertEquals(
+      analyzeStatement("SELECT ('2022-12-31T' || '23:59:59Z') :: floating_timestamp"),
+      """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp without time zone AS i1 FROM table1 AS x1"""
+    )
   }
 }
