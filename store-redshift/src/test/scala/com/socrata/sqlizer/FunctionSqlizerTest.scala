@@ -1,5 +1,7 @@
 package com.socrata.store.sqlizer
 
+import scala.util.parsing.input._
+
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
@@ -88,9 +90,12 @@ class FunctionSqlizerTest {
   val analyzer =
     new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, FunctionSqlizerTest.ProvenanceMapper)
 
-  def analyzeStatement(stmt: String) = analyze(stmt).sql.layoutSingleLine.toString
+  def analyzeStatement(stmt: String) = analyzeStatementEither(stmt).right.get
+  def analyzeStatementEither(stmt: String): Either[RedshiftSqlizerError[Int], String] =
+    analyze(stmt).map(_.sql.layoutSingleLine.toString)
 
-  def analyze(stmt: String): com.socrata.soql.sqlizer.Sqlizer.Result[DatabaseNamesMetaTypes] = {
+  def analyze(stmt: String)
+      : Either[RedshiftSqlizerError[Int], Sqlizer.Result[com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes]] = {
     val tf = MockTableFinder[DatabaseNamesMetaTypes](
       (0, "table1") -> D(
         "text" -> SoQLText,
@@ -112,7 +117,7 @@ class FunctionSqlizerTest {
         case Left(err) => fail("Bad query: " + err)
       }
 
-    sqlizer.apply(analysis, extraContext).getOrElse { fail("analysis failed") }
+    sqlizer.apply(analysis, extraContext)
   }
 
   def test(generated: String, expected: String) = {
@@ -1272,9 +1277,13 @@ class FunctionSqlizerTest {
 
   @Test
   def `test get_context non-literal`(): Unit = {
-    assertEquals(
-      analyzeStatement("SELECT get_context(text)"),
-      "..."
-    )
+    val position = new Position { val line = 1; val column = 8; lazy val lineContents = ??? }
+
+    analyzeStatementEither("SELECT get_context(text)") match {
+      case Left(RedshiftSqlizerError.NonLiteralContextParameter(None, p))
+          if ((p.line == position.line) && (p.column == position.column)) =>
+      case Left(err) => fail(err.toString())
+      case _ => fail()
+    }
   }
 }
