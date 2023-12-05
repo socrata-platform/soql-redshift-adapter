@@ -9,5 +9,5 @@ trait SoQLMetaTypesExt extends MetaTypesExt { this: MetaTypes =>
   type ExtraContext = SoQLExtraContext
   type ExtraContextResult = SoQLExtraContext.Result
   type CustomSqlizeAnnotation = Nothing
-  type SqlizerError = Nothing
+  type SqlizerError = RedshiftSqlizerError[ResourceNameScope]
 }
