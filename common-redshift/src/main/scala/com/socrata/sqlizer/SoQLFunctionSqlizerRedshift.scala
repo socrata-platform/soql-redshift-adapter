@@ -197,11 +197,12 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       case NullLiteral(_) =>
         nullLiteral
       case _ =>
-        ctx.extraContext.nonliteralSystemContextLookupFound = true
-        val hashedArg = Seq(args(0).compressed.sql).funcall(d"md5").group
-        val prefixedArg = d"'socrata_system.a' ||" +#+ hashedArg
-        val lookup = Seq(prefixedArg.group, d"true").funcall(d"current_setting")
-        exprSqlFactory(lookup, f)
+        ???
+//        ctx.extraContext.nonliteralSystemContextLookupFound = true
+//        val hashedArg = Seq(args(0).compressed.sql).funcall(d"md5").group
+//        val prefixedArg = d"'socrata_system.a' ||" +#+ hashedArg
+//        val lookup = Seq(prefixedArg.group, d"true").funcall(d"current_setting")
+//        exprSqlFactory(lookup, f)
     }
   }
 
