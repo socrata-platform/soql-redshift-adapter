@@ -197,11 +197,10 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       case NullLiteral(_) =>
         nullLiteral
       case _ =>
-        ctx.extraContext.nonliteralSystemContextLookupFound = true
-        val hashedArg = Seq(args(0).compressed.sql).funcall(d"md5").group
-        val prefixedArg = d"'socrata_system.a' ||" +#+ hashedArg
-        val lookup = Seq(prefixedArg.group, d"true").funcall(d"current_setting")
-        exprSqlFactory(lookup, f)
+        ctx.abortSqlization(RedshiftSqlizerError.NonLiteralContextParameter(
+          f.position.logicalSource,
+          f.position.logicalPosition
+        ))
     }
   }
 
@@ -499,9 +498,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
       // magical
       GetContext -> sqlizeGetContext,
-      SoQLRewriteSearch.ToTsVector -> sqlizeNormalOrdinaryFuncall("to_tsvector", prefixArgs = Seq(d"'english'")),
-      SoQLRewriteSearch.PlainToTsQuery -> sqlizeNormalOrdinaryFuncall("plainto_tsquery", prefixArgs = Seq(d"'english'")),
-      SoQLRewriteSearch.TsSearch -> sqlizeBinaryOp("@@"),
 
       // simple casts
       TextToBool -> comment(expr"(case when lower(${0}) = 'true' then true else false end)", comment = "TextToBool"),
@@ -667,6 +663,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     assert(e.function.needsWindow || e.function.isAggregate)
     windowedFunctionMap(e.function.function.identity)(e, args, filter, partitionBy, orderBy, ctx)
   }
+
 }
 
 object SoQLFunctionSqlizerRedshift {
