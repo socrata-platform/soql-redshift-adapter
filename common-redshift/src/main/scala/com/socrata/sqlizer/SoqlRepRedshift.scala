@@ -65,7 +65,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         Set(rawId.provenance)
       }
 
-      override def compressedSubColumns(table: String, column: ColumnLabel) = Seq.empty // TODO: This shouldn't be empty
+      override def compressedSubColumns(table: String, column: ColumnLabel) = Seq.empty //TODO: This shouldn't be empty
 
       override def literal(e: LiteralValue) = {
         val rawId = e.value.asInstanceOf[SoQLID]
@@ -132,7 +132,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         Set(rawId.provenance)
       }
 
-      override def compressedSubColumns(table: String, column: ColumnLabel) = Seq.empty // TODO: This shouldn't be empty
+      override def compressedSubColumns(table: String, column: ColumnLabel) = Seq.empty //TODO: This shouldn't be empty
 
       override def literal(e: LiteralValue) = {
         val rawId = e.value.asInstanceOf[SoQLVersion]
