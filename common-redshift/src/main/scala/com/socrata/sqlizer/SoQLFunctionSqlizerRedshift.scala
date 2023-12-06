@@ -498,9 +498,6 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
       // magical
       GetContext -> sqlizeGetContext,
-      SoQLRewriteSearch.ToTsVector -> sqlizeNormalOrdinaryFuncall("to_tsvector", prefixArgs = Seq(d"'english'")),
-      SoQLRewriteSearch.PlainToTsQuery -> sqlizeNormalOrdinaryFuncall("plainto_tsquery", prefixArgs = Seq(d"'english'")),
-      SoQLRewriteSearch.TsSearch -> sqlizeBinaryOp("@@"),
 
       // simple casts
       TextToBool -> comment(expr"(case when lower(${0}) = 'true' then true else false end)", comment = "TextToBool"),
