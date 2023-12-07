@@ -1,14 +1,14 @@
 package com.socrata
 
-import io.quarkus.logging.Log
 import com.socrata.service.{InsertService, QueryService}
+import io.quarkus.logging.Log
 import com.socrata.util.TestData.readTestData
 import com.socrata.util.Timing
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.{BeforeEach, DisplayName, Test, Disabled}
+import org.junit.jupiter.api.{BeforeEach, Disabled, DisplayName, Test}
 
 import java.io.File
 import scala.collection.JavaConverters._

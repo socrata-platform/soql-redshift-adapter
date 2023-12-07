@@ -8,6 +8,7 @@ import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.thirdparty.metrics.{Metrics, MetricsOptions, MetricsReporter}
 import com.socrata.config.RedshiftSecondaryDependencies.{SecondaryBundle, SecondaryMap}
+import com.socrata.service.RedshiftSecondary
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.jackson.ObjectMapperCustomizer
@@ -15,10 +16,9 @@ import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.BoundedExponentialBackoffRetry
-import com.socrata.service.RedshiftSecondary
 import io.quarkus.arc.All
 
-import java.io.{OutputStream}
+import java.io.OutputStream
 import scala.collection.JavaConverters._
 import java.sql.Connection
 import javax.sql.{DataSource => JavaDataSource}

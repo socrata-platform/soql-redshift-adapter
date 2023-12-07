@@ -6,4 +6,4 @@ quarkus:
 mp:
   openapi:
     scan:
-      disable: true
+      disable: false
