@@ -1,6 +1,6 @@
 package com.socrata.analyzer2
 
-import com.socrata.common.sqlizer.CryptProviderProvider
+import com.socrata.util.CryptProviderProvider
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.obfuscation.CryptProvider
