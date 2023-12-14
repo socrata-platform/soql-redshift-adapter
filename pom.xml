@@ -61,11 +61,6 @@
       <artifactId>soql-utils_2.12</artifactId>
       <version>${soql.std.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.socrata</groupId>
-      <artifactId>soql-sqlizer_2.12</artifactId>
-      <version>${soql.std.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -174,13 +169,8 @@
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-redshift</artifactId>
-      <version>${aws-java-sdk-redshift.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>${aws-java-sdk-redshift.version}</version>
+      <version>${aws.sdk.version}</version>
     </dependency>
   </dependencies>
   <build>
