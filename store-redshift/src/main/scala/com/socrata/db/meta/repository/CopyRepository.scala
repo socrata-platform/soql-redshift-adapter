@@ -8,12 +8,12 @@ import java.util.Optional
 @ApplicationScoped
 class CopyRepository extends PanacheRepository[CopyInfo] with CopyOps {
 
-  override def findByDatasetInternalNameAndCopyNumber(datasetInternalName: String, copyNumber: Long): Optional[CopyInfo] = {
+  override def findByDatasetResourceNameAndCopyNumber(resourceName: String, copyNumber: Long): Optional[CopyInfo] = {
     find("copyNumber = ?1",Array(copyNumber)).singleResultOptional()
   }
 
 }
 
 trait CopyOps {
-  def findByDatasetInternalNameAndCopyNumber(datasetInternalName: String, copyNumber: Long): Optional[CopyInfo]
+  def findByDatasetResourceNameAndCopyNumber(resourceName: String, copyNumber: Long): Optional[CopyInfo]
 }

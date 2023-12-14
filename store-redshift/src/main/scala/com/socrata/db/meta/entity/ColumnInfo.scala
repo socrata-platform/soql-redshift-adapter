@@ -1,6 +1,6 @@
 package com.socrata.db.meta.entity
 
-import jakarta.persistence.{Column, Entity, ManyToOne, Table, UniqueConstraint}
+import jakarta.persistence.{Column, Entity, JoinColumn, ManyToOne, Table, UniqueConstraint}
 
 
 @Entity
@@ -13,7 +13,7 @@ import jakarta.persistence.{Column, Entity, ManyToOne, Table, UniqueConstraint}
 ))
 class ColumnInfo extends SocrataEntityBase {
   @ManyToOne
-  @Column(name = "copy_system_id")
+  @JoinColumn(name = "copy_system_id")
   var copyInfo: CopyInfo = _
   @Column(name = "user_column_id")
   var userColumnId: String = _
