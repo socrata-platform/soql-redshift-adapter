@@ -1,0 +1,23 @@
+package com.socrata.db.meta.entity
+
+import jakarta.persistence.{Column, Entity, ManyToOne, Table, UniqueConstraint}
+
+import java.time.LocalDateTime
+
+@Entity
+@Table(name = "copy_map",uniqueConstraints = Array(new UniqueConstraint(columnNames = Array("dataset_system_id", "copy_number"))))
+class CopyInfo extends SocrataEntityBase {
+  @ManyToOne
+  @Column(name = "dataset_system_id")
+  var datasetInfo: DatasetInfo = _
+  @Column(name = "copy_number")
+  var copyNumber: Long = _
+  @Column(name = "lifecycle_stage")
+  var lifecycleStage: String = _
+  @Column(name = "data_version")
+  var dataVersion: Long = _
+  @Column(name = "last_modified")
+  var lastModified: LocalDateTime = _
+  @Column(name = "data_shape_version")
+  var dataShapeVersion: Option[Long] = _
+}

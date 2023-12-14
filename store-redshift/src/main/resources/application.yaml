@@ -37,7 +37,11 @@ quarkus:
   log:
     level: INFO
   datasource:
-    #   meta is our metadata store, our postgres
+    db-kind: h2
+    username: default
+    jdbc:
+      url: jdbc:h2:mem:default
+      max-size: 11
     meta:
       db-kind: h2
       username: meta

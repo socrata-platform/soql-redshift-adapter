@@ -1,12 +1,12 @@
 package com.socrata.db.meta.service
 
 import jakarta.enterprise.context.ApplicationScoped
+import jakarta.transaction.Transactional
 
+@Transactional
 @ApplicationScoped
-class MetaService
+class ColumnService
 (
-  private val datasetService: DatasetService,
-  private val copyService: CopyService,
   private val columnService: ColumnService
 ) {
 
