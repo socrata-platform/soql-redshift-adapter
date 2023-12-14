@@ -32,6 +32,7 @@ class ColumnCreatorTest extends TableCreationUtils {
       .foreach {
         case (received, expected) => {
           assertEquals(expected, received)
+          println(s"$expected == $received")
           Utils.withTable(dataSource, "columnCreator")("foo", "int") { (conn, tableName) =>
             schema.update(tableName, "testcol")(`type`).foreach(_.execute(conn))
           }

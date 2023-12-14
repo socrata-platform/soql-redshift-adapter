@@ -53,7 +53,7 @@ class RepsLiteralsTest extends TableCreationUtils {
     )
   }
 
-  def test(@annotation.unused testName: String)(literal: DatabaseNamesMetaTypes#ColumnValue)(expected: String*) = {
+  def test(literal: DatabaseNamesMetaTypes#ColumnValue)(expected: String*) = {
     val rep = repProvider
       .reps(literal.typ)
 
@@ -62,6 +62,7 @@ class RepsLiteralsTest extends TableCreationUtils {
       .foreach {
         case (received, expected) => {
           assertEquals(expected, received)
+          println(s"$expected == $received")
           Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
             schema.update(tableName, "testcol")(literal.typ).foreach(thing => thing.execute(conn))
             rows.update(tableName, "testcol")(literal).foreach(thing => thing.execute(conn))
@@ -72,18 +73,18 @@ class RepsLiteralsTest extends TableCreationUtils {
 
   @Test
   def text(): Unit = {
-    test("text")(SoQLText("here are some words"))("text 'here are some words'")
+    test(SoQLText("here are some words"))("text 'here are some words'")
   }
 
   @Test
   def number(): Unit = {
-    test("number")(SoQLNumber(new java.math.BigDecimal(22)))("22 :: decimal(30, 7)")
+    test(SoQLNumber(new java.math.BigDecimal(22)))("22 :: decimal(30, 7)")
   }
 
   @Test
   def boolean(): Unit = {
-    test("bool")(SoQLBoolean(false))("false")
-    test("bool")(SoQLBoolean(true))("true")
+    test(SoQLBoolean(false))("false")
+    test(SoQLBoolean(true))("true")
   }
 
   val dateStr = "2021-06-13 18-14-23CST"
@@ -92,34 +93,34 @@ class RepsLiteralsTest extends TableCreationUtils {
   @Test
   def fixedTimestamp(): Unit = {
     val dateTime: DateTime = formatter.parseDateTime(dateStr)
-    test("fixed timestamp")(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
+    test(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
   }
 
   @Test
   def floatingTimestamp(): Unit = {
     val dateTime: LocalDateTime = formatter.parseLocalDateTime(dateStr)
-    test("floating timestamp")(SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
+    test(SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
   }
 
   @Test
   def date(): Unit = {
     val dateTime: LocalDate = formatter.parseLocalDate(dateStr)
-    test("date")(SoQLDate(dateTime))("date '2021-06-13'")
+    test(SoQLDate(dateTime))("date '2021-06-13'")
   }
 
   @Test
   def time(): Unit = {
     val dateTime: LocalTime = formatter.parseLocalTime(dateStr)
-    test("time")(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
+    test(SoQLTime(dateTime))("time without time zone '18:14:23.000'")
   }
 
   @Test
   def json(): Unit = {
-    test("json")(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
-    test("json")(SoQLJson(JNumber(BigDecimal(2.18))))("JSON_PARSE(2.18)")
-    test("json")(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
-    test("json null")(SoQLJson(JNull))("JSON_PARSE(null)")
-    test("json")(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
+    test(SoQLJson(JNumber(2)))("JSON_PARSE(2)")
+    test(SoQLJson(JNumber(BigDecimal(2.18))))("JSON_PARSE(2.18)")
+    test(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
+    test(SoQLJson(JNull))("JSON_PARSE(null)")
+    test(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
   }
 
   @Test
@@ -133,14 +134,14 @@ class RepsLiteralsTest extends TableCreationUtils {
 
   @Test
   def point(): Unit = {
-    test("point")(SoQLPoint(pt))(
+    test(SoQLPoint(pt))(
       "ST_GeomFromWKB('00000000014059000000000000408f380000000000', 4326)"
     )
   }
 
   @Test
   def multipoint(): Unit = {
-    test("multipoint")(SoQLMultiPoint(new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)))(
+    test(SoQLMultiPoint(new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '00000000040000000300000000014059000000000000408f38000000000000000000014059000000000000408f38000000000000000000014059000000000000408f380000000000',
   4326
@@ -152,7 +153,7 @@ class RepsLiteralsTest extends TableCreationUtils {
 
   @Test
   def line(): Unit = {
-    test("line")(SoQLLine(lineString))(
+    test(SoQLLine(lineString))(
       """ST_GeomFromWKB(
   '0000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -162,7 +163,7 @@ class RepsLiteralsTest extends TableCreationUtils {
 
   @Test
   def multiline(): Unit = {
-    test("multiline")(SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
+    test(SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '0000000005000000020000000002000000024059000000000000408f3800000000004059000000000000408f3800000000000000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -178,7 +179,7 @@ class RepsLiteralsTest extends TableCreationUtils {
 
   @Test
   def polygon(): Unit = {
-    test("polygon")(SoQLPolygon(poly))(
+    test(SoQLPolygon(poly))(
       """ST_GeomFromWKB(
   '000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -188,7 +189,7 @@ class RepsLiteralsTest extends TableCreationUtils {
 
   @Test
   def multipolygon(): Unit = {
-    test("polygon")(SoQLMultiPolygon(new MultiPolygon(Array(poly, poly, poly), precisionModel, Geo.defaultSRID)))(
+    test(SoQLMultiPolygon(new MultiPolygon(Array(poly, poly, poly), precisionModel, Geo.defaultSRID)))(
       """ST_GeomFromWKB(
   '000000000600000003000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326
