@@ -7,18 +7,12 @@ import config.RedshiftSecondaryConfig
 import config.RedshiftSecondaryDependencies.SecondaryMap
 import io.quarkus.runtime.QuarkusApplication
 import io.quarkus.runtime.annotations.QuarkusMain
-import org.apache.curator.framework.CuratorFramework
+import com.amazonaws.services.s3.{AmazonS3ClientBuilder}
 
 @QuarkusMain
-class Application(
-    secondaryBundle: (DSInfo, MetricsReporter, CuratorFramework),
-    secondaryWatcherAppConfig: RedshiftSecondaryConfig,
-    secondaryMap: SecondaryMap
-) extends QuarkusApplication {
+class Application extends QuarkusApplication {
   override def run(args: String*): Int = {
-    println(args)
-    val (dsInfo: DSInfo, reporter: MetricsReporter, curator: CuratorFramework) = secondaryBundle
-    SecondaryWatcherApp(dsInfo, reporter, curator)(secondaryWatcherAppConfig)(secondaryMap)
+    println("================================================================", 88)
     0
   }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter</artifactId>
@@ -45,27 +45,27 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-sqlizer_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-sqlizer_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
 
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-stdlib_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-utils_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-sqlizer_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-stdlib_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-utils_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-sqlizer_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -146,16 +146,16 @@
       <version>${jackson-module-scala.version}</version>
     </dependency>
     <dependency>
-            <groupId>com.socrata</groupId>
-            <artifactId>secondarylib_2.12</artifactId>
-            <version>${secondarylib.version}</version>
-            <exclusions>
-                <exclusion>
-<!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
-                    <groupId>org.liquibase</groupId>
-                    <artifactId>liquibase-plugin</artifactId>
-                </exclusion>
-            </exclusions>
+      <groupId>com.socrata</groupId>
+      <artifactId>secondarylib_2.12</artifactId>
+      <version>${secondarylib.version}</version>
+      <exclusions>
+        <exclusion>
+          <!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-plugin</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>        
     <dependency>
       <groupId>com.amazon.redshift</groupId>
@@ -166,22 +166,21 @@
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
       <version>${aws.sdk.version}</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-redshift</artifactId>
       <version>${aws.sdk.version}</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sts</artifactId>
-      <version>${aws.sdk.version}</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
+      <artifactId>aws-java-sdk-redshift</artifactId>
+      <version>${aws-java-sdk-redshift.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>${aws-java-sdk-redshift.version}</version>
     </dependency>
   </dependencies>
   <build>
@@ -270,7 +269,6 @@
             <arg>-deprecation</arg>
             <arg>-feature</arg>
             <arg>-explaintypes</arg>
-            <arg>-Ywarn-unused</arg>
             <arg>-Xfatal-warnings</arg>
           </args>
         </configuration>

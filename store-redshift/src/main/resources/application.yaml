@@ -5,7 +5,7 @@ redshift:
   claim-timeout: 30m
   collocation-lock-path: collocation-lock
   collocation-lock-timeout: 10s
-  instance: ${TRUTH_CLUSTER} #alpha
+  instance: alpha
   log4j:
   max-replay-wait: 2 hours
   max-replays: 200
@@ -23,9 +23,7 @@ redshift:
   watcher-id: ${quarkus.uuid}
 
 aws:
-  region: ${AWS_DEFAULT_REGION}
-  accessKey: ${AWS_ACCESS_KEY_ID}
-  secretKey: ${AWS_SECRET_ACCESS_KEY}
+  region: us-west-2
 zookeeper:
   ensemble: local.dev.socrata.net:2181
   base-sleep-time-ms: 100
