@@ -34,7 +34,7 @@ class RedshiftSecondary(
     val finalDataVersion: Long = info.finalDataVersion
     val cookie: Secondary.Cookie = info.cookie
     val createdOrUpdatedRollups: Seq[RollupInfo] = info.createdOrUpdatedRollups
-    val events: Iterator[Event[CT, CV]] = info.events
+    val events: Iterator[Event[SoQLType, SoQLValue]] = info.events
 
     cookie
   }
