@@ -9,7 +9,7 @@ import java.util.Optional
 class CopyRepository extends PanacheRepository[CopyInfo] with CopyOps {
 
   override def findByDatasetResourceNameAndCopyNumber(resourceName: String, copyNumber: Long): Optional[CopyInfo] = {
-    find("copyNumber = ?1",Array(copyNumber)).singleResultOptional()
+    find("datasetInfo.resourceName = ?1 and copyNumber = ?2",Seq(Some(resourceName),java.lang.Long.valueOf(copyNumber)): _*).singleResultOptional()
   }
 
 }
