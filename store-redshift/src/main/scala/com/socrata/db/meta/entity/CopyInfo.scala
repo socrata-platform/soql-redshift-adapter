@@ -1,6 +1,6 @@
 package com.socrata.db.meta.entity
 
-import jakarta.persistence.{Column, Entity, ManyToOne, Table, UniqueConstraint}
+import jakarta.persistence.{Column, Entity, JoinColumn, ManyToOne, Table, UniqueConstraint}
 
 import java.time.LocalDateTime
 
@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @Table(name = "copy_map",uniqueConstraints = Array(new UniqueConstraint(columnNames = Array("dataset_system_id", "copy_number"))))
 class CopyInfo extends SocrataEntityBase {
   @ManyToOne
-  @Column(name = "dataset_system_id")
+  @JoinColumn(name = "dataset_system_id")
   var datasetInfo: DatasetInfo = _
   @Column(name = "copy_number")
   var copyNumber: Long = _

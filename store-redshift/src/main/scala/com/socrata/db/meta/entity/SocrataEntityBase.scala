@@ -1,9 +1,9 @@
 package com.socrata.db.meta.entity
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
-import jakarta.persistence.{Column, Entity, GeneratedValue, Id}
+import jakarta.persistence.{Column, GeneratedValue, Id, MappedSuperclass}
 
-@Entity
+@MappedSuperclass
 class SocrataEntityBase extends PanacheEntityBase {
   @Id
   @GeneratedValue

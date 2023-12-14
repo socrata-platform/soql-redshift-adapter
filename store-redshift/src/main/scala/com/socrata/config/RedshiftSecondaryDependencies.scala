@@ -2,26 +2,25 @@ package com.socrata.config
 
 import com.codahale.metrics.MetricRegistry
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.socrata.config.RedshiftSecondaryDependencies.SecondaryMap
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
 import com.socrata.datacoordinator.secondary.Secondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers
+import com.socrata.service.RedshiftSecondary
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.thirdparty.metrics.{Metrics, MetricsOptions, MetricsReporter}
-import com.socrata.config.RedshiftSecondaryDependencies.{SecondaryBundle, SecondaryMap}
-import com.socrata.service.RedshiftSecondary
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
+import io.quarkus.arc.All
 import io.quarkus.jackson.ObjectMapperCustomizer
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
-import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
-import org.apache.curator.retry.BoundedExponentialBackoffRetry
-import io.quarkus.arc.All
+import org.apache.curator.framework.CuratorFramework
 
 import java.io.OutputStream
-import scala.collection.JavaConverters._
 import java.sql.Connection
 import javax.sql.{DataSource => JavaDataSource}
+import scala.collection.JavaConverters._
 
 object RedshiftSecondaryDependencies {
   type SecondaryBundle = (DSInfo, MetricsReporter, CuratorFramework)
@@ -43,12 +42,12 @@ class RedshiftSecondaryDependencies {
 
   @Produces
   def configProvider(
-      objectMapper: ObjectMapper,
-      @All
-      configSources: java.util.List[ConfigSource],
-      @All
-      envSources: java.util.List[EnvSource]
-  ): ConfigProvider = {
+                      objectMapper: ObjectMapper,
+                      @All
+                      configSources: java.util.List[ConfigSource],
+                      @All
+                      envSources: java.util.List[EnvSource]
+                    ): ConfigProvider = {
     JacksonProxyConfigBuilder(objectMapper)
       .withSources(configSources.asScala.toArray: _*)
       .withEnvs(envSources.asScala.toArray: _*)
@@ -56,16 +55,16 @@ class RedshiftSecondaryDependencies {
 
   @Produces
   def redshiftSecondaryConfig(
-      configProvider: ConfigProvider
-  ): RedshiftSecondaryConfig = {
+                               configProvider: ConfigProvider
+                             ): RedshiftSecondaryConfig = {
     configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
   }
 
   @Produces
   def dsInfo(
-      @DataSource("store")
-      storeDataSource: AgroalDataSource
-  ): DSInfo = {
+              @DataSource("store")
+              storeDataSource: AgroalDataSource
+            ): DSInfo = {
     new DSInfo {
       override val dataSource: JavaDataSource = storeDataSource
       // TODO ??
@@ -85,32 +84,12 @@ class RedshiftSecondaryDependencies {
 
   @Produces
   def metricsReporter(
-      metricsOptions: MetricsOptions,
-      metricRegistry: MetricRegistry
-  ): MetricsReporter = {
+                       metricsOptions: MetricsOptions,
+                       metricRegistry: MetricRegistry
+                     ): MetricsReporter = {
     new MetricsReporter(metricsOptions, metricRegistry)
   }
 
-  @Produces
-  def curator(zkConfig: ZookeeperConfig): CuratorFramework = {
-    val curator = CuratorFrameworkFactory.newClient(
-      zkConfig.ensemble,
-      new BoundedExponentialBackoffRetry(
-        zkConfig.baseSleepTimeMs,
-        zkConfig.maxSleepTimeMs,
-        zkConfig.maxRetries
-      )
-    )
-    curator.start()
-    curator
-  }
-
-  @Produces
-  def coreBundle(
-      dsInfo: DSInfo,
-      metricsReporter: MetricsReporter,
-      curatorFramework: CuratorFramework
-  ): SecondaryBundle = (dsInfo, metricsReporter, curatorFramework)
 
   @Produces
   def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> (secondary, 1))

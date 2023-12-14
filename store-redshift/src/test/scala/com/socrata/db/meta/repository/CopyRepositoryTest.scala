@@ -13,7 +13,7 @@ class CopyRepositoryTest {
 
   @Test
   def findByDatasetInternalNameAndCopyNumber(): Unit = {
-    val res = copyRepository.findByDatasetInternalNameAndCopyNumber("one",1)
+    val res = copyRepository.findByDatasetResourceNameAndCopyNumber("one",1)
     Log.info(res)
   }
 }
