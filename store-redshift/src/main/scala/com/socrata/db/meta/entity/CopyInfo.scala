@@ -21,3 +21,16 @@ class CopyInfo extends SocrataEntityBase {
   @Column(name = "data_shape_version")
   var dataShapeVersion: Option[Long] = _
 }
+
+object CopyInfo{
+  def apply(datasetInfo: DatasetInfo,copyNumber: Long,lifecycleStage: String,dataVersion: Long,lastModified: LocalDateTime,dataShapeVersion: Option[Long]):CopyInfo = {
+    val out = new CopyInfo
+    out.datasetInfo=datasetInfo
+    out.copyNumber=copyNumber
+    out.lifecycleStage=lifecycleStage
+    out.datasetInfo=datasetInfo
+    out.lastModified=lastModified
+    out.dataShapeVersion=dataShapeVersion
+    out
+  }
+}
