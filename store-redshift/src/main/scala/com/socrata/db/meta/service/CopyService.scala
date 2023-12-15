@@ -14,7 +14,7 @@ class CopyService
   private val copyRepository: CopyRepository
 ) extends CopyOps {
 
-  override def findByDatasetResourceNameAndCopyNumber(resourceName: String, copyNumber: Long): Optional[CopyInfo] = {
+  override def findByDatasetResourceNameAndCopyNumber(resourceName: String, copyNumber: Long): Option[CopyInfo] = {
     copyRepository.findByDatasetResourceNameAndCopyNumber(resourceName, copyNumber)
   }
 }

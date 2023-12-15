@@ -28,7 +28,7 @@ class CopyRepositoryTest {
     datasetRepository.persist(di)
     val ci: CopyInfo = CopyInfo(di,1L,"published",1L,LocalDateTime.now,Some(1L))
     copyRepository.persist(ci)
-    val res = copyRepository.findByDatasetResourceNameAndCopyNumber("aaaa-aaaa",1L)
+    val res: Option[CopyInfo] = copyRepository.findByDatasetResourceNameAndCopyNumber("aaaa-aaaa", 1L)
     Log.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(res))
   }
 }
