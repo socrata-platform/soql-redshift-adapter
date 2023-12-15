@@ -1,3 +1,4 @@
+-- File to execute on our postgres eventually. For now we will cheat with hibernate and h2?
 create sequence dataset_map_system_id_seq;
 create table dataset_map (
                                     system_id bigint primary key not null default nextval('dataset_map_system_id_seq'::regclass),
