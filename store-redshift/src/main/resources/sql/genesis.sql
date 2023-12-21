@@ -1,5 +1,6 @@
+-- File to execute on our postgres eventually. For now we will cheat with hibernate and h2?
 create sequence dataset_map_system_id_seq;
-create table public.dataset_map (
+create table dataset_map (
                                     system_id bigint primary key not null default nextval('dataset_map_system_id_seq'::regclass),
                                     next_counter_value bigint not null,
                                     locale_name character varying(40) not null,
@@ -10,7 +11,7 @@ create table public.dataset_map (
 create index dataset_map_resource_name on dataset_map using btree (resource_name);
 
 create sequence copy_map_system_id_seq;
-create table public.copy_map (
+create table copy_map (
                                  system_id bigint primary key not null default nextval('copy_map_system_id_seq'::regclass),
                                  dataset_system_id bigint not null,
                                  copy_number bigint not null,
@@ -23,7 +24,7 @@ create table public.copy_map (
 );
 create unique index copy_map_dataset_system_id_copy_number_key on copy_map using btree (dataset_system_id, copy_number);
 
-create table public.column_map (
+create table column_map (
                                    system_id bigint not null,
                                    copy_system_id bigint not null,
                                    user_column_id character varying(40) not null,

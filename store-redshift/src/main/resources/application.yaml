@@ -38,7 +38,7 @@ quarkus:
     db-kind: h2
     username: meta
     jdbc:
-      url: jdbc:h2:mem:meta
+      url: jdbc:h2:mem:meta;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
       max-size: 11
     #   store is our data store, our redshift
     store:
@@ -48,3 +48,8 @@ quarkus:
       jdbc:
         driver: com.amazon.redshift.jdbc.Driver
         url: ${REDSHIFT_JDBC_URL} # Must be power of 2. Max rewrite insert size. We will flush buffer manually long before this.
+  hibernate-orm:
+#    danger settings!
+    sql-load-script: no-file
+    database:
+      generation: drop-and-create

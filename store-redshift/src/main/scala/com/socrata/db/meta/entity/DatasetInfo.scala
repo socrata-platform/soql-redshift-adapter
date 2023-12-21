@@ -16,3 +16,16 @@ class DatasetInfo extends SocrataEntityBase {
   @Column(name = "latest_data_version")
   var latestDataVersion: Long = _
 }
+
+object DatasetInfo{
+  def apply(nextCounterValue: Long, localeName: String, obfuscationKey: Array[Byte],
+            resourceName: Option[String], latestDataVersion: Long): DatasetInfo = {
+    val out = new DatasetInfo
+    out.nextCounterValue = nextCounterValue
+    out.localeName = localeName
+    out.obfuscationKey = obfuscationKey
+    out.resourceName = resourceName
+    out.latestDataVersion = latestDataVersion
+    out
+  }
+}
