@@ -1,7 +1,7 @@
-package com.socrata.analyzer2.metatypes
+package com.socrata.common.sqlizer.metatypes
 
+import com.socrata.common.sqlizer._
 import com.rojoma.json.v3.util.JsonUtil
-import com.socrata.analyzer2.SoQLValueDebugHelper
 import com.socrata.datacoordinator.id.{DatasetInternalName, UserColumnId}
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.analyzer2._

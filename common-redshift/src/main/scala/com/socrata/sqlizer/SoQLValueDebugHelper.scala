@@ -1,10 +1,9 @@
-package com.socrata.analyzer2
+package com.socrata.common.sqlizer
 
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.types.{SoQLID, SoQLValue, SoQLVersion}
-import com.socrata.util.CryptProviderProvider
 
 trait SoQLValueDebugHelper {
   implicit def hasDocCV(implicit cryptProviderProvider: CryptProviderProvider) = new HasDoc[SoQLValue] {

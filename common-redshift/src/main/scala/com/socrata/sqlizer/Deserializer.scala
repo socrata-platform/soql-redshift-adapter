@@ -1,6 +1,6 @@
-package com.socrata.analyzer2
+package com.socrata.common.sqlizer
 
-import com.socrata.analyzer2.metatypes.{InputMetaTypes, Stage}
+import metatypes._
 import com.socrata.datacoordinator.id.{DatasetInternalName, UserColumnId}
 import com.socrata.soql.analyzer2.rewrite.Pass
 import com.socrata.soql.analyzer2.{LabelUniverse, SoQLAnalysis}

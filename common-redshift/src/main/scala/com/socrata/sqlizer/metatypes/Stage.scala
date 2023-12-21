@@ -1,4 +1,4 @@
-package com.socrata.analyzer2.metatypes
+package com.socrata.common.sqlizer.metatypes
 
 import com.rojoma.json.v3.util.WrapperJsonCodec
 
