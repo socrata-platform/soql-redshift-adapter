@@ -1,11 +1,16 @@
 package com.socrata.db.meta.entity
 
-import jakarta.persistence.{Column, Entity, Table}
+import jakarta.persistence._
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 
 @Entity
 @Table(name = "datasets")
 class Dataset extends PanacheEntityBase {
+
+  @Id
+  @GeneratedValue
+  @Column(name = "system_id")
+  var systemId: Long = _
 
   @Column(name = "obfuscation_key")
   var obfuscationKey: Array[Byte] = _
