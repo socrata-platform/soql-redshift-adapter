@@ -11,7 +11,7 @@ import com.socrata.db.meta.service._
 
 @ApplicationScoped
 class RedshiftSecondary(
-  datasetService: DatasetService
+    datasetService: DatasetService
 ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
@@ -29,15 +29,15 @@ class RedshiftSecondary(
   }
 
   override def resync(
-    datasetInfo: DatasetInfo,
-    copyInfo: CopyInfo,
-    schema: ColumnIdMap[ColumnInfo[SoQLType]],
-    cookie: Cookie,
-    rows: Managed[Iterator[ColumnIdMap[SoQLValue]]],
-    rollups: Seq[RollupInfo],
-    indexDirectives: Seq[IndexDirective[SoQLType]],
-    indexes: Seq[IndexInfo],
-    isLatestLivingCopy: Boolean): Cookie = {
+      datasetInfo: DatasetInfo,
+      copyInfo: CopyInfo,
+      schema: ColumnIdMap[ColumnInfo[SoQLType]],
+      cookie: Cookie,
+      rows: Managed[Iterator[ColumnIdMap[SoQLValue]]],
+      rollups: Seq[RollupInfo],
+      indexDirectives: Seq[IndexDirective[SoQLType]],
+      indexes: Seq[IndexInfo],
+      isLatestLivingCopy: Boolean): Cookie = {
 
     datasetService.insert(???)
 
