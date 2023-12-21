@@ -10,7 +10,6 @@
   </parent>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter-store</artifactId>
-
   <properties>
     <guava.version>19.0</guava.version>
   </properties>
@@ -30,7 +29,6 @@
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
-
     </plugins>
   </build>
   <profiles>

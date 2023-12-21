@@ -10,7 +10,6 @@
   </parent>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter-server</artifactId>
-
   <properties>
     <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <openapi-generator.version>7.0.0</openapi-generator.version>
@@ -26,7 +25,6 @@
       <artifactId>swagger-annotations</artifactId>
       <version>1.6.11</version>
     </dependency>
-
   </dependencies>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>

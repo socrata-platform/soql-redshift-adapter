@@ -48,7 +48,6 @@
       <artifactId>soql-sqlizer_2.12</artifactId>
       <version>${soql.std.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.socrata</groupId>
       <artifactId>soql-stdlib_2.12</artifactId>
@@ -59,7 +58,6 @@
       <artifactId>soql-utils_2.12</artifactId>
       <version>${soql.std.version}</version>
     </dependency>
-
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-reactive</artifactId>

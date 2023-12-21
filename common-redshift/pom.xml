@@ -15,8 +15,6 @@
     <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <openapi-generator.version>7.0.0</openapi-generator.version>
   </properties>
-  <dependencies>
-  </dependencies>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
