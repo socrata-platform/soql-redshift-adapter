@@ -31,68 +31,6 @@
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
-        <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.openapitools</groupId>-->
-<!--                <artifactId>openapi-generator-maven-plugin</artifactId>-->
-<!--                <version>${openapi-generator.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>generate</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <inputSpec>${project.basedir}/src/main/resources/META-INF/openapi.yaml</inputSpec>-->
-<!--                            <generatorName>jaxrs-spec</generatorName>-->
-<!--                            <configHelp>false</configHelp>-->
-<!--                            <configOptions>-->
-<!--                                <dateLibrary>java8</dateLibrary>-->
-<!--                                <generateBuilders>true</generateBuilders>-->
-<!--                                <openApiNullable>true</openApiNullable>-->
-<!--                                <serializableModel>true</serializableModel>-->
-<!--                                <supportAsync>false</supportAsync>-->
-<!--                                <useMicroProfileOpenAPIAnnotations>true</useMicroProfileOpenAPIAnnotations>-->
-<!--                                <useBeanValidation>true</useBeanValidation>-->
-<!--                                <useOneOfInterfaces>true</useOneOfInterfaces>-->
-<!--                                <useSwaggerAnnotations>true</useSwaggerAnnotations>-->
-<!--                                <interfaceOnly>true</interfaceOnly>-->
-<!--                                <useJakartaEe>true</useJakartaEe>-->
-<!--                                <asyncNative>true</asyncNative>-->
-<!--                                <library>quarkus</library>-->
-<!--                                <serializationLibrary>jackson</serializationLibrary>-->
-<!--                                <useOptional>true</useOptional>-->
-<!--                            </configOptions>-->
-<!--                            <apiPackage>com.socrata.api</apiPackage>-->
-<!--                            <modelPackage>com.socrata.model</modelPackage>-->
-<!--                            <generateModelTests>false</generateModelTests>-->
-<!--                            <generateModelDocumentation>false</generateModelDocumentation>-->
-<!--                            <generateSupportingFiles>false</generateSupportingFiles>-->
-<!--                            <generateApiTests>false</generateApiTests>-->
-<!--                            <generateApiDocumentation>false</generateApiDocumentation>-->
-<!--                            <auth>false</auth>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>build-helper-maven-plugin</artifactId>-->
-<!--                <version>${build-helper-plugin.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>add-source</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <sources>-->
-<!--                                <source>${project.build.directory}/generated-sources/openapi/src/gen/java</source>-->
-<!--                            </sources>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-        </plugins>
     </build>
     <profiles>
         <profile>
@@ -103,7 +41,6 @@
                 </property>
             </activation>
             <properties>
-                <skipITs>false</skipITs>
                 <quarkus.package.type>native</quarkus.package.type>
             </properties>
         </profile>
