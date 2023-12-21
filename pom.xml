@@ -275,9 +275,9 @@
         <configuration>
           <scala>
             <scalafmt>
-              <version>3.4.3</version>              <!-- optional -->
-              <file>scalafmt.conf</file> <!-- optional -->
-              <scalaMajorVersion>2.12</scalaMajorVersion> <!-- optional -->
+              <version>3.4.3</version>
+              <file>scalafmt.conf</file>
+              <scalaMajorVersion>2.12</scalaMajorVersion>
             </scalafmt>
           </scala>
         </configuration>
