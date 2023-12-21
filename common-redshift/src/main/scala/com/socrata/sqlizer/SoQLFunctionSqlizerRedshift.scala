@@ -11,7 +11,6 @@ import com.socrata.soql.functions.Function
 import com.socrata.soql.sqlizer._
 import SoQLFunctionSqlizerRedshift._
 
-// move over tests as well
 class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
   type ColumnType = SoQLType; type ColumnValue = SoQLValue
 })] extends FuncallSqlizer[MT] {

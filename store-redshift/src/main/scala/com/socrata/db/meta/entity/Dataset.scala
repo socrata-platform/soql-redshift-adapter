@@ -7,7 +7,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 @Table(name = "datasets")
 class Dataset extends PanacheEntityBase {
 
-  @Id
+  @Id // use compound column instead of this silly id
   @GeneratedValue
   @Column(name = "system_id")
   var systemId: Long = _
