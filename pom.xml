@@ -265,6 +265,14 @@
         <artifactId>spotless-maven-plugin</artifactId>
         <version>2.40.0</version>
         <configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>apply</goal>
+              </goals>
+              <phase>compile</phase>
+            </execution>
+          </executions>
           <scala>
             <scalafmt>
               <version>3.4.3</version>              <!-- optional -->

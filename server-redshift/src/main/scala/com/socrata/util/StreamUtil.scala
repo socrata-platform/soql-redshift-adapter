@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets
 object StreamUtil {
 
   def normalize(input: InputStream): ByteArrayInputStream = {
-    //TODO Why do we do this?
+    // TODO Why do we do this?
     new ByteArrayInputStream(IOUtils.toString(input, StandardCharsets.UTF_8.name).getBytes(StandardCharsets.ISO_8859_1))
   }
 

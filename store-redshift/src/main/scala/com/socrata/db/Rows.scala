@@ -13,7 +13,8 @@ trait Rows[MT <: MetaTypes] {
 }
 
 case class RowsImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes])(
-    implicit val hasType: HasType[metatypes.DatabaseNamesMetaTypes#ColumnValue, metatypes.DatabaseNamesMetaTypes#ColumnType])
+    implicit
+    val hasType: HasType[metatypes.DatabaseNamesMetaTypes#ColumnValue, metatypes.DatabaseNamesMetaTypes#ColumnType])
     extends Rows[metatypes.DatabaseNamesMetaTypes] {
 
   def update(table: String, column: String)(cv: SoQLValue) = {

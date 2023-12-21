@@ -6,12 +6,13 @@ import com.socrata.soql.types.obfuscation.CryptProvider
 import com.socrata.soql.types.{SoQLID, SoQLValue, SoQLVersion}
 
 trait SoQLValueDebugHelper {
-  implicit def hasDocCV(implicit cryptProviderProvider: CryptProviderProvider) = new HasDoc[SoQLValue] {
+  implicit def hasDocCV(
+      implicit cryptProviderProvider: CryptProviderProvider) = new HasDoc[SoQLValue] {
     def docOf(cv: SoQLValue) =
       cv match {
-        case id@SoQLID(_) =>
+        case id @ SoQLID(_) =>
           id.doc(cryptProviderFor(id.provenance))
-        case ver@SoQLVersion(_) =>
+        case ver @ SoQLVersion(_) =>
           ver.doc(cryptProviderFor(ver.provenance))
         case other =>
           other.doc(CryptProvider.zeros)

@@ -27,8 +27,8 @@ class ZookeeperDependencies {
 
   @Produces
   def coreBundle(
-                  dsInfo: DSInfo,
-                  metricsReporter: MetricsReporter,
-                  curatorFramework: CuratorFramework
-                ): SecondaryBundle = (dsInfo, metricsReporter, curatorFramework)
+      dsInfo: DSInfo,
+      metricsReporter: MetricsReporter,
+      curatorFramework: CuratorFramework
+  ): SecondaryBundle = (dsInfo, metricsReporter, curatorFramework)
 }

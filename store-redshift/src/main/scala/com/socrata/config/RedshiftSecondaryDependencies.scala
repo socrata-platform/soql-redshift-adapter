@@ -42,12 +42,12 @@ class RedshiftSecondaryDependencies {
 
   @Produces
   def configProvider(
-                      objectMapper: ObjectMapper,
-                      @All
-                      configSources: java.util.List[ConfigSource],
-                      @All
-                      envSources: java.util.List[EnvSource]
-                    ): ConfigProvider = {
+      objectMapper: ObjectMapper,
+      @All
+      configSources: java.util.List[ConfigSource],
+      @All
+      envSources: java.util.List[EnvSource]
+  ): ConfigProvider = {
     JacksonProxyConfigBuilder(objectMapper)
       .withSources(configSources.asScala.toArray: _*)
       .withEnvs(envSources.asScala.toArray: _*)
@@ -55,16 +55,16 @@ class RedshiftSecondaryDependencies {
 
   @Produces
   def redshiftSecondaryConfig(
-                               configProvider: ConfigProvider
-                             ): RedshiftSecondaryConfig = {
+      configProvider: ConfigProvider
+  ): RedshiftSecondaryConfig = {
     configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
   }
 
   @Produces
   def dsInfo(
-              @DataSource("store")
-              storeDataSource: AgroalDataSource
-            ): DSInfo = {
+      @DataSource("store")
+      storeDataSource: AgroalDataSource
+  ): DSInfo = {
     new DSInfo {
       override val dataSource: JavaDataSource = storeDataSource
       // TODO ??
@@ -84,12 +84,11 @@ class RedshiftSecondaryDependencies {
 
   @Produces
   def metricsReporter(
-                       metricsOptions: MetricsOptions,
-                       metricRegistry: MetricRegistry
-                     ): MetricsReporter = {
+      metricsOptions: MetricsOptions,
+      metricRegistry: MetricRegistry
+  ): MetricsReporter = {
     new MetricsReporter(metricsOptions, metricRegistry)
   }
-
 
   @Produces
   def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> (secondary, 1))

@@ -11,24 +11,22 @@ import scala.concurrent.duration._
 import java.io.InputStream
 import com.socrata.soql.serialize.Readable
 
-
-
 object Deserializer extends LabelUniverse[InputMetaTypes] {
   case class Request(
-                      analysis: SoQLAnalysis[InputMetaTypes],
-                      locationSubcolumns: Map[DatabaseTableName, Map[DatabaseColumnName, Seq[Option[DatabaseColumnName]]]],
-                      context: Map[String, String],
-                      passes: Seq[Seq[Pass]],
-                      debug: Option[Debug],
-                      queryTimeout: Option[FiniteDuration]
-                    )
+      analysis: SoQLAnalysis[InputMetaTypes],
+      locationSubcolumns: Map[DatabaseTableName, Map[DatabaseColumnName, Seq[Option[DatabaseColumnName]]]],
+      context: Map[String, String],
+      passes: Seq[Seq[Pass]],
+      debug: Option[Debug],
+      queryTimeout: Option[FiniteDuration]
+  )
   object Request {
     implicit def deserialize(
-                              implicit ev1: Readable[SoQLAnalysis[InputMetaTypes]],
-                              ev2: Readable[DatasetInternalName],
-                              ev3: Readable[UserColumnId],
-                              ev4: Readable[Stage],
-                            ) = new Readable[Request] {
+        implicit ev1: Readable[SoQLAnalysis[InputMetaTypes]],
+        ev2: Readable[DatasetInternalName],
+        ev3: Readable[UserColumnId],
+        ev4: Readable[Stage]
+    ) = new Readable[Request] {
       def readFrom(buffer: ReadBuffer): Request = {
         buffer.read[Int]() match {
           case 0 =>

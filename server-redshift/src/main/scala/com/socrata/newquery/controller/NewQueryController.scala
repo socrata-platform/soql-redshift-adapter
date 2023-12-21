@@ -8,9 +8,7 @@ import jakarta.ws.rs.core.Response
 import java.io.InputStream
 
 @ApplicationScoped
-class NewQueryController
-(
-
+class NewQueryController(
 ) extends NewQueryEndpoint {
   override def post(body: InputStream): Response = {
     import com.socrata.common.sqlizer.metatypes.InputMetaTypes.DebugHelper._

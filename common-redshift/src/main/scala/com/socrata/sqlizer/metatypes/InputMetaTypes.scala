@@ -10,7 +10,6 @@ import com.socrata.soql.functions.{MonomorphicFunction, SoQLFunctionInfo}
 import com.socrata.soql.serialize._
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 
-
 final class InputMetaTypes extends MetaTypes {
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
