@@ -16,9 +16,9 @@ import com.socrata.soql.types._
   val datasetInfo = DatasetInfo("dataset_info", "locale_name", Array.empty, Some("resource_name"))
   val copyInfo = CopyInfo(new CopyId(0), 0, LifecycleStage.Published, 18, 18, DateTime.now())
 
-  val schema = Map(
+  val schema = Map[ColumnId, ColumnInfo[SoQLType]](
     new ColumnId(0) ->
-      ColumnInfo[SoQLType](
+      ColumnInfo(
         new ColumnId(1),
         new UserColumnId("some text"),
         None,
@@ -29,7 +29,7 @@ import com.socrata.soql.types._
         None
       ),
     new ColumnId(0) ->
-      ColumnInfo[SoQLType](
+      ColumnInfo(
         new ColumnId(2),
         new UserColumnId("some boolean"),
         None,
@@ -48,7 +48,7 @@ import com.socrata.soql.types._
     )
   ))
 
-  val managedRows: Managed[Iterator[ColumnIdMap[SoQLValue]]] =
+  val managedRows =
     new Managed[Iterator[ColumnIdMap[SoQLValue]]] {
       def run[B](f: Iterator[ColumnIdMap[SoQLValue]] => B): B = {
         f(rows.iterator)
@@ -70,3 +70,14 @@ import com.socrata.soql.types._
 
   }
 }
+
+/*
+
+ use JSON file https://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-avro
+ make Transactional work (failures should do nothing to the DB).
+ Make ID auto increment
+ Write Columns.
+
+ persist should complain if thing already exists
+
+ */
