@@ -1,5 +1,6 @@
 package com.socrata.service
 
+import com.socrata.db.meta.entity._
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
 import com.socrata.datacoordinator.secondary._
@@ -8,6 +9,7 @@ import com.socrata.datacoordinator.util.collection.ColumnIdMap
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import jakarta.enterprise.context.ApplicationScoped
 import com.socrata.db.meta.service._
+import jakarta.transaction.Transactional
 
 @ApplicationScoped
 class RedshiftSecondary(
@@ -28,6 +30,15 @@ class RedshiftSecondary(
     None
   }
 
+/*
+
+
+ Transactional does not work. This still inserts
+
+
+
+ */
+  @Transactional
   override def resync(
       datasetInfo: DatasetInfo,
       copyInfo: CopyInfo,
@@ -39,8 +50,8 @@ class RedshiftSecondary(
       indexes: Seq[IndexInfo],
       isLatestLivingCopy: Boolean): Cookie = {
 
-    datasetService.insert(???)
-
+    datasetService.insert(Dataset(datasetInfo.internalName, copyInfo.copyNumber, datasetInfo.obfuscationKey))
+    throw new Throwable(":(")
     None
   }
 

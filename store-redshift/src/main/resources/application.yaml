@@ -35,10 +35,11 @@ quarkus:
   log:
     level: INFO
   datasource:
-    db-kind: h2
-    username: meta
+    db-kind: postgresql
+    username: postgres
+    password: admin
     jdbc:
-      url: jdbc:h2:mem:meta;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+      url: jdbc:postgresql://localhost:5432/redshift_metadata
       max-size: 11
     #   store is our data store, our redshift
     store:
