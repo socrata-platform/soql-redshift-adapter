@@ -18,9 +18,9 @@ import com.socrata.soql.environment.ColumnName
   @Inject var jsonTransformer: JsonTransformer = _
 
   val schema = Map[ColumnId, ColumnInfo[SoQLType]](
-    new ColumnId(0) ->
+    new ColumnId(2) ->
       ColumnInfo(
-        new ColumnId(1),
+        new ColumnId(0),
         new UserColumnId("some text"),
         Some(ColumnName("Field name of text column")),
         SoQLText,
@@ -29,9 +29,9 @@ import com.socrata.soql.environment.ColumnName
         false,
         None
       ),
-    new ColumnId(1) ->
+    new ColumnId(8) ->
       ColumnInfo(
-        new ColumnId(2),
+        new ColumnId(1),
         new UserColumnId("some boolean"),
         Some(ColumnName("Field name of boolean column")),
         SoQLBoolean,
@@ -45,14 +45,14 @@ import com.socrata.soql.environment.ColumnName
   val rows = Iterator(
     ColumnIdMap.apply(
       Map(
-        new ColumnId(0) -> SoQLText("first row"),
-        new ColumnId(1) -> SoQLBoolean(false)
+        new ColumnId(2) -> SoQLText("first row"),
+        new ColumnId(8) -> SoQLBoolean(false)
       )
     ),
     ColumnIdMap.apply(
       Map(
-        new ColumnId(0) -> SoQLText("second row"),
-        new ColumnId(1) -> SoQLBoolean(true)
+        new ColumnId(2) -> SoQLText("second row"),
+        new ColumnId(8) -> SoQLBoolean(true)
       )
     )
   )

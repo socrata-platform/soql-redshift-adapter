@@ -19,12 +19,9 @@ trait JsonTransformer {
 @ApplicationScoped
 case class JsonTransformerImpl(nameMapper: ColumnNames) extends JsonTransformer {
   def transform(colIdMap: ColumnIdMap[SoQLValue], schema: ColumnIdMap[ColumnInfo[SoQLType]]): JValue = {
-    val row: Seq[(ColumnInfo[SoQLType], SoQLValue)] = colIdMap.toSeq.map { case (id, value) =>
-      schema.get(id).get -> value
+    val dbRow: Map[String, SoQLValue] = colIdMap.foldLeft(Map.empty[String, SoQLValue]) { case (state, (id, value)) =>
+      state.updated(nameMapper.name(schema(id)), value)
     }
-    val dbRow: Map[String, SoQLValue] = row.map { case (colInfo, soqlValue) =>
-      nameMapper.name(colInfo) -> soqlValue
-    }.toMap
     JObject(dbRow.mapValues(transformValue))
   }
 
