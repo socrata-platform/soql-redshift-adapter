@@ -1,5 +1,6 @@
 package com.socrata.service
 
+import com.socrata.common.utils.managed.ManagedUtils
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.id._
@@ -28,7 +29,7 @@ import com.socrata.soql.types._
         false,
         None
       ),
-    new ColumnId(0) ->
+    new ColumnId(1) ->
       ColumnInfo(
         new ColumnId(2),
         new UserColumnId("some boolean"),
@@ -41,19 +42,12 @@ import com.socrata.soql.types._
       )
   )
 
-  val rows = List(ColumnIdMap.apply(
-    Map(
+  val rows = ManagedUtils.construct(Iterator(
+    ColumnIdMap.apply(Map(
       new ColumnId(0) -> SoQLText("hey there"),
       new ColumnId(1) -> SoQLBoolean(false)
-    )
+    ))
   ))
-
-  val managedRows =
-    new Managed[Iterator[ColumnIdMap[SoQLValue]]] {
-      def run[B](f: Iterator[ColumnIdMap[SoQLValue]] => B): B = {
-        f(rows.iterator)
-      }
-    }
 
   @Test def resync(): Unit = {
     secondary.resync(
@@ -61,7 +55,7 @@ import com.socrata.soql.types._
       copyInfo,
       ColumnIdMap.apply(schema),
       None,
-      managedRows,
+      rows,
       Seq.empty,
       Seq.empty,
       Seq.empty,

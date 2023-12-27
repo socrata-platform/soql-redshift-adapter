@@ -9,6 +9,10 @@ import com.socrata.datacoordinator.secondary._
 import com.socrata.store.column._
 
 trait JsonTransformer {
+  def transformAll(
+      colIdMaps: Iterator[ColumnIdMap[SoQLValue]],
+      schema: ColumnIdMap[ColumnInfo[SoQLType]]): Iterator[JValue] = colIdMaps.map(transform(_, schema))
+
   def transform(colIdMap: ColumnIdMap[SoQLValue], schema: ColumnIdMap[ColumnInfo[SoQLType]]): JValue
 }
 
