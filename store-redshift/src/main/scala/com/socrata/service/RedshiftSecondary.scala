@@ -30,14 +30,14 @@ class RedshiftSecondary(
     None
   }
 
-/*
+  /*
 
 
  Transactional does not work. This still inserts
 
 
 
- */
+   */
   @Transactional
   override def resync(
       datasetInfo: DatasetInfo,
