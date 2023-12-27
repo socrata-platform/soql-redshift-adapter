@@ -29,10 +29,10 @@ case class JsonTransformerImpl(nameMapper: ColumnNames) extends JsonTransformer 
     case SoQLText(value) => JString(value)
     case SoQLNumber(value) => JNumber(value)
     case SoQLBoolean(value) => JBoolean(value)
-    //    case SoQLFixedTimestamp(value) => JString(value)
-    //    case SoQLFloatingTimestamp(value) => JString(value)
-    //    case SoQLDate(value) => JString(value)
-    //    case SoQLTime(value) => JString(value)
+    case t @ SoQLFixedTimestamp(value) => JString(t.typ.StringRep(value))
+    case t @ SoQLFloatingTimestamp(value) => JString(t.typ.StringRep(value))
+    case t @ SoQLDate(value) => JString(t.typ.StringRep(value))
+    case t @ SoQLTime(value) => JString(t.typ.StringRep(value))
     case SoQLJson(value) => value
     case t @ SoQLPoint(value) =>
       val bytes = t.typ.WkbRep(value)

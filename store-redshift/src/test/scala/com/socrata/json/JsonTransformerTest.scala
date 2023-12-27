@@ -1,6 +1,18 @@
 package com.socrata.store.json
 
 import com.socrata.common.utils.managed.ManagedUtils
+import org.joda.time.format.{DateTimeFormat}
+import com.vividsolutions.jts.geom.{
+  LineString,
+  LinearRing,
+  MultiLineString,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  Polygon,
+  Coordinate,
+  PrecisionModel
+}
 import com.rojoma.simplearm.v2.Managed
 import com.rojoma.json.v3.interpolation._
 import com.socrata.datacoordinator.secondary._
@@ -50,6 +62,28 @@ import com.socrata.soql.environment.ColumnName
         false,
         false,
         None
+      ),
+    new ColumnId(-2) ->
+      ColumnInfo(
+        new ColumnId(0),
+        new UserColumnId("some point"),
+        Some(ColumnName("Field name of point column")),
+        SoQLPoint,
+        false,
+        false,
+        false,
+        None
+      ),
+    new ColumnId(-33) ->
+      ColumnInfo(
+        new ColumnId(0),
+        new UserColumnId("some floating time stamp"),
+        Some(ColumnName("Field name of floating timestamp column")),
+        SoQLPoint,
+        false,
+        false,
+        false,
+        None
       )
   )
 
@@ -58,14 +92,18 @@ import com.socrata.soql.environment.ColumnName
       Map(
         new ColumnId(2) -> SoQLText("first row"),
         new ColumnId(8) -> SoQLBoolean(false),
-        new ColumnId(15) -> SoQLNumber(new java.math.BigDecimal(13))
+        new ColumnId(15) -> SoQLNumber(new java.math.BigDecimal(13)),
+        new ColumnId(-2) -> SoQLPoint(new Point(new Coordinate(100, 999), new PrecisionModel(), 4326))
       )
     ),
     ColumnIdMap.apply(
       Map(
         new ColumnId(2) -> SoQLText("second row"),
         new ColumnId(8) -> SoQLBoolean(true),
-        new ColumnId(15) -> SoQLNumber(new java.math.BigDecimal(22))
+        new ColumnId(15) -> SoQLNumber(new java.math.BigDecimal(22)),
+        new ColumnId(-33) -> SoQLFloatingTimestamp(
+          DateTimeFormat.forPattern("yyyy-MM-dd HH-mm-sszzz").parseLocalDateTime("2021-06-13 18-14-23CST")
+        )
       )
     )
   )
@@ -75,12 +113,14 @@ import com.socrata.soql.environment.ColumnName
       jsonTransformer.transformAll(rows, ColumnIdMap.apply(schema)).toList,
       List(
         j"""{
+  "field_name_of_point_column_0" : "00000000014059000000000000408f380000000000",
   "field_name_of_text_column_0" : "first row",
   "field_name_of_boolean_column_0" : false,
   "field_name_of_number_column_0": 13
 }""",
         j"""{
   "field_name_of_boolean_column_0" : true,
+  "field_name_of_floating_timestamp_column_0" : "2021-06-13T18:14:23.000",
   "field_name_of_number_column_0": 22,
   "field_name_of_text_column_0" : "second row"
 }"""
