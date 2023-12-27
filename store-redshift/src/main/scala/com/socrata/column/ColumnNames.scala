@@ -9,5 +9,6 @@ trait ColumnNames {
 
 @ApplicationScoped
 object ColumnNamesImpl extends ColumnNames {
-  override def name(columnInfo: ColumnInfo[_]): String = columnInfo.fieldName.get.name.replace(" ", "_").toLowerCase()
+  override def name(columnInfo: ColumnInfo[_]): String =
+    s"${columnInfo.fieldName.get.name.replace(" ", "_").toLowerCase()}_${columnInfo.systemId.underlying}"
 }

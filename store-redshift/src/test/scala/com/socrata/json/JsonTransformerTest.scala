@@ -31,10 +31,21 @@ import com.socrata.soql.environment.ColumnName
       ),
     new ColumnId(8) ->
       ColumnInfo(
-        new ColumnId(1),
+        new ColumnId(0),
         new UserColumnId("some boolean"),
         Some(ColumnName("Field name of boolean column")),
         SoQLBoolean,
+        false,
+        false,
+        false,
+        None
+      ),
+    new ColumnId(15) ->
+      ColumnInfo(
+        new ColumnId(0),
+        new UserColumnId("some number"),
+        Some(ColumnName("Field name of number column")),
+        SoQLNumber,
         false,
         false,
         false,
@@ -46,13 +57,15 @@ import com.socrata.soql.environment.ColumnName
     ColumnIdMap.apply(
       Map(
         new ColumnId(2) -> SoQLText("first row"),
-        new ColumnId(8) -> SoQLBoolean(false)
+        new ColumnId(8) -> SoQLBoolean(false),
+        new ColumnId(15) -> SoQLNumber(new java.math.BigDecimal(13))
       )
     ),
     ColumnIdMap.apply(
       Map(
         new ColumnId(2) -> SoQLText("second row"),
-        new ColumnId(8) -> SoQLBoolean(true)
+        new ColumnId(8) -> SoQLBoolean(true),
+        new ColumnId(15) -> SoQLNumber(new java.math.BigDecimal(22))
       )
     )
   )
@@ -62,12 +75,14 @@ import com.socrata.soql.environment.ColumnName
       jsonTransformer.transformAll(rows, ColumnIdMap.apply(schema)).toList,
       List(
         j"""{
-  "field_name_of_boolean_column" : false,
-  "field_name_of_text_column" : "first row"
+  "field_name_of_text_column_0" : "first row",
+  "field_name_of_boolean_column_0" : false,
+  "field_name_of_number_column_0": 13
 }""",
         j"""{
-  "field_name_of_boolean_column" : true,
-  "field_name_of_text_column" : "second row"
+  "field_name_of_boolean_column_0" : true,
+  "field_name_of_number_column_0": 22,
+  "field_name_of_text_column_0" : "second row"
 }"""
       )
     )
