@@ -110,7 +110,6 @@ import com.socrata.soql.environment.ColumnName
 
   @Test def test: Unit = {
     assertEquals(
-      jsonTransformer.transformAll(rows, ColumnIdMap.apply(schema)).toList,
       List(
         j"""{
   "field_name_of_point_column_0" : "00000000014059000000000000408f380000000000",
@@ -120,11 +119,12 @@ import com.socrata.soql.environment.ColumnName
 }""",
         j"""{
   "field_name_of_boolean_column_0" : true,
-  "field_name_of_floating_timestamp_column_0" : "2021-06-13T18:14:23.000",
+  "field_name_of_floating_timestamp_column_0" : "2021-06-13 18:14:23",
   "field_name_of_number_column_0": 22,
   "field_name_of_text_column_0" : "second row"
 }"""
-      )
+      ),
+      jsonTransformer.transformAll(rows, ColumnIdMap.apply(schema)).toList
     )
   }
 
