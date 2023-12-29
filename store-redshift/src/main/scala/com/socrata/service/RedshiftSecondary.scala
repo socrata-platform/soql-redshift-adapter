@@ -79,7 +79,6 @@ class RedshiftSecondary(
     ???
 }
 
-
 /*
 
  types are a mess
