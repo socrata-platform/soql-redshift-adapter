@@ -78,3 +78,22 @@ class RedshiftSecondary(
   override def dropCopy(datasetInfo: DatasetInfo, copyInfo: CopyInfo, cookie: Cookie, isLatestCopy: Boolean): Cookie =
     ???
 }
+
+
+/*
+
+ types are a mess
+ package names are a mess.
+ not sure where to use db entities and where to not.
+ inserter poorly named
+ transactions not working
+ id is silly
+
+ json does not support GEO
+ CSV does support GEO, but writing CSV is difficult. Cannot get CsvWRiter to write to s3.
+
+ imports are out of order and importing too much (scalafix would be nice)
+
+ need to work out config. Not sure how to inject thing which requires partSize, for example.
+
+ */

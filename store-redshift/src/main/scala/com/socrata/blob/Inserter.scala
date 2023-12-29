@@ -2,7 +2,6 @@ package com.socrata.store.blob
 // not really blob actually
 // rename resync handler
 
-
 import com.socrata.store.table._
 import com.socrata.store.json._
 import com.socrata.db.datasets._
