@@ -69,6 +69,7 @@ class RedshiftSecondary(
       }
 
     rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
+      inserter.store(dataset, schema, rows)
     }
     throw new Throwable(":(")
     None
