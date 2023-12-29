@@ -5,11 +5,13 @@ import com.amazonaws.services.s3.model._
 import scala.collection.mutable.ArrayBuilder
 import java.io._
 import scala.collection.JavaConverters._
+import jakarta.enterprise.context.ApplicationScoped
 
 trait DataStorage {
   def store(key: String, data: Iterator[Array[Byte]]): Option[Long]
 }
 
+@ApplicationScoped
 case class DataStorageImpl(s3Client: AmazonS3)(bucketName: String, partsSize: Int) extends DataStorage {
   private def cleanupFailedUpload(uploadId: String, key: String): Unit = {
     s3Client.abortMultipartUpload(

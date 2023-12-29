@@ -1,5 +1,7 @@
 package com.socrata.service
 
+import com.socrata.db.Exists
+import com.socrata.store.blob.Inserter
 import com.socrata.db.meta.entity._
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
@@ -13,7 +15,9 @@ import jakarta.transaction.Transactional
 
 @ApplicationScoped
 class RedshiftSecondary(
-    datasetService: DatasetService
+    datasetService: DatasetService,
+    datasetColumnService: DatasetColumnService,
+    inserter: Inserter
 ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
@@ -23,9 +27,6 @@ class RedshiftSecondary(
 
   override def currentCopyNumber(datasetInternalName: String, cookie: Cookie): Long = ???
 
-  // ColumnCreatedHandler, where it makes a call to physicalColumnBaseBase, instead of passing in secColInfo.id.underlying pass in secColInfo.fieldName.underlying and it should all Just Work.
-  // https://teams.microsoft.com/l/message/19:f6588672e1684823bec41fceac1e55ba@thread.tacv2/1699997650096?tenantId=7cc5f0f9-ee5b-4106-a62d-1b9f7be46118&groupId=102da3ef-c928-4a59-afe5-f0d51e6443dd&parentMessageId=1699995352754&teamName=D%26I%20-%20Internal&channelName=siq_internal&createdTime=1699997650096&allowXTenantAccess=false
-
   override def version(info: VersionInfo[SoQLType, SoQLValue]): Cookie = {
     None
   }
@@ -33,7 +34,7 @@ class RedshiftSecondary(
   /*
 
 
- Transactional does not work. This still inserts
+   Transactional does not work. This still inserts
 
 
 
@@ -50,7 +51,25 @@ class RedshiftSecondary(
       indexes: Seq[IndexInfo],
       isLatestLivingCopy: Boolean): Cookie = {
 
-    datasetService.insert(Dataset(datasetInfo.internalName, copyInfo.copyNumber, datasetInfo.obfuscationKey))
+    val (dataset, columns) =
+      datasetService.persist(Dataset(datasetInfo, copyInfo)) match {
+        case Exists.Does(dataset) => (???, ???)
+        // delete it and recreate it.
+        case Exists.DoesNot(dataset) => {
+          val columns: List[DatasetColumn] = schema.values.map(columnInfo =>
+            datasetColumnService.persist(DatasetColumn(datasetInfo, copyInfo, columnInfo)) match {
+              case Exists.Does(column) =>
+                throw new IllegalStateException(s"column $column existed on a dataset that did not exist.")
+                ???
+              case Exists.DoesNot(column) => column
+            }
+          ).toList
+          (dataset, columns)
+        }
+      }
+
+    rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
+    }
     throw new Throwable(":(")
     None
   }

@@ -8,6 +8,8 @@ import com.socrata.soql.sqlizer._
 
 // use the COPY functionality
 
+// Delete this
+
 trait Rows[MT <: MetaTypes] {
   def update(table: MT#DatabaseTableNameImpl, column: MT#DatabaseColumnNameImpl)(cv: MT#ColumnValue): Seq[InsertCommand]
 }

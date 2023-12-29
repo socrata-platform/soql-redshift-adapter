@@ -5,30 +5,16 @@ import com.socrata.store.column
 import jakarta.persistence._
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 
-@Entity
-@Table(name = "datasets")
-class Dataset extends PanacheEntityBase {
-
 // try to make these not VARS
 
-  /*
-
-
-
-
-   The ID is deleted and reused every test run
-
-
-
-   */
+@Entity
+@Table(name = "datasets")
+class DatasetColumn extends PanacheEntityBase {
 
   @Id // use compound column instead of this silly id
   @GeneratedValue
   @Column(name = "system_id")
   var systemId: Long = _
-
-  @Column(name = "obfuscation_key")
-  var obfuscationKey: Array[Byte] = _
 
   @Column(name = "internal_name")
   var internalName: String = _
@@ -36,20 +22,24 @@ class Dataset extends PanacheEntityBase {
   @Column(name = "copy_number")
   var copyNumber: Long = _
 
-  @Column(name = "table_name")
-  var table: String = _
+  @Column(name = "column_id")
+  var columnId: Long = _
 
+  @Column(name = "column_name")
+  var columnName: String = _
 }
 
-object Dataset {
+object DatasetColumn {
   def apply(
       datasetInfo: DatasetInfo,
-      copyInfo: CopyInfo
-  ): Dataset = {
-    val out = new Dataset()
-    out.obfuscationKey = datasetInfo.obfuscationKey
+      copyInfo: CopyInfo,
+      columnInfo: ColumnInfo[_]
+  ): DatasetColumn = {
+    val out = new DatasetColumn()
     out.internalName = datasetInfo.internalName
     out.copyNumber = copyInfo.copyNumber
+    out.columnId = columnInfo.systemId.underlying
+    out.columnName = column.ColumnNames.name(columnInfo)
     out
   }
 }

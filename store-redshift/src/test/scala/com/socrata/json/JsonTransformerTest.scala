@@ -27,6 +27,7 @@ import com.socrata.soql.types._
 import com.socrata.soql.environment.ColumnName
 
 @QuarkusTest class JsonTransformerTest() {
+  // try to make these not vars
   @Inject var jsonTransformer: JsonTransformer = _
 
   val schema = Map[ColumnId, ColumnInfo[SoQLType]](

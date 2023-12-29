@@ -18,10 +18,10 @@ trait JsonTransformer {
 }
 
 @ApplicationScoped
-case class JsonTransformerImpl(nameMapper: ColumnNames) extends JsonTransformer {
+case object JsonTransformerImpl extends JsonTransformer {
   def transform(colIdMap: ColumnIdMap[SoQLValue], schema: ColumnIdMap[ColumnInfo[SoQLType]]): JValue = {
     val dbRow: Map[String, SoQLValue] = colIdMap.foldLeft(Map.empty[String, SoQLValue]) { case (state, (id, value)) =>
-      state.updated(nameMapper.name(schema(id)), value)
+      state.updated(ColumnNames.name(schema(id)), value)
     }
     JObject(dbRow.mapValues(transformValue))
   }
@@ -32,7 +32,6 @@ case class JsonTransformerImpl(nameMapper: ColumnNames) extends JsonTransformer 
      offset is not being produced or respected, it seems.
 
      */
-
 
     val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ssZ")
     soqlValue match {

@@ -6,6 +6,8 @@ import com.socrata.common.sqlizer.metatypes
 import com.socrata.soql.types.{SoQLType}
 import com.socrata.soql.sqlizer._
 
+// delete this too
+
 trait Schema[MT <: MetaTypes] {
   def update(table: MT#DatabaseTableNameImpl, column: MT#DatabaseColumnNameImpl)(ct: MT#ColumnType): Seq[UpdateCommand]
 }
