@@ -11,16 +11,13 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 @Table(name = "columns")
 class DatasetColumn extends PanacheEntityBase {
 
-  @Id // use compound column instead of this silly id
+  @Id
   @GeneratedValue
   @Column(name = "system_id")
   var systemId: Long = _
 
-  @Column(name = "internal_name")
-  var internalName: String = _
-
-  @Column(name = "copy_number")
-  var copyNumber: Long = _
+  @Column(name = "dataset_id")
+  var datasetId: Long = _
 
   @Column(name = "column_id")
   var columnId: Long = _
@@ -31,15 +28,18 @@ class DatasetColumn extends PanacheEntityBase {
 
 object DatasetColumn {
   def apply(
+      dataset: Dataset,
       datasetInfo: DatasetInfo,
       copyInfo: CopyInfo,
       columnInfo: ColumnInfo[_]
   ): DatasetColumn = {
     val out = new DatasetColumn()
-    out.internalName = datasetInfo.internalName
-    out.copyNumber = copyInfo.copyNumber
+    out.datasetId = dataset.systemId
     out.columnId = columnInfo.systemId.underlying
     out.columnName = names.ColumnNames.from(columnInfo)
     out
   }
 }
+/*
+ create table columns (system_id bigint primary key, dataset_id bigint, column_id bigint, column_name varchar)
+ */
