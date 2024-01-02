@@ -39,7 +39,6 @@ class ColumnCreatorTest extends TableCreationUtils {
         }
       }
 
-
   def testFails[T <: Throwable](`type`: DatabaseNamesMetaTypes#ColumnType)(expectedType: Class[T]) = {
     assertThrows(
       expectedType,

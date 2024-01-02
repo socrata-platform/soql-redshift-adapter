@@ -19,14 +19,16 @@ import com.rojoma.json.v3.util.JsonUtil
 trait Resync {
   def store(
       dataset: Dataset,
+      columns: List[DatasetColumn],
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
       data: Iterator[ColumnIdMap[SoQLValue]]): Option[Long]
 }
 
 @ApplicationScoped
-case class ResyncImpl(jsonTransformer: JsonTransformer, tableCreator: TableCreator[MT]) extends Resync {
+case class ResyncImpl(jsonTransformer: JsonTransformer, tableCreator: TableCreator) extends Resync {
   override def store(
       dataset: Dataset,
+      columns: List[DatasetColumn],
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
       data: Iterator[ColumnIdMap[SoQLValue]]): Option[Long] = {
 
