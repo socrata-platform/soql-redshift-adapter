@@ -9,6 +9,9 @@ import com.socrata.db.Exists
 class DatasetColumnService(
     private val datasetColumnRepository: DatasetColumnRepository
 ) {
-  def persist(datasetColumn: DatasetColumn): Exists.Exists[DatasetColumn] =
-    ??? // datasetColumnRepository.persist(datasetColumn)
+  def persist(datasetColumn: DatasetColumn): Exists.Exists[DatasetColumn] = {
+    // not quite right
+    datasetColumnRepository.persist(datasetColumn)
+    Exists.DoesNot(datasetColumn)
+  }
 }

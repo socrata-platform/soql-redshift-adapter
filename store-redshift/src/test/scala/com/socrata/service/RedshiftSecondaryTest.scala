@@ -1,5 +1,6 @@
 package com.socrata.service
 
+import com.socrata.soql.environment.ColumnName
 import com.socrata.common.utils.managed.ManagedUtils
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary._
@@ -22,7 +23,7 @@ import com.socrata.soql.types._
       ColumnInfo(
         new ColumnId(1),
         new UserColumnId("some text"),
-        None,
+        Some(ColumnName("Field name of text column")),
         SoQLText,
         false,
         false,
@@ -33,7 +34,7 @@ import com.socrata.soql.types._
       ColumnInfo(
         new ColumnId(2),
         new UserColumnId("some boolean"),
-        None,
+        Some(ColumnName("Field name of boolean column")),
         SoQLBoolean,
         false,
         false,

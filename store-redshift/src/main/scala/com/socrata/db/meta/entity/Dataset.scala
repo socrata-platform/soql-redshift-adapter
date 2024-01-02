@@ -38,6 +38,15 @@ class Dataset extends PanacheEntityBase {
   @Column(name = "table_name")
   var table: String = _
 
+  override def toString() = s"""Dataset(
+    system_id: ${systemId}
+    obfuscation_key: ${obfuscationKey}
+    internal_name: ${internalName}
+    copy_number: ${copyNumber}
+    table: ${table}
+)
+"""
+
 }
 
 object Dataset {

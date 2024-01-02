@@ -24,6 +24,14 @@ class DatasetColumn extends PanacheEntityBase {
 
   @Column(name = "column_name")
   var columnName: String = _
+
+  override def toString() = s"""Column(
+    system_id: ${systemId}
+    dataset_id: ${datasetId}
+    column_id: ${columnId}
+    column_name: ${columnName}
+)
+"""
 }
 
 object DatasetColumn {
