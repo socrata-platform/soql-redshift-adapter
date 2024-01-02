@@ -1,11 +1,11 @@
 package com.socrata.db.meta.entity
 
-import jakarta.persistence.{Column, Entity, JoinColumn, ManyToOne, Table, UniqueConstraint}
+import jakarta.persistence._
 
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "copy_map",uniqueConstraints = Array(new UniqueConstraint(columnNames = Array("dataset_system_id", "copy_number"))))
+@Table(name = "copy_map", uniqueConstraints = Array(new UniqueConstraint(columnNames = Array("dataset_system_id", "copy_number"))))
 class CopyInfo extends SocrataEntityBase {
   @ManyToOne
   @JoinColumn(name = "dataset_system_id")
@@ -22,15 +22,15 @@ class CopyInfo extends SocrataEntityBase {
   var dataShapeVersion: Option[Long] = _
 }
 
-object CopyInfo{
-  def apply(datasetInfo: DatasetInfo,copyNumber: Long,lifecycleStage: String,dataVersion: Long,lastModified: LocalDateTime,dataShapeVersion: Option[Long]):CopyInfo = {
+object CopyInfo {
+  def apply(datasetInfo: DatasetInfo, copyNumber: Long, lifecycleStage: String, dataVersion: Long, lastModified: LocalDateTime, dataShapeVersion: Option[Long]): CopyInfo = {
     val out = new CopyInfo
-    out.datasetInfo=datasetInfo
-    out.copyNumber=copyNumber
-    out.lifecycleStage=lifecycleStage
-    out.datasetInfo=datasetInfo
-    out.lastModified=lastModified
-    out.dataShapeVersion=dataShapeVersion
+    out.datasetInfo = datasetInfo
+    out.copyNumber = copyNumber
+    out.lifecycleStage = lifecycleStage
+    out.datasetInfo = datasetInfo
+    out.lastModified = lastModified
+    out.dataShapeVersion = dataShapeVersion
     out
   }
 }

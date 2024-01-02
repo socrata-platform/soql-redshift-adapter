@@ -17,7 +17,7 @@ class DatasetInfo extends SocrataEntityBase {
   var latestDataVersion: Long = _
 }
 
-object DatasetInfo{
+object DatasetInfo {
   def apply(nextCounterValue: Long, localeName: String, obfuscationKey: Array[Byte],
             resourceName: Option[String], latestDataVersion: Long): DatasetInfo = {
     val out = new DatasetInfo

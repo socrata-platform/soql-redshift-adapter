@@ -1,6 +1,6 @@
 package com.socrata.db.meta.entity
 
-import jakarta.persistence.{Column, Entity, JoinColumn, ManyToOne, Table, UniqueConstraint}
+import jakarta.persistence._
 
 
 @Entity
