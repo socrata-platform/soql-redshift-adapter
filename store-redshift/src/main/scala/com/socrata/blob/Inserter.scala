@@ -35,10 +35,10 @@ case class InserterImpl(jsonTransformer: JsonTransformer, dataStorage: DataStora
 
     val jsons = jsonTransformer
       .transformAll(data, schema)
-      .map(JsonUtil.renderJson(_))
+      .map(JsonUtil.renderJson(_, pretty = false))
       .map(_.getBytes)
 
-    dataStorage.store(TableName.name(dataset), jsons)
+    dataStorage.store(BlobNames.name(dataset), jsons)
     tableCreator.create(dataset, BlobNames.name(dataset))
     ???
   }

@@ -67,7 +67,6 @@ import com.socrata.soql.types._
 
 /*
 
- use JSON file https://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-format.html#copy-avro
  make Transactional work (failures should do nothing to the DB).
  Make ID auto increment
  Write Columns.

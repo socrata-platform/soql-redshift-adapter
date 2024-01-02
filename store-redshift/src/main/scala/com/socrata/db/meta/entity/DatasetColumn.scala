@@ -1,14 +1,14 @@
 package com.socrata.db.meta.entity
 
 import com.socrata.datacoordinator.secondary._
-import com.socrata.store.column
+import com.socrata.store.names
 import jakarta.persistence._
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 
 // try to make these not VARS
 
 @Entity
-@Table(name = "datasets")
+@Table(name = "columns")
 class DatasetColumn extends PanacheEntityBase {
 
   @Id // use compound column instead of this silly id
@@ -39,7 +39,7 @@ object DatasetColumn {
     out.internalName = datasetInfo.internalName
     out.copyNumber = copyInfo.copyNumber
     out.columnId = columnInfo.systemId.underlying
-    out.columnName = column.ColumnNames.name(columnInfo)
+    out.columnName = names.ColumnNames.from(columnInfo)
     out
   }
 }

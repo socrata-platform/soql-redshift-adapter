@@ -60,7 +60,6 @@ class RedshiftSecondary(
             datasetColumnService.persist(DatasetColumn(datasetInfo, copyInfo, columnInfo)) match {
               case Exists.Does(column) =>
                 throw new IllegalStateException(s"column $column existed on a dataset that did not exist.")
-                ???
               case Exists.DoesNot(column) => column
             }
           ).toList
@@ -71,7 +70,6 @@ class RedshiftSecondary(
     rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
       inserter.store(dataset, schema, rows)
     }
-    throw new Throwable(":(")
     None
   }
 

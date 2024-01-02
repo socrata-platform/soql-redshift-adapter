@@ -7,7 +7,7 @@ import com.rojoma.json.v3.ast._
 import com.vividsolutions.jts.geom.Geometry
 import com.socrata.datacoordinator.util.collection.ColumnIdMap
 import com.socrata.datacoordinator.secondary._
-import com.socrata.store.column._
+import com.socrata.store.names
 
 trait JsonTransformer {
   def transformAll(
@@ -21,7 +21,7 @@ trait JsonTransformer {
 case object JsonTransformerImpl extends JsonTransformer {
   def transform(colIdMap: ColumnIdMap[SoQLValue], schema: ColumnIdMap[ColumnInfo[SoQLType]]): JValue = {
     val dbRow: Map[String, SoQLValue] = colIdMap.foldLeft(Map.empty[String, SoQLValue]) { case (state, (id, value)) =>
-      state.updated(ColumnNames.name(schema(id)), value)
+      state.updated(names.ColumnNames.from(schema(id)), value)
     }
     JObject(dbRow.mapValues(transformValue))
   }
