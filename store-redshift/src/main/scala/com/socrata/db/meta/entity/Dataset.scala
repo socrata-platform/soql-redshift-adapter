@@ -1,5 +1,6 @@
 package com.socrata.db.meta.entity
 
+import com.socrata.store.names
 import com.socrata.datacoordinator.secondary._
 import jakarta.persistence._
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
@@ -58,6 +59,7 @@ object Dataset {
     out.obfuscationKey = datasetInfo.obfuscationKey
     out.internalName = datasetInfo.internalName
     out.copyNumber = copyInfo.copyNumber
+    out.table = names.TableName.from(datasetInfo)
     out
   }
 }

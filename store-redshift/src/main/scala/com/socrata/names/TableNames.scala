@@ -6,5 +6,5 @@ import jakarta.enterprise.context.ApplicationScoped
 import com.socrata.datacoordinator.secondary._
 
 object TableName {
-  def from(dataset: Dataset): String = ??? // using the dataset.tableName, create tableName
+  def from(dataset: DatasetInfo): String = s"${dataset.internalName}"
 }

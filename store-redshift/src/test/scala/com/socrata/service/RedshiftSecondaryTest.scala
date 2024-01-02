@@ -19,9 +19,9 @@ import com.socrata.soql.types._
   val copyInfo = CopyInfo(new CopyId(0), 0, LifecycleStage.Published, 18, 18, DateTime.now())
 
   val schema = Map[ColumnId, ColumnInfo[SoQLType]](
-    new ColumnId(0) ->
+    new ColumnId(14) ->
       ColumnInfo(
-        new ColumnId(1),
+        new ColumnId(14),
         new UserColumnId("some text"),
         Some(ColumnName("Field name of text column")),
         SoQLText,
@@ -30,9 +30,9 @@ import com.socrata.soql.types._
         false,
         None
       ),
-    new ColumnId(1) ->
+    new ColumnId(33) ->
       ColumnInfo(
-        new ColumnId(2),
+        new ColumnId(33),
         new UserColumnId("some boolean"),
         Some(ColumnName("Field name of boolean column")),
         SoQLBoolean,
@@ -45,8 +45,8 @@ import com.socrata.soql.types._
 
   val rows = ManagedUtils.construct(Iterator(
     ColumnIdMap.apply(Map(
-      new ColumnId(0) -> SoQLText("hey there"),
-      new ColumnId(1) -> SoQLBoolean(false)
+      new ColumnId(33) -> SoQLBoolean(false),
+      new ColumnId(14) -> SoQLText("hey there")
     ))
   ))
 
