@@ -60,7 +60,7 @@ class RedshiftSecondary(
       }
 
     rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
-      resyncHandler.store(dataset, schema, rows)
+      resyncHandler.store(dataset, columns, schema, rows)
     }
     None
   }
