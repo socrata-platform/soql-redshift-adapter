@@ -65,13 +65,3 @@ import com.socrata.soql.types._
 
   }
 }
-
-/*
-
- make Transactional work (failures should do nothing to the DB).
- Make ID auto increment
- Write Columns.
-
- persist should complain if thing already exists
-
- */

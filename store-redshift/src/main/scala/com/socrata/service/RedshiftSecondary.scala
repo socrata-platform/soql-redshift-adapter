@@ -45,14 +45,14 @@ class RedshiftSecondary(
 
     val (dataset, columns) =
       datasetService.persist(Dataset(datasetInfo, copyInfo)) match {
-        case Exists.Does(dataset) => (???, ???)
+        case Exists.Updated(dataset) => (???, ???)
         // delete it and recreate it.
-        case Exists.DoesNot(dataset) => {
+        case Exists.Inserted(dataset) => {
           val columns: List[DatasetColumn] = schema.values.map(columnInfo =>
             datasetColumnService.persist(DatasetColumn(dataset, datasetInfo, copyInfo, columnInfo)) match {
-              case Exists.Does(column) =>
+              case Exists.Updated(column) =>
                 throw new IllegalStateException(s"column $column existed on a dataset that did not exist.")
-              case Exists.DoesNot(column) => column
+              case Exists.Inserted(column) => column
             }
           ).toList
           (dataset, columns)

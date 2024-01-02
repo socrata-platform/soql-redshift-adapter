@@ -12,6 +12,6 @@ class DatasetColumnService(
   def persist(datasetColumn: DatasetColumn): Exists.Exists[DatasetColumn] = {
     // not quite right
     datasetColumnRepository.persist(datasetColumn)
-    Exists.DoesNot(datasetColumn)
+    Exists.Inserted(datasetColumn)
   }
 }

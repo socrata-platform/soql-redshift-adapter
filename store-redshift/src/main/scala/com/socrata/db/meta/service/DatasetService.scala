@@ -13,6 +13,6 @@ class DatasetService(
   def persist(dataset: Dataset): Exists.Exists[Dataset] = {
     // This is not quite right
     datasetRepository.persist(dataset)
-    Exists.DoesNot(dataset)
+    Exists.Inserted(dataset)
   }
 }
