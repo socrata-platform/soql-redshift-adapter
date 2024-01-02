@@ -1,7 +1,6 @@
 package com.socrata.store.handlers
 
 import com.socrata.store.names._
-import com.socrata.store.blob._
 import com.socrata.store.json._
 import com.socrata.db.datasets._
 import com.socrata.db.meta.entity._
@@ -25,8 +24,7 @@ trait Resync {
 }
 
 @ApplicationScoped
-case class ResyncImpl(jsonTransformer: JsonTransformer, dataStorage: DataStorage, tableCreator: TableCreator)
-    extends Resync {
+case class ResyncImpl(jsonTransformer: JsonTransformer, tableCreator: TableCreator) extends Resync {
   override def store(
       dataset: Dataset,
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
@@ -37,7 +35,6 @@ case class ResyncImpl(jsonTransformer: JsonTransformer, dataStorage: DataStorage
       .map(JsonUtil.renderJson(_, pretty = false))
       .map(_.getBytes)
 
-    dataStorage.store(BlobNames.from(dataset), jsons)
     tableCreator.create(dataset, BlobNames.from(dataset))
     ???
   }
