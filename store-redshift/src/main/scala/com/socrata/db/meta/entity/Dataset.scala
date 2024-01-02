@@ -1,7 +1,6 @@
 package com.socrata.db.meta.entity
 
 import com.socrata.datacoordinator.secondary._
-import com.socrata.store.column
 import jakarta.persistence._
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 
