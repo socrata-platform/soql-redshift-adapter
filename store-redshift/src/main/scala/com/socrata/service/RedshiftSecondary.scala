@@ -1,7 +1,7 @@
 package com.socrata.service
 
 import com.socrata.db.Exists
-import com.socrata.store.blob.Inserter
+import com.socrata.store.handlers._
 import com.socrata.db.meta.entity._
 import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
@@ -17,7 +17,7 @@ import jakarta.transaction.Transactional
 class RedshiftSecondary(
     datasetService: DatasetService,
     datasetColumnService: DatasetColumnService,
-    inserter: Inserter
+    resyncHandler: Resync
 ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
@@ -31,14 +31,6 @@ class RedshiftSecondary(
     None
   }
 
-  /*
-
-
-   Transactional does not work. This still inserts
-
-
-
-   */
   @Transactional
   override def resync(
       datasetInfo: DatasetInfo,
@@ -68,7 +60,7 @@ class RedshiftSecondary(
       }
 
     rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
-      inserter.store(dataset, schema, rows)
+      resyncHandler.store(dataset, schema, rows)
     }
     None
   }
@@ -79,8 +71,6 @@ class RedshiftSecondary(
 
 /*
 
- types are a mess
- package names are a mess.
  not sure where to use db entities and where to not.
  inserter poorly named
  transactions not working
