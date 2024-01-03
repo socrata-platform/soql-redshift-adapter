@@ -1,5 +1,7 @@
 package com.socrata.store.handlers
 
+import com.socrata.datacoordinator.id._
+import com.socrata.common.sqlizer._
 import com.socrata.store.names._
 import com.socrata.store.json._
 import com.socrata.db.datasets._
@@ -36,7 +38,11 @@ case class ResyncImpl(jsonTransformer: JsonTransformer, tableCreator: TableCreat
       .transformAll(data, schema)
       .map(JsonUtil.renderJson(_, pretty = false))
 
-    println(jsons.toList)
-    None
+    tableCreator.create(SoQLSqlizer.repProvider(null, null, RedshiftNamespaces, new RedshiftExprSqlFactory))(
+      dataset,
+      columns.map(column => column -> schema(new ColumnId(column.columnId))),
+      ""
+    )
+    ???
   }
 }

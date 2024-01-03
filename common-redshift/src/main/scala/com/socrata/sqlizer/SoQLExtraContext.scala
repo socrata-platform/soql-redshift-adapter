@@ -9,8 +9,8 @@ import com.socrata.common.sqlizer.metatypes.DatabaseNamesMetaTypes
 
 class SoQLExtraContext(
     val systemContext: Map[String, String],
-    val cryptProviderProvider: CryptProviderProvider,
-    val escapeString: String => String
+    val cryptProviderProvider: CryptProviderProvider, // remove?
+    val escapeString: String => String // remove?
 ) extends ExtraContext[SoQLExtraContext.Result] {
   val now = DateTime.now()
   var nonliteralSystemContextLookupFound: Boolean = false

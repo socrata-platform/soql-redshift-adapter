@@ -17,7 +17,7 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
       dataset: Dataset,
       columns: List[(DatasetColumn, ColumnInfo[SoQLType])],
       blobUrl: String): Unit = {
-    val dbColumns: List[List[(String, String)]] = columns.map {
+    val dbColumns: List[(String, String)] = columns.flatMap {
       case (dbColumn, column) => {
         val rep = repProvider.reps(column.typ)
         rep.physicalDatabaseColumns(DatabaseColumnName(dbColumn.columnName))
@@ -26,12 +26,14 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
       }
     }
 
-    val dbColumnFragment = dbColumns.map(_.map { case (name, typ) => s"name typ" }.mkString(" ")).mkString(" ")
+    val dbColumnFragment = dbColumns.map({ case (name, typ) => s"$name $typ" }).mkString(", ")
+
+    val sql = s"""create table ${dataset.table} ($dbColumnFragment)"""
 
     Using.resource(store.getConnection) { conn =>
       Using.resource(conn.createStatement()) { stmt =>
         stmt.executeUpdate(
-          s"""create table ${dataset.table} ($dbColumnFragment)"""
+          sql
         )
       }
     }
