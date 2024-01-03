@@ -294,7 +294,7 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
     ctx.extraContext.nowUsed = true
     ctx.repFor(f.typ).literal(
-      LiteralValue[MT](SoQLFixedTimestamp(ctx.extraContext.now))(AtomicPositionInfo.None)
+      LiteralValue[MT](SoQLFixedTimestamp(ctx.extraContext.now))(AtomicPositionInfo.Synthetic)
     ).withExpr(f)
   }
 
@@ -329,8 +329,8 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
         case LiteralValue(SoQLNumber(n)) =>
           // move the negation into the literal
           ctx.repFor(SoQLNumber).literal(LiteralValue[MT](SoQLNumber(n.negate))(new AtomicPositionInfo(
-            f.position.logicalSource,
-            f.position.functionNamePosition
+            f.position.source,
+            f.position.functionNameSource
           ))).withExpr(f)
         case _ =>
           base(f, args, ctx)

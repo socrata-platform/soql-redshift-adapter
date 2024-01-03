@@ -14,9 +14,9 @@ class DatasetService(
   def persist(dataset: Dataset): Exists.Exists[Dataset] = {
     datasetRepository.findByInternalNameAndCopyNumber(dataset.internalName, dataset.copyNumber) match {
       case Some(found) =>
-        dataset.systemId = found.systemId
-        datasetRepository.persist(dataset)
-        Exists.Updated(dataset)
+        Dataset.update(found, dataset)
+        datasetRepository.persist(found)
+        Exists.Updated(found)
       case None =>
         datasetRepository.persist(dataset)
         Exists.Inserted(dataset)

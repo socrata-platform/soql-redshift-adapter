@@ -49,7 +49,7 @@ class RepsLiteralsTest extends TableCreationUtils {
       expectedType,
       () =>
         repProvider
-          .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None))
+          .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.Synthetic))
     )
   }
 
@@ -57,7 +57,7 @@ class RepsLiteralsTest extends TableCreationUtils {
     val rep = repProvider
       .reps(literal.typ)
 
-    rep.literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.None)).sqls.map(_.toString)
+    rep.literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.Synthetic)).sqls.map(_.toString)
       .zipExact(expected.toList)
       .foreach {
         case (received, expected) => {

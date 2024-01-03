@@ -49,6 +49,12 @@ object Dataset {
     out.table = names.TableName.from(datasetInfo)
     out
   }
+
+  def update(updated: Dataset, copyFrom: Dataset) = {
+    updated.obfuscationKey = copyFrom.obfuscationKey
+    updated.table = copyFrom.table
+    updated
+  }
 }
 
 /*

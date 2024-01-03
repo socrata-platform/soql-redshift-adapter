@@ -23,7 +23,7 @@ case class RowsImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes])
     val rep = repProvider(cv.typ)
 
     val names = rep.physicalDatabaseColumns(DatabaseColumnName(column))
-    val updates = rep.literal(LiteralValue[metatypes.DatabaseNamesMetaTypes](cv)(AtomicPositionInfo.None)).sqls
+    val updates = rep.literal(LiteralValue[metatypes.DatabaseNamesMetaTypes](cv)(AtomicPositionInfo.Synthetic)).sqls
     names.zip(updates).map { case (name, lit) =>
       InsertCommand(table, name.toString, lit.toString())
     }

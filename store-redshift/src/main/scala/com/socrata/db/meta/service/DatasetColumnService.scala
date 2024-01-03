@@ -10,9 +10,14 @@ class DatasetColumnService(
     private val datasetColumnRepository: DatasetColumnRepository
 ) {
   def persist(datasetColumn: DatasetColumn): Exists.Exists[DatasetColumn] = {
-    
-    // not quite right
-    datasetColumnRepository.persist(datasetColumn)
-    Exists.Inserted(datasetColumn)
+    datasetColumnRepository.findByDatasetIdAndColumnId(datasetColumn.datasetId, datasetColumn.columnId) match {
+      case Some(found) =>
+        DatasetColumn.update(found, datasetColumn)
+        datasetColumnRepository.persist(found)
+        Exists.Updated(found)
+      case None =>
+        datasetColumnRepository.persist(datasetColumn)
+        Exists.Inserted(datasetColumn)
+    }
   }
 }

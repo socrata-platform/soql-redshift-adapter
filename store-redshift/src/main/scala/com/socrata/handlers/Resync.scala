@@ -43,6 +43,6 @@ case class ResyncImpl(jsonTransformer: JsonTransformer, tableCreator: TableCreat
       columns.map(column => column -> schema(new ColumnId(column.columnId))),
       ""
     )
-    ???
+    None
   }
 }

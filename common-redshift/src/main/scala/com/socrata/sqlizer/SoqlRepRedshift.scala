@@ -38,6 +38,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
   abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV)
       extends SingleColumnRep(t, d"geometry") {
+    override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
     private val open = d"ST_GeomFromWKB"
 
     override def literal(e: LiteralValue) = {
@@ -60,12 +61,14 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
         ) // TODO: this just turns invalid values into null, we should probably be noisier than that
       }.map(ctor).getOrElse(SoQLNull)
     }
-
-    override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
   }
 
   val reps = Map[SoQLType, Rep](
     SoQLID -> new ProvenancedRep(SoQLID, d"bigint") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+
+      override def compressedDatabaseType = d"jsonb"
+
       override def provenanceOf(e: LiteralValue) = { // test this
         val rawId = e.value.asInstanceOf[SoQLID]
         Set(rawId.provenance)
@@ -136,11 +139,12 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             }
         }
       }
-
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
     SoQLVersion -> new ProvenancedRep(SoQLVersion, d"bigint") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+
+      override def compressedDatabaseType = d"jsonb"
+
       override def provenanceOf(e: LiteralValue) = {
         val rawId = e.value.asInstanceOf[SoQLVersion]
         Set(rawId.provenance)
@@ -210,13 +214,12 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             }
         }
       }
-
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
 
     // ATOMIC REPS
 
     SoQLText -> new SingleColumnRep(SoQLText, d"text") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       override def literal(e: LiteralValue) = {
         val SoQLText(s) = e.value
         exprSqlFactory(mkTextLiteral(s), e)
@@ -227,9 +230,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case Some(t) => SoQLText(t)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLNumber -> new SingleColumnRep(SoQLNumber, Doc(SoQLFunctionSqlizerRedshift.numericType)) {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       override def literal(e: LiteralValue) = {
         val SoQLNumber(n) = e.value
         exprSqlFactory(Doc(n.toString) +#+ d"::" +#+ sqlType, e)
@@ -240,10 +243,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           case Some(t) => SoQLNumber(t)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
     SoQLBoolean -> new SingleColumnRep(SoQLBoolean, d"boolean") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       def literal(e: LiteralValue) = {
         val SoQLBoolean(b) = e.value
         exprSqlFactory(if (b) d"true" else d"false", e)
@@ -256,9 +258,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           SoQLBoolean(v)
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLFixedTimestamp -> new SingleColumnRep(SoQLFixedTimestamp, d"timestamp with time zone") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       def literal(e: LiteralValue) = {
         val SoQLFixedTimestamp(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLFixedTimestamp.StringRep(s)), e)
@@ -266,10 +268,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.FixedTimestampRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
     SoQLFloatingTimestamp -> new SingleColumnRep(SoQLFloatingTimestamp, d"timestamp without time zone") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       def literal(e: LiteralValue) = {
         val SoQLFloatingTimestamp(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLFloatingTimestamp.StringRep(s)), e)
@@ -277,9 +278,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.FloatingTimestampRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLDate -> new SingleColumnRep(SoQLDate, d"date") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       def literal(e: LiteralValue) = {
         val SoQLDate(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLDate.StringRep(s)), e)
@@ -287,10 +288,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.DateRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
     SoQLTime -> new SingleColumnRep(SoQLTime, d"time without time zone") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       def literal(e: LiteralValue) = {
         val SoQLTime(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLTime.StringRep(s)), e)
@@ -298,10 +298,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.TimeRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
     SoQLJson -> new SingleColumnRep(SoQLJson, d"super") { // this'll need to be super
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       def literal(e: LiteralValue) = {
         val SoQLJson(j) = e.value
 
@@ -315,10 +314,9 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("").fromResultSet(rs, dbCol)
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
-
     },
     SoQLDocument -> new SingleColumnRep(SoQLDocument, d"super") {
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
       override def literal(e: LiteralValue) = ???
       override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         Option(rs.getString(dbCol)) match {
@@ -331,7 +329,6 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
             SoQLNull
         }
       }
-      override def indices(tableName: DatabaseTableName, label: ColumnLabel) = Seq.empty
     },
     SoQLPoint -> new GeometryRep(SoQLPoint, SoQLPoint(_)) {
       override def downcast(v: SoQLValue) = v.asInstanceOf[SoQLPoint].value

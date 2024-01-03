@@ -31,6 +31,11 @@ class RedshiftSecondary(
     None
   }
 
+  /*
+
+   transactional continues to not work
+
+   */
   @Transactional
   override def resync(
       datasetInfo: DatasetInfo,

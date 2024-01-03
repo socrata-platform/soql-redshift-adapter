@@ -26,7 +26,7 @@
     <redshift.jdbc.version>2.1.0.19</redshift.jdbc.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
     <scala.version>2.12.18</scala.version>
-    <soql.std.version>4.14.30</soql.std.version>
+    <soql.std.version>4.14.36</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
     <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
     <secondarylib.version>4.2.18</secondarylib.version>

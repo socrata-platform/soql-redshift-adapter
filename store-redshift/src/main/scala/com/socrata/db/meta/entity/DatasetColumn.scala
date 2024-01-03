@@ -45,6 +45,12 @@ object DatasetColumn {
     out.columnName = names.ColumnNames.from(columnInfo)
     out
   }
+
+  def update(updated: DatasetColumn, copyFrom: DatasetColumn) = {
+    updated.columnName = copyFrom.columnName
+    updated
+  }
+
 }
 /*
  create table columns (system_id bigint primary key, dataset_id bigint, column_id bigint, column_name varchar)
