@@ -602,7 +602,7 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
           }
         }
         override def placeholders = Seq(d"? ::" +#+ sqlType)
-        override def indices = Nil
+        override def indices = Seq.empty
       }
       override def literal(e: LiteralValue) = ???
       override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
