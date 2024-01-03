@@ -27,16 +27,12 @@ trait Resync {
 }
 
 @ApplicationScoped
-case class ResyncImpl(jsonTransformer: JsonTransformer, tableCreator: TableCreator) extends Resync {
+case class ResyncImpl(tableCreator: TableCreator) extends Resync {
   override def store(
       dataset: Dataset,
       columns: List[DatasetColumn],
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
       data: Iterator[ColumnIdMap[SoQLValue]]): Option[Long] = {
-
-    val jsons = jsonTransformer
-      .transformAll(data, schema)
-      .map(JsonUtil.renderJson(_, pretty = false))
 
     tableCreator.create(SoQLSqlizer.repProvider(null, null))(
       dataset,
