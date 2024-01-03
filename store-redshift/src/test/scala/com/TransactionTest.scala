@@ -44,11 +44,13 @@ class TransactionTest {
     val dataset: Dataset = Dataset(datasetInfo, copyInfo)
     Try(persistWithException(dataset)) match {
       case Failure(exception) => {
-        assert(!findViaInteralNameAndCopyNumber(internalName, copyNumber).isDefined, "dataset should not have been persisted")
+        assert(
+          !findViaInteralNameAndCopyNumber(internalName, copyNumber).isDefined,
+          "dataset should not have been persisted"
+        )
       }
-      case Success(_) => assume(false,"this was supposed to fail due to an exception")
+      case Success(_) => assume(false, "this was supposed to fail due to an exception")
     }
-
 
   }
 

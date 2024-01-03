@@ -16,7 +16,7 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
   def create(repProvider: SoQLRepProviderRedshift[metatypes.DatabaseNamesMetaTypes])(
       dataset: Dataset,
       columns: List[(DatasetColumn, ColumnInfo[SoQLType])],
-      blobUrl: String): Unit = {
+      blobUrl: String): Exists.Exists[String] = {
     val dbColumns: List[(String, String)] = columns.flatMap {
       case (dbColumn, column) => {
         val rep = repProvider.reps(column.typ)
@@ -36,6 +36,8 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
           sql
         )
       }
+
+      Exists.Inserted(dataset.table)
     }
   }
 }
