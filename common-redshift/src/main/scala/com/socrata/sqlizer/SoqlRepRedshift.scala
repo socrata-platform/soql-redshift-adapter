@@ -1,6 +1,7 @@
 package com.socrata.common.sqlizer
 
-import java.sql.ResultSet
+import java.io.Writer
+import java.sql.{ResultSet, PreparedStatement, Types}
 
 import com.rojoma.json.v3.ast._
 import com.rojoma.json.v3.io.CompactJsonWriter
@@ -38,7 +39,31 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
 
   abstract class GeometryRep[T <: Geometry](t: SoQLType with SoQLGeometryLike[T], ctor: T => CV)
       extends SingleColumnRep(t, d"geometry") {
-    override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+    override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = {
+      new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          cv match {
+            case SoQLNull =>
+              stmt.setNull(start, Types.VARCHAR)
+            case other =>
+              val geo = downcast(other)
+              stmt.setString(start, t.EWktRep(geo, Geo.defaultSRID))
+          }
+          start + 1
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          cv match {
+            case SoQLNull =>
+              writeCSV(out, None)
+            case other =>
+              val geo = downcast(other)
+              writeCSV(out, Some(t.EWktRep(geo, Geo.defaultSRID)))
+          }
+        }
+        override def placeholders: Seq[Doc] = Seq(d"ST_GeomFromEWKT(?)")
+        override def indices = Seq.empty
+      }
+    }
     private val open = d"ST_GeomFromWKB"
 
     override def literal(e: LiteralValue) = {
@@ -63,9 +88,82 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
     }
   }
 
+  private def badType(expected: String, value: CV): Nothing =
+    throw new Exception(s"Bad type; expected $expected, got $value")
+
+  private def writeCSV(out: Writer, firstValue: Option[String], moreValues: Option[String]*): Unit = {
+    def writeCell(cell: Option[String]): Unit =
+      for (v <- cell) {
+        out.write('"')
+        out.write(v.replaceAll("\"", "\"\""))
+        out.write('"')
+      }
+    writeCell(firstValue)
+    for (value <- moreValues) {
+      out.write(',')
+      writeCell(value)
+    }
+  }
+
   val reps = Map[SoQLType, Rep](
     SoQLID -> new ProvenancedRep(SoQLID, d"bigint") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        val needProv = isRollup(tableName)
+
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          if (needProv) {
+            cv match {
+              case SoQLNull =>
+                stmt.setNull(start, Types.VARCHAR)
+                stmt.setNull(start + 1, Types.BIGINT)
+              case id @ SoQLID(value) =>
+                id.provenance match {
+                  case Some(Provenance(prov)) => stmt.setString(start, prov)
+                  case None => stmt.setNull(start, Types.VARCHAR)
+                }
+                stmt.setLong(start + 1, value)
+              case other =>
+                badType("id", other)
+            }
+            start + 2
+          } else {
+            cv match {
+              case SoQLNull => stmt.setNull(start, Types.BIGINT)
+              case id @ SoQLID(value) => stmt.setLong(start, value)
+              case other => badType("id", other)
+            }
+            start + 1
+          }
+        }
+
+        override def csvify(out: Writer, cv: CV): Unit = {
+          if (needProv) {
+            cv match {
+              case SoQLNull =>
+                writeCSV(out, None, None)
+              case id @ SoQLID(value) =>
+                writeCSV(out, id.provenance.map(_.value), Some(value.toString))
+              case other =>
+                badType("id", other)
+            }
+          } else {
+            cv match {
+              case SoQLNull =>
+                writeCSV(out, None)
+              case id @ SoQLID(value) =>
+                writeCSV(out, Some(value.toString))
+              case other =>
+                badType("id", other)
+            }
+          }
+        }
+
+        override def placeholders =
+          if (needProv) Seq(d"?", d"?")
+          else Seq(d"?")
+
+        override def indices = Seq.empty
+      }
 
       override def compressedDatabaseType = d"jsonb"
 
@@ -141,7 +239,64 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLVersion -> new ProvenancedRep(SoQLVersion, d"bigint") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        val needProv = isRollup(tableName)
+
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          if (needProv) {
+            cv match {
+              case SoQLNull =>
+                stmt.setNull(start, Types.VARCHAR)
+                stmt.setNull(start + 1, Types.BIGINT)
+              case id @ SoQLVersion(value) =>
+                id.provenance match {
+                  case Some(Provenance(prov)) => stmt.setString(start, prov)
+                  case None => stmt.setNull(start, Types.VARCHAR)
+                }
+                stmt.setLong(start + 1, value)
+              case other =>
+                badType("version", other)
+            }
+            start + 2
+          } else {
+            cv match {
+              case SoQLNull => stmt.setNull(start, Types.BIGINT)
+              case id @ SoQLVersion(value) => stmt.setLong(start, value)
+              case other => badType("version", other)
+            }
+            start + 1
+          }
+        }
+
+        override def csvify(out: Writer, cv: CV): Unit = {
+          if (needProv) {
+            cv match {
+              case SoQLNull =>
+                writeCSV(out, None, None)
+              case id @ SoQLVersion(value) =>
+                writeCSV(out, id.provenance.map(_.value), Some(value.toString))
+              case other =>
+                badType("version", other)
+            }
+          } else {
+            cv match {
+              case SoQLNull =>
+                writeCSV(out, None)
+              case id @ SoQLVersion(value) =>
+                writeCSV(out, Some(value.toString))
+              case other =>
+                badType("version", other)
+            }
+          }
+        }
+
+        override def placeholders =
+          if (needProv) Seq(d"?", d"?")
+          else Seq(d"?")
+
+        override def indices = Seq.empty
+
+      }
 
       override def compressedDatabaseType = d"jsonb"
 
@@ -219,7 +374,25 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
     // ATOMIC REPS
 
     SoQLText -> new SingleColumnRep(SoQLText, d"text") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          cv match {
+            case SoQLNull => stmt.setNull(start, Types.VARCHAR)
+            case SoQLText(t) => stmt.setString(start, t)
+            case other => badType("text", other)
+          }
+          start + 1
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          cv match {
+            case SoQLNull => writeCSV(out, None)
+            case SoQLText(t) => writeCSV(out, Some(t))
+            case other => badType("text", other)
+          }
+        }
+        override def placeholders = Seq(d"?")
+        override def indices = Seq.empty
+      }
       override def literal(e: LiteralValue) = {
         val SoQLText(s) = e.value
         exprSqlFactory(mkTextLiteral(s), e)
@@ -232,7 +405,25 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLNumber -> new SingleColumnRep(SoQLNumber, Doc(SoQLFunctionSqlizerRedshift.numericType)) {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          cv match {
+            case SoQLNull => stmt.setNull(start, Types.NUMERIC)
+            case SoQLNumber(n) => stmt.setBigDecimal(start, n)
+            case other => badType("number", other)
+          }
+          start + 1
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          cv match {
+            case SoQLNull => writeCSV(out, None)
+            case SoQLNumber(n) => writeCSV(out, Some(n.toString))
+            case other => badType("number", other)
+          }
+        }
+        override def placeholders = Seq(d"?")
+        override def indices = Seq.empty
+      }
       override def literal(e: LiteralValue) = {
         val SoQLNumber(n) = e.value
         exprSqlFactory(Doc(n.toString) +#+ d"::" +#+ sqlType, e)
@@ -245,7 +436,25 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLBoolean -> new SingleColumnRep(SoQLBoolean, d"boolean") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          cv match {
+            case SoQLNull => stmt.setNull(start, Types.BOOLEAN)
+            case SoQLBoolean(b) => stmt.setBoolean(start, b)
+            case other => badType("boolean", other)
+          }
+          start + 1
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          cv match {
+            case SoQLNull => writeCSV(out, None)
+            case SoQLBoolean(b) => writeCSV(out, Some(if (b) "true" else "false"))
+            case other => badType("boolean", other)
+          }
+        }
+        override def placeholders = Seq(d"?")
+        override def indices = Seq.empty
+      }
       def literal(e: LiteralValue) = {
         val SoQLBoolean(b) = e.value
         exprSqlFactory(if (b) d"true" else d"false", e)
@@ -260,7 +469,19 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLFixedTimestamp -> new SingleColumnRep(SoQLFixedTimestamp, d"timestamp with time zone") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.FixedTimestampRep("")
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          ugh.prepareInsert(stmt, cv, start)
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          val sb = new java.lang.StringBuilder
+          ugh.csvifyForInsert(sb, cv)
+          out.write(sb.toString)
+        }
+        override def placeholders = Seq(d"? ::" +#+ sqlType)
+        override def indices = Seq.empty
+      }
       def literal(e: LiteralValue) = {
         val SoQLFixedTimestamp(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLFixedTimestamp.StringRep(s)), e)
@@ -270,7 +491,19 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLFloatingTimestamp -> new SingleColumnRep(SoQLFloatingTimestamp, d"timestamp without time zone") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.FloatingTimestampRep("")
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          ugh.prepareInsert(stmt, cv, start)
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          val sb = new java.lang.StringBuilder
+          ugh.csvifyForInsert(sb, cv)
+          out.write(sb.toString)
+        }
+        override def placeholders = Seq(d"? ::" +#+ sqlType)
+        override def indices = Seq.empty
+      }
       def literal(e: LiteralValue) = {
         val SoQLFloatingTimestamp(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLFloatingTimestamp.StringRep(s)), e)
@@ -280,7 +513,19 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLDate -> new SingleColumnRep(SoQLDate, d"date") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.DateRep("")
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          ugh.prepareInsert(stmt, cv, start)
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          val sb = new java.lang.StringBuilder
+          ugh.csvifyForInsert(sb, cv)
+          out.write(sb.toString)
+        }
+        override def placeholders = Seq(d"? ::" +#+ sqlType)
+        override def indices = Seq.empty
+      }
       def literal(e: LiteralValue) = {
         val SoQLDate(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLDate.StringRep(s)), e)
@@ -290,7 +535,19 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLTime -> new SingleColumnRep(SoQLTime, d"time without time zone") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.TimeRep("")
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          ugh.prepareInsert(stmt, cv, start)
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          val sb = new java.lang.StringBuilder
+          ugh.csvifyForInsert(sb, cv)
+          out.write(sb.toString)
+        }
+        override def placeholders = Seq(d"? ::" +#+ sqlType)
+        override def indices = Seq.empty
+      }
       def literal(e: LiteralValue) = {
         val SoQLTime(s) = e.value
         exprSqlFactory(sqlType +#+ mkStringLiteral(SoQLTime.StringRep(s)), e)
@@ -300,7 +557,19 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLJson -> new SingleColumnRep(SoQLJson, d"super") { // this'll need to be super
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      private val ugh = new com.socrata.datacoordinator.common.soql.sqlreps.JsonRep("")
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          ugh.prepareInsert(stmt, cv, start)
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          val sb = new java.lang.StringBuilder
+          ugh.csvifyForInsert(sb, cv)
+          out.write(sb.toString)
+        }
+        override def placeholders = Seq(d"? ::" +#+ sqlType)
+        override def indices = Seq.empty
+      }
       def literal(e: LiteralValue) = {
         val SoQLJson(j) = e.value
 
@@ -316,7 +585,25 @@ abstract class SoQLRepProviderRedshift[MT <: MetaTypes with metatypes.SoQLMetaTy
       }
     },
     SoQLDocument -> new SingleColumnRep(SoQLDocument, d"super") {
-      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = ???
+      override def ingressRep(tableName: DatabaseTableName, columnName: ColumnLabel) = new IngressRep[MT] {
+        override def populatePreparedStatement(stmt: PreparedStatement, start: Int, cv: CV): Int = {
+          cv match {
+            case SoQLNull => stmt.setNull(start, Types.VARCHAR)
+            case SoQLJson(j) => stmt.setString(start, CompactJsonWriter.toString(j))
+            case other => badType("json", other)
+          }
+          start + 1
+        }
+        override def csvify(out: Writer, cv: CV): Unit = {
+          cv match {
+            case SoQLNull => writeCSV(out, None)
+            case SoQLJson(j) => writeCSV(out, Some(CompactJsonWriter.toString(j)))
+            case other => badType("json", other)
+          }
+        }
+        override def placeholders = Seq(d"? ::" +#+ sqlType)
+        override def indices = Nil
+      }
       override def literal(e: LiteralValue) = ???
       override protected def doExtractFrom(rs: ResultSet, dbCol: Int): CV = {
         Option(rs.getString(dbCol)) match {
