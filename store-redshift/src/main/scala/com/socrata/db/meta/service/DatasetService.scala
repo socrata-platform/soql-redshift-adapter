@@ -6,13 +6,20 @@ import jakarta.enterprise.context.ApplicationScoped
 import com.socrata.db.meta.entity._
 import scala.compat.java8.OptionConverters._
 
+@jakarta.transaction.Transactional
 @ApplicationScoped
 class DatasetService(
     private val datasetRepository: DatasetRepository
 ) {
   def persist(dataset: Dataset): Exists.Exists[Dataset] = {
-    // This is not quite right
-    datasetRepository.persist(dataset)
-    Exists.Inserted(dataset)
+    datasetRepository.findByInternalNameAndCopyNumber(dataset.internalName, dataset.copyNumber) match {
+      case Some(found) =>
+        dataset.systemId = found.systemId
+        datasetRepository.persist(dataset)
+        Exists.Updated(dataset)
+      case None =>
+        datasetRepository.persist(dataset)
+        Exists.Inserted(dataset)
+    }
   }
 }

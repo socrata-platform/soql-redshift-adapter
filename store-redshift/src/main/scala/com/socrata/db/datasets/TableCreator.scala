@@ -11,13 +11,19 @@ import com.socrata.datacoordinator.secondary._
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
 
+object TableCreator {
+  type ColumnName = String
+  type ColumnType = String
+}
+
 @jakarta.enterprise.context.ApplicationScoped
 case class TableCreator(@DataSource("store") store: AgroalDataSource) {
   def create(repProvider: SoQLRepProviderRedshift[metatypes.DatabaseNamesMetaTypes])(
       dataset: Dataset,
       columns: List[(DatasetColumn, ColumnInfo[SoQLType])],
       blobUrl: String): Exists.Exists[String] = {
-    val dbColumns: List[(String, String)] = columns.flatMap {
+
+    val dbColumns: List[(TableCreator.ColumnName, TableCreator.ColumnType)] = columns.flatMap {
       case (dbColumn, column) => {
         val rep = repProvider.reps(column.typ)
         rep.physicalDatabaseColumns(DatabaseColumnName(dbColumn.columnName))

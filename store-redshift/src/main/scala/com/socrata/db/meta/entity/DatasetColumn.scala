@@ -5,8 +5,6 @@ import com.socrata.store.names
 import jakarta.persistence._
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
 
-// try to make these not VARS
-
 @Entity
 @Table(name = "columns")
 class DatasetColumn extends PanacheEntityBase {
