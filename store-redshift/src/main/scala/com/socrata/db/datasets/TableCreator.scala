@@ -23,7 +23,7 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
       columns: List[(DatasetColumn, ColumnInfo[SoQLType])],
       blobUrl: String): Exists.Exists[String] =
     Using.resource(store.getConnection) { conn =>
-      conn.getMetaData().getTables(null, null, "foobarbaz", null).next() match {
+      conn.getMetaData().getTables(null, null, dataset.table, null).next() match {
         case true =>
           // Delete and recreate
           Exists.Updated(dataset.table)
