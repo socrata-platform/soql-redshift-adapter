@@ -56,7 +56,9 @@ final class DatabaseEntityMetaTypes(
         DatabaseTableName(??? /* datasetService.findByInternalName(dsid).get */ ) // TODO use service down here
       },
       { case (DatabaseTableName((dsid @ DatasetInternalName(_, _), stage)), DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(??? /* datasetService.findByInternalName(dsid, userColumnId.name).get */) // TODO use service down here
+        DatabaseColumnName(
+          ??? /* datasetService.findByInternalName(dsid, userColumnId.name).get */
+        ) // TODO use service down here
       },
       fromProv,
       provenanceMapper,
