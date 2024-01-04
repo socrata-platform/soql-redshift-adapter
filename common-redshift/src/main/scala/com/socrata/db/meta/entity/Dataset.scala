@@ -1,9 +1,9 @@
 package com.socrata.db.meta.entity
 
-import com.socrata.store.names
 import com.socrata.datacoordinator.secondary._
-import jakarta.persistence._
+import com.socrata.names.TableName
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
+import jakarta.persistence._
 
 @Entity
 @Table(name = "datasets")
@@ -46,7 +46,7 @@ object Dataset {
     out.obfuscationKey = datasetInfo.obfuscationKey
     out.internalName = datasetInfo.internalName
     out.copyNumber = copyInfo.copyNumber
-    out.table = names.TableName.from(datasetInfo)
+    out.table = TableName.from(datasetInfo)
     out
   }
 

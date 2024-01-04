@@ -1,9 +1,9 @@
 package com.socrata.db.meta.entity
 
 import com.socrata.datacoordinator.secondary._
-import com.socrata.store.names
-import jakarta.persistence._
+import com.socrata.names.ColumnNames
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase
+import jakarta.persistence._
 
 @Entity
 @Table(name = "columns")
@@ -42,7 +42,7 @@ object DatasetColumn {
     val out = new DatasetColumn()
     out.datasetId = dataset.systemId
     out.columnId = columnInfo.systemId.underlying
-    out.columnName = names.ColumnNames.from(columnInfo)
+    out.columnName = ColumnNames.from(columnInfo)
     out
   }
 

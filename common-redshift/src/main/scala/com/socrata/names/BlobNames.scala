@@ -1,4 +1,4 @@
-package com.socrata.store.names
+package com.socrata.names
 
 import com.socrata.db.meta.entity._
 

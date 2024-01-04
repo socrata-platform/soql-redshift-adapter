@@ -1,4 +1,4 @@
-package com.socrata.store.names
+package com.socrata.names
 
 import jakarta.enterprise.context.ApplicationScoped
 import com.socrata.datacoordinator.secondary._
