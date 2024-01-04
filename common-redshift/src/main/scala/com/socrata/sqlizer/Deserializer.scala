@@ -13,7 +13,7 @@ import com.socrata.soql.serialize.Readable
 
 object Deserializer extends LabelUniverse[InputMetaTypes] {
   case class Request(
-      analysis: SoQLAnalysis[InputMetaTypes], // => SoQLAnalysis[DatabaseNamesMetaTypes]
+      analysis: SoQLAnalysis[InputMetaTypes],
       locationSubcolumns: Map[DatabaseTableName, Map[DatabaseColumnName, Seq[Option[DatabaseColumnName]]]],
       context: Map[String, String],
       passes: Seq[Seq[Pass]],
