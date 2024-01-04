@@ -1,8 +1,8 @@
 package com.socrata.common.sqlizer.metatypes
 
 import scala.collection.{mutable => scm}
-import com.socrata.datacoordinator.truth.metadata.{ColumnInfo, CopyInfo}
-import com.socrata.datacoordinator.id.{CopyId, DatasetId, UserColumnId}
+import com.socrata.datacoordinator.truth.metadata.{ColumnInfo}
+import com.socrata.datacoordinator.id.{DatasetInternalName, DatasetId, UserColumnId}
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.{SoQLType, SoQLValue}
@@ -20,13 +20,14 @@ final class DatabaseEntityMetaTypes extends MetaTypes {
 
   val provenanceMapper = new types.ProvenanceMapper[DatabaseEntityMetaTypes] {
     private val dtnMap = new scm.HashMap[Provenance, DatabaseTableName[DatabaseTableNameImpl]]
-    private val provMap = new scm.HashMap[(DatasetId, CopyId), Provenance]
+    private val provMap = new scm.HashMap[(DatasetId, Long /* Dataset.systemId */ ), Provenance]
 
     def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseEntityMetaTypes] = {
       dtnMap(prov)
     }
 
     def toProvenance(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): Provenance = {
+      // TODO
       provMap.get((???, ???)) match {
         case Some(existing) =>
           existing
@@ -39,21 +40,17 @@ final class DatabaseEntityMetaTypes extends MetaTypes {
     }
   }
 
-  def rewriteFrom[MT <: MetaTypes with ({
-    type ColumnType = SoQLType
-    type ColumnValue = SoQLValue
-    type DatabaseColumnNameImpl = UserColumnId
-  })](
-      analysis: SoQLAnalysis[MT],
-      fromProv: types.FromProvenance[MT]
-  )(
-      implicit
-      changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseEntityMetaTypes] = {
+  def rewriteFrom(
+      analysis: SoQLAnalysis[InputMetaTypes],
+      fromProv: types.FromProvenance[InputMetaTypes]
+  ): SoQLAnalysis[DatabaseEntityMetaTypes] = {
 
     analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
-      { case DatabaseTableName(thing) => DatabaseTableName(???) }, // TODO proper error
-      { case (dtn, DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(???) // TODO proper errors
+      { case DatabaseTableName((DatasetInternalName(instance, datasetId), stage)) =>
+        DatabaseTableName(db.meta.entity.Dataset(???, ???)) // TODO
+      },
+      { case (DatabaseTableName((DatasetInternalName(instance, datasetId), stage)), DatabaseColumnName(userColumnId)) =>
+        DatabaseColumnName(db.meta.entity.DatasetColumn(???, ???, ???, ???)) // TODO
       },
       fromProv,
       provenanceMapper,
