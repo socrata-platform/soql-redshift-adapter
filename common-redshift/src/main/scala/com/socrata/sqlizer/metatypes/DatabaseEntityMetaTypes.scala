@@ -8,34 +8,30 @@ import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.soql.functions.SoQLTypeInfo2
 
-// delete this file
-final class DatabaseMetaTypes extends MetaTypes {
+final class DatabaseEntityMetaTypes extends MetaTypes {
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
   override type ColumnValue = SoQLValue
-  override type DatabaseTableNameImpl = CopyInfo
-  override type DatabaseColumnNameImpl = ColumnInfo[ColumnType]
+  override type DatabaseTableNameImpl = Unit
+  override type DatabaseColumnNameImpl = Unit
 
-  val typeInfo = new SoQLTypeInfo2[DatabaseMetaTypes]
+  val typeInfo = new SoQLTypeInfo2[DatabaseEntityMetaTypes]
 
-  // ugh.. but making this stateful was the only way I could find to
-  // do this.
-  val provenanceMapper = new types.ProvenanceMapper[DatabaseMetaTypes] {
+  val provenanceMapper = new types.ProvenanceMapper[DatabaseEntityMetaTypes] {
     private val dtnMap = new scm.HashMap[Provenance, DatabaseTableName[DatabaseTableNameImpl]]
     private val provMap = new scm.HashMap[(DatasetId, CopyId), Provenance]
 
-    def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseMetaTypes] = {
+    def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseEntityMetaTypes] = {
       dtnMap(prov)
     }
 
-    def toProvenance(dtn: types.DatabaseTableName[DatabaseMetaTypes]): Provenance = {
-      val provKey = (dtn.name.datasetInfo.systemId, dtn.name.systemId)
-      provMap.get(provKey) match {
+    def toProvenance(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): Provenance = {
+      provMap.get((???, ???)) match {
         case Some(existing) =>
           existing
         case None =>
           val prov = Provenance(dtnMap.size.toString)
-          provMap += provKey -> prov
+          provMap += (???, ???) -> prov
           dtnMap += prov -> dtn
           prov
       }
@@ -46,14 +42,14 @@ final class DatabaseMetaTypes extends MetaTypes {
     type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = UserColumnId
   })](
       analysis: SoQLAnalysis[MT],
-      copyCache: CopyCache[MT],
       fromProv: types.FromProvenance[MT]
   )(
-      implicit changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseMetaTypes]): SoQLAnalysis[DatabaseMetaTypes] = {
-    analysis.rewriteDatabaseNames[DatabaseMetaTypes](
-      { dtn => DatabaseTableName(copyCache(dtn).get._1) }, // TODO proper error
+      implicit
+      changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseEntityMetaTypes] = {
+    analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
+      { dtn => DatabaseTableName(???) }, // TODO proper error
       { case (dtn, DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(copyCache(dtn).get._2.get(userColumnId).get) // TODO proper errors
+        DatabaseColumnName(???) // TODO proper errors
       },
       fromProv,
       provenanceMapper,

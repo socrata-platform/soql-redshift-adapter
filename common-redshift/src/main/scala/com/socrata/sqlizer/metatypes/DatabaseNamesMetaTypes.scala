@@ -5,9 +5,9 @@ import com.socrata.soql.environment.Provenance
 import com.socrata.soql.functions.SoQLTypeInfo2
 
 final abstract class DatabaseNamesMetaTypes extends MetaTypes with SoQLMetaTypesExt {
-  override type ResourceNameScope = DatabaseMetaTypes#ResourceNameScope
-  override type ColumnType = DatabaseMetaTypes#ColumnType
-  override type ColumnValue = DatabaseMetaTypes#ColumnValue
+  override type ResourceNameScope = DatabaseEntityMetaTypes#ResourceNameScope
+  override type ColumnType = DatabaseEntityMetaTypes#ColumnType
+  override type ColumnValue = DatabaseEntityMetaTypes#ColumnValue
   override type DatabaseTableNameImpl = String
   override type DatabaseColumnNameImpl = String
 }
@@ -25,17 +25,17 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
       }
   }
 
-  def rewriteDTN(dtn: types.DatabaseTableName[DatabaseMetaTypes]): types.DatabaseTableName[DatabaseNamesMetaTypes] =
+  def rewriteDTN(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): types.DatabaseTableName[DatabaseNamesMetaTypes] =
     dtn match {
-      case DatabaseTableName(copyInfo) => DatabaseTableName(copyInfo.dataTableName)
+      case DatabaseTableName(copyInfo) => DatabaseTableName(??? /* dataset.table */ )
     }
 
   def rewriteFrom(
-      dmtState: DatabaseMetaTypes,
-      analysis: SoQLAnalysis[DatabaseMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
+      dmtState: DatabaseEntityMetaTypes,
+      analysis: SoQLAnalysis[DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
     analysis.rewriteDatabaseNames[DatabaseNamesMetaTypes](
       rewriteDTN,
-      { case (_, DatabaseColumnName(columnInfo)) => DatabaseColumnName(columnInfo.physicalColumnBase) },
+      { case (_, DatabaseColumnName(columnInfo)) => DatabaseColumnName(??? /* datasetColumn.columnName */ ) },
       dmtState.provenanceMapper,
       provenanceMapper,
       typeInfo.updateProvenance
