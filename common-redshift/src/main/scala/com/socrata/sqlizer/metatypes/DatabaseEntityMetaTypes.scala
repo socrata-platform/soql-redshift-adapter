@@ -51,7 +51,7 @@ final class DatabaseEntityMetaTypes extends MetaTypes {
       changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseEntityMetaTypes] = {
 
     analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
-      { dtn => DatabaseTableName(???) }, // TODO proper error
+      { case DatabaseTableName(thing) => DatabaseTableName(???) }, // TODO proper error
       { case (dtn, DatabaseColumnName(userColumnId)) =>
         DatabaseColumnName(???) // TODO proper errors
       },

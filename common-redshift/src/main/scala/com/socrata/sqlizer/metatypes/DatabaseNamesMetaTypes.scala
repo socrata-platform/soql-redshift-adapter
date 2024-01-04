@@ -25,16 +25,11 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
       }
   }
 
-  def rewriteDTN(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): types.DatabaseTableName[DatabaseNamesMetaTypes] =
-    dtn match {
-      case DatabaseTableName(dataset) => DatabaseTableName(dataset.table)
-    }
-
   def rewriteFrom(
       dmtState: DatabaseEntityMetaTypes,
       analysis: SoQLAnalysis[DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
     analysis.rewriteDatabaseNames[DatabaseNamesMetaTypes](
-      rewriteDTN,
+      { case DatabaseTableName(dataset) => DatabaseTableName(dataset.table) },
       { case (_, DatabaseColumnName(datasetColumn)) => DatabaseColumnName(datasetColumn.columnName) },
       dmtState.provenanceMapper,
       provenanceMapper,
