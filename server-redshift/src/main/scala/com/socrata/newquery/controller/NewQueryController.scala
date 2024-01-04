@@ -1,5 +1,11 @@
 package com.socrata.newquery.controller
 
+import scala.util._
+import io.agroal.api.AgroalDataSource
+import io.quarkus.agroal.DataSource
+import com.socrata.util.RedshiftSqlUtils
+import java.sql.Connection
+import com.socrata.common.sqlizer.metatypes._
 import com.socrata.soql.analyzer2._
 import com.socrata.common.sqlizer.{metatypes, _}
 import com.socrata.newquery.api.NewQueryEndpoint
@@ -10,6 +16,9 @@ import java.io.InputStream
 
 @ApplicationScoped
 class NewQueryController(
+    @DataSource("store")
+    storeDataSource: AgroalDataSource,
+    databaseEntityMetaTypes: DatabaseEntityMetaTypes
 ) extends NewQueryEndpoint {
   override def post(body: InputStream): Response = {
     import metatypes.InputMetaTypes.DebugHelper._
@@ -17,12 +26,21 @@ class NewQueryController(
 
     val Deserializer.Request(
       analysis: SoQLAnalysis[metatypes.InputMetaTypes],
-      context,
+      locationSubcolumns,
+      context: Map[String, String],
       passes,
       debug,
-      queryTimeout,
-      locationSubcolumns
+      queryTimeout
     ) = Deserializer(body)
+
+    val analysis2 = databaseEntityMetaTypes.rewriteFrom(analysis, InputMetaTypes.provenanceMapper)
+    val analysis3 = DatabaseNamesMetaTypes.rewriteFrom(databaseEntityMetaTypes, analysis2)
+
+    Using.resource(storeDataSource.getConnection) { conn =>
+      val extraContext = new SoQLExtraContext(context, ???, RedshiftSqlUtils.escapeString(conn))
+
+      val sql = RedshiftSqlizer.apply(analysis3, extraContext).right.get.sql
+    }
 
     Response.ok(Map(
       "analysis" -> analysis.statement.debugStr,

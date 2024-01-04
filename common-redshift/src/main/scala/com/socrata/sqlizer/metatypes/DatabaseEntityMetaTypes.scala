@@ -1,5 +1,6 @@
 package com.socrata.common.sqlizer.metatypes
 
+import jakarta.enterprise.context.ApplicationScoped
 import scala.collection.{mutable => scm}
 import com.socrata.datacoordinator.truth.metadata.{ColumnInfo}
 import com.socrata.datacoordinator.id.{DatasetInternalName, DatasetId, UserColumnId}
@@ -9,7 +10,12 @@ import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.soql.functions.SoQLTypeInfo2
 import com.socrata.db
 
-final class DatabaseEntityMetaTypes extends MetaTypes {
+@ApplicationScoped
+final class DatabaseEntityMetaTypes(
+    datasetService: db.meta.service.DatasetService,
+    columnsService: db.meta.service.DatasetColumnService)
+    extends MetaTypes {
+
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
   override type ColumnValue = SoQLValue
@@ -47,10 +53,10 @@ final class DatabaseEntityMetaTypes extends MetaTypes {
 
     analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
       { case DatabaseTableName((DatasetInternalName(instance, datasetId), stage)) =>
-        DatabaseTableName(db.meta.entity.Dataset(???, ???)) // TODO
+        DatabaseTableName(db.meta.entity.Dataset(???, ???)) // TODO use service down here
       },
       { case (DatabaseTableName((DatasetInternalName(instance, datasetId), stage)), DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(db.meta.entity.DatasetColumn(???, ???, ???, ???)) // TODO
+        DatabaseColumnName(db.meta.entity.DatasetColumn(???, ???, ???, ???)) // TODO use service down here
       },
       fromProv,
       provenanceMapper,
