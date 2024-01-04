@@ -1,9 +1,9 @@
 package com.socrata.db.meta.service
 
+import com.socrata.db.Exists
+import com.socrata.db.meta.entity._
 import com.socrata.db.meta.repository._
 import jakarta.enterprise.context.ApplicationScoped
-import com.socrata.db.meta.entity._
-import com.socrata.db.Exists
 
 @ApplicationScoped
 class DatasetColumnService(
