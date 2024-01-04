@@ -52,11 +52,11 @@ final class DatabaseEntityMetaTypes(
   ): SoQLAnalysis[DatabaseEntityMetaTypes] = {
 
     analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
-      { case DatabaseTableName((DatasetInternalName(instance, datasetId), stage)) =>
-        DatabaseTableName(db.meta.entity.Dataset(???, ???)) // TODO use service down here
+      { case DatabaseTableName((dsid @ DatasetInternalName(_, _), stage)) =>
+        DatabaseTableName(??? /* datasetService.findByInternalName(dsid).get */ ) // TODO use service down here
       },
-      { case (DatabaseTableName((DatasetInternalName(instance, datasetId), stage)), DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(db.meta.entity.DatasetColumn(???, ???, ???, ???)) // TODO use service down here
+      { case (DatabaseTableName((dsid @ DatasetInternalName(_, _), stage)), DatabaseColumnName(userColumnId)) =>
+        DatabaseColumnName(??? /* datasetService.findByInternalName(dsid, userColumnId.name).get */) // TODO use service down here
       },
       fromProv,
       provenanceMapper,
