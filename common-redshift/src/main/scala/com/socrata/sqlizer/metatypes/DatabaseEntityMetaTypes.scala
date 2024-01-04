@@ -39,13 +39,16 @@ final class DatabaseEntityMetaTypes extends MetaTypes {
   }
 
   def rewriteFrom[MT <: MetaTypes with ({
-    type ColumnType = SoQLType; type ColumnValue = SoQLValue; type DatabaseColumnNameImpl = UserColumnId
+    type ColumnType = SoQLType
+    type ColumnValue = SoQLValue
+    type DatabaseColumnNameImpl = UserColumnId
   })](
       analysis: SoQLAnalysis[MT],
       fromProv: types.FromProvenance[MT]
   )(
       implicit
       changesOnlyLabels: MetaTypes.ChangesOnlyLabels[MT, DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseEntityMetaTypes] = {
+
     analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
       { dtn => DatabaseTableName(???) }, // TODO proper error
       { case (dtn, DatabaseColumnName(userColumnId)) =>
@@ -56,4 +59,5 @@ final class DatabaseEntityMetaTypes extends MetaTypes {
       typeInfo.updateProvenance
     )
   }
+
 }
