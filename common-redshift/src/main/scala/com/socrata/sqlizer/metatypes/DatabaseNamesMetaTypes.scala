@@ -27,7 +27,7 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
 
   def rewriteDTN(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): types.DatabaseTableName[DatabaseNamesMetaTypes] =
     dtn match {
-      case DatabaseTableName(copyInfo) => DatabaseTableName(??? /* dataset.table */ )
+      case DatabaseTableName(dataset) => DatabaseTableName(dataset.table)
     }
 
   def rewriteFrom(
@@ -35,7 +35,7 @@ object DatabaseNamesMetaTypes extends MetaTypeHelper[DatabaseNamesMetaTypes] {
       analysis: SoQLAnalysis[DatabaseEntityMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] =
     analysis.rewriteDatabaseNames[DatabaseNamesMetaTypes](
       rewriteDTN,
-      { case (_, DatabaseColumnName(columnInfo)) => DatabaseColumnName(??? /* datasetColumn.columnName */ ) },
+      { case (_, DatabaseColumnName(datasetColumn)) => DatabaseColumnName(datasetColumn.columnName) },
       dmtState.provenanceMapper,
       provenanceMapper,
       typeInfo.updateProvenance

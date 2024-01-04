@@ -7,13 +7,14 @@ import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import com.socrata.soql.functions.SoQLTypeInfo2
+import com.socrata.db
 
 final class DatabaseEntityMetaTypes extends MetaTypes {
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
   override type ColumnValue = SoQLValue
-  override type DatabaseTableNameImpl = Unit
-  override type DatabaseColumnNameImpl = Unit
+  override type DatabaseTableNameImpl = db.meta.entity.Dataset
+  override type DatabaseColumnNameImpl = db.meta.entity.DatasetColumn
 
   val typeInfo = new SoQLTypeInfo2[DatabaseEntityMetaTypes]
 
