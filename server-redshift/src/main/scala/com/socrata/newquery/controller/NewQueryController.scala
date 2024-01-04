@@ -37,7 +37,8 @@ class NewQueryController(
     val analysis3 = DatabaseNamesMetaTypes.rewriteFrom(databaseEntityMetaTypes, analysis2)
 
     Using.resource(storeDataSource.getConnection) { conn =>
-      val extraContext = new SoQLExtraContext(context, ???, RedshiftSqlUtils.escapeString(conn))
+      val cpp = CryptProviderProvider.empty
+      val extraContext = new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
 
       val sql = RedshiftSqlizer.apply(analysis3, extraContext).right.get.sql
     }
