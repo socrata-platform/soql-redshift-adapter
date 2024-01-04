@@ -2,7 +2,7 @@ package com.socrata.store.handlers
 
 import com.socrata.datacoordinator.id._
 import com.socrata.common.sqlizer._
-import com.socrata.store.names._
+import com.socrata.names._
 import com.socrata.db.datasets._
 import com.socrata.db.meta.entity._
 import com.rojoma.json.v3.ast._
