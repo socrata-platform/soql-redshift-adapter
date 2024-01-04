@@ -22,8 +22,7 @@ class NewQueryController(
       debug,
       queryTimeout,
       locationSubcolumns
-    ) =
-      Deserializer(body)
+    ) = Deserializer(body)
 
     Response.ok(Map(
       "analysis" -> analysis.statement.debugStr,
