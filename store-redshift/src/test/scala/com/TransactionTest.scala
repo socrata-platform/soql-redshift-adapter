@@ -1,9 +1,9 @@
 package com
 
+import com.socrata.common.db.meta.entity.Dataset
+import com.socrata.common.db.meta.repository.DatasetRepository
 import com.socrata.datacoordinator.id.CopyId
 import com.socrata.datacoordinator.secondary.{CopyInfo, DatasetInfo, LifecycleStage}
-import com.socrata.db.meta.entity.Dataset
-import com.socrata.db.meta.repository.DatasetRepository
 import io.quarkus.logging.Log
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject

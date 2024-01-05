@@ -1,0 +1,51 @@
+version:
+  version: 5.2
+redshift:
+  backoff-interval: 5 minutes
+  claim-timeout: 30m
+  collocation-lock-path: collocation-lock
+  collocation-lock-timeout: 10s
+  instance: alpha
+  log4j:
+  max-replay-wait: 2 hours
+  max-replays: 200
+  max-retries: 29
+  #stub layout for now
+  message-producer-config:
+    eurybates:
+      producers: activemq
+      activemq-conn-str: tcp://local.dev.socrata.net:61616
+    zookeeper:
+      conn-spec: local.dev.socrata.net:2181
+      session-timeout: 4
+  replay-wait: 2 minutes
+  tmpdir: ${java.io.tmpdir}
+  watcher-id: ${quarkus.uuid}
+
+aws:
+  region: us-west-2
+zookeeper:
+  ensemble: local.dev.socrata.net:2181
+  base-sleep-time-ms: 100
+  max-sleep-time-ms: 10000
+  max-retries: 29
+quarkus:
+  test:
+    hang-detection-timeout:
+  log:
+    level: INFO
+  datasource:
+    db-kind: postgresql
+    username: postgres
+    password: admin
+    jdbc:
+      url: jdbc:postgresql://localhost:5432/redshift_metadata
+      max-size: 11
+    #   store is our data store, our redshift
+    store:
+      db-kind: other
+      username: ${REDSHIFT_USER}
+      password: ${REDSHIFT_PASSWORD}
+      jdbc:
+        driver: com.amazon.redshift.jdbc.Driver
+        url: ${REDSHIFT_JDBC_URL} # Must be power of 2. Max rewrite insert size. We will flush buffer manually long before this.
