@@ -1,4 +1,4 @@
-package com.socrata.store
+package com.socrata.common
 
 import scala.util.Using
 import com.socrata.soql.analyzer2._

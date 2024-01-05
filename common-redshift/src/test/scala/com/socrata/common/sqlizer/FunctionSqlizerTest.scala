@@ -1,4 +1,4 @@
-package com.socrata.store.sqlizer
+package com.socrata.common.sqlizer
 
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.types._

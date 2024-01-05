@@ -1,4 +1,4 @@
-package com.socrata.store.sqlizer
+package com.socrata.common.sqlizer
 
 import org.junit.jupiter.api.Assertions._
 
