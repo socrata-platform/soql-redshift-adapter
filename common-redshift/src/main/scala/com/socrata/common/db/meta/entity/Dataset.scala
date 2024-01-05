@@ -63,5 +63,5 @@ object Dataset {
 }
 
 /*
- create table datasets (system_id bigint primary key, obfuscation_key bytea, internal_name text, copy_number bigint, table_name varchar)
+ create table datasets (system_id bigint primary key, obfuscation_key bytea, internal_name text, copy_number bigint, published bool, table_name varchar)
  */

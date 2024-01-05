@@ -57,5 +57,5 @@ object DatasetColumn {
 
 }
 /*
- create table columns (system_id bigint primary key, dataset_id bigint, column_id bigint, column_name varchar)
+ create table columns (system_id bigint primary key, dataset_id bigint, column_id bigint, user_column_id varchar, column_name varchar)
  */
