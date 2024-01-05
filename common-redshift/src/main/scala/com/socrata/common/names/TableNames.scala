@@ -1,6 +1,5 @@
 package com.socrata.common.names
 
-
 import com.socrata.datacoordinator.secondary._
 
 object TableName {

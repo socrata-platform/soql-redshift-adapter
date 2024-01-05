@@ -1,7 +1,11 @@
 package com.socrata
 
 import com.socrata.common.config.ConfigProvider
-import com.socrata.datacoordinator.secondary.messaging.eurybates.{EurybatesConfig, MessageProducerConfig, ZookeeperConfig}
+import com.socrata.datacoordinator.secondary.messaging.eurybates.{
+  EurybatesConfig,
+  MessageProducerConfig,
+  ZookeeperConfig
+}
 import com.socrata.store.config.RedshiftSecondaryConfig
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject

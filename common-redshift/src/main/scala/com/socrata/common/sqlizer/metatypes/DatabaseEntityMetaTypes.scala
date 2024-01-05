@@ -2,7 +2,7 @@ package com.socrata.common.sqlizer.metatypes
 
 import com.socrata.common.db.meta.entity.{Dataset, DatasetColumn}
 import com.socrata.common.db.meta.service.{DatasetColumnService, DatasetService}
-import com.socrata.datacoordinator.id.{DatasetId, DatasetInternalName}
+import com.socrata.datacoordinator.id._
 import com.socrata.soql.analyzer2._
 import com.socrata.soql.environment.Provenance
 import com.socrata.soql.functions.SoQLTypeInfo2
@@ -13,9 +13,9 @@ import scala.collection.{mutable => scm}
 
 @ApplicationScoped
 final class DatabaseEntityMetaTypes(
-                                     datasetService: DatasetService,
-                                     columnsService: DatasetColumnService)
-  extends MetaTypes {
+    datasetService: DatasetService,
+    columnService: DatasetColumnService)
+    extends MetaTypes {
 
   override type ResourceNameScope = Int
   override type ColumnType = SoQLType
@@ -34,7 +34,6 @@ final class DatabaseEntityMetaTypes(
     }
 
     def toProvenance(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): Provenance = {
-      // TODO
       val provKey = (dtn.name.internalName, dtn.name.copyNumber)
       provMap.get(provKey) match {
         case Some(existing) =>
@@ -49,18 +48,29 @@ final class DatabaseEntityMetaTypes(
   }
 
   def rewriteFrom(
-                   analysis: SoQLAnalysis[InputMetaTypes],
-                   fromProv: types.FromProvenance[InputMetaTypes]
-                 ): SoQLAnalysis[DatabaseEntityMetaTypes] = {
+      analysis: SoQLAnalysis[InputMetaTypes],
+      fromProv: types.FromProvenance[InputMetaTypes]
+  ): SoQLAnalysis[DatabaseEntityMetaTypes] = {
 
     analysis.rewriteDatabaseNames[DatabaseEntityMetaTypes](
-      { case DatabaseTableName((dsid@DatasetInternalName(_, _), stage)) =>
-        DatabaseTableName(??? /* datasetService.findByInternalName(dsid).get */) // TODO use service down here
+      { case DatabaseTableName((dsid, stage)) =>
+        DatabaseTableName(datasetService.findByInternalNameAndPublishedState(
+          dsid.underlying,
+          stage.underlying
+        ).get)
       },
-      { case (DatabaseTableName((dsid@DatasetInternalName(_, _), stage)), DatabaseColumnName(userColumnId)) =>
-        DatabaseColumnName(
-          ??? /* datasetService.findByInternalName(dsid, userColumnId.name).get */
-        ) // TODO use service down here
+      { case (DatabaseTableName((dsid, stage)), DatabaseColumnName(colId: UserColumnId)) =>
+        DatabaseColumnName {
+          val dataset = datasetService.findByInternalNameAndPublishedState(
+            dsid.underlying,
+            stage.underlying
+          ).get
+
+          columnService.findByDatasetIdAndUserColumnId(
+            dataset.systemId,
+            colId.underlying
+          ).get
+        }
       },
       fromProv,
       provenanceMapper,

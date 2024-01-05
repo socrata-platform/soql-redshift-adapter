@@ -3,7 +3,15 @@ package com.socrata.store.config
 import RedshiftSecondaryDependencies.SecondaryMap
 import com.codahale.metrics.MetricRegistry
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.socrata.common.config.{CommonObjectMapperCustomizer, ConfigProvider, ConfigSource, EnvSource, JacksonProxyConfigBuilder, JacksonYamlConfigSource, PropertiesFileEnvSource}
+import com.socrata.common.config.{
+  CommonObjectMapperCustomizer,
+  ConfigProvider,
+  ConfigSource,
+  EnvSource,
+  JacksonProxyConfigBuilder,
+  JacksonYamlConfigSource,
+  PropertiesFileEnvSource
+}
 import com.socrata.datacoordinator.common.DataSourceFromConfig.DSInfo
 import com.socrata.datacoordinator.secondary.Secondary
 import com.socrata.datacoordinator.secondary.SecondaryWatcherApp.NumWorkers

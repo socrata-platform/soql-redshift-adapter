@@ -2,7 +2,17 @@ package com.socrata.db.meta.service
 
 import com.socrata.common.utils.managed.ManagedUtils
 import org.joda.time.format.DateTimeFormat
-import com.vividsolutions.jts.geom.{Coordinate, LineString, LinearRing, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon, PrecisionModel}
+import com.vividsolutions.jts.geom.{
+  Coordinate,
+  LineString,
+  LinearRing,
+  MultiLineString,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  Polygon,
+  PrecisionModel
+}
 import com.rojoma.simplearm.v2.Managed
 import com.rojoma.json.v3.interpolation._
 import com.socrata.common.db.meta.entity.Dataset
