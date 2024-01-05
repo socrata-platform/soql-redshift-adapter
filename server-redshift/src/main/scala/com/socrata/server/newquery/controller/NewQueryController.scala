@@ -17,9 +17,9 @@ import java.io.InputStream
 
 @ApplicationScoped
 class NewQueryController(
+    rewriter: SoQLRewriter,
     @DataSource("store")
-    storeDataSource: AgroalDataSource,
-    databaseEntityMetaTypes: DatabaseEntityMetaTypes
+    storeDataSource: AgroalDataSource
 ) extends NewQueryEndpoint {
   override def post(body: InputStream): Response = {
     import metatypes.InputMetaTypes.DebugHelper._
@@ -34,14 +34,13 @@ class NewQueryController(
       queryTimeout
     ) = Deserializer(body)
 
-    val analysis2 = databaseEntityMetaTypes.rewriteFrom(analysis, InputMetaTypes.provenanceMapper)
-    val analysis3 = DatabaseNamesMetaTypes.rewriteFrom(databaseEntityMetaTypes, analysis2)
+    val rewrittenAnalysis = rewriter.rewrite(analysis)
 
     Using.resource(storeDataSource.getConnection) { conn =>
       val cpp = CryptProviderProvider.empty
       val extraContext = new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
 
-      val sql = RedshiftSqlizer.apply(analysis3, extraContext).right.get.sql
+      val sql = RedshiftSqlizer.apply(rewrittenAnalysis, extraContext).right.get.sql
     }
 
     Response.ok(Map(

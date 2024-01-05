@@ -19,6 +19,13 @@
       <artifactId>soql-redshift-adapter-common</artifactId>
       <groupId>com.socrata</groupId>
       <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <artifactId>soql-redshift-adapter-common</artifactId>
+      <groupId>com.socrata</groupId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.swagger</groupId>
