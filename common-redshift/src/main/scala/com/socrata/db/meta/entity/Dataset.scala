@@ -23,6 +23,9 @@ class Dataset extends PanacheEntityBase {
   @Column(name = "copy_number")
   var copyNumber: Long = _
 
+  @Column(name = "published")
+  var published: Boolean = _
+
   @Column(name = "table_name")
   var table: String = _
 
@@ -31,6 +34,7 @@ class Dataset extends PanacheEntityBase {
     obfuscation_key: ${obfuscationKey}
     internal_name: ${internalName}
     copy_number: ${copyNumber}
+    published: ${published}
     table: ${table}
 )
 """
@@ -46,6 +50,7 @@ object Dataset {
     out.obfuscationKey = datasetInfo.obfuscationKey
     out.internalName = datasetInfo.internalName
     out.copyNumber = copyInfo.copyNumber
+    out.published = copyInfo.lifecycleStage == LifecycleStage.Published
     out.table = TableName.from(datasetInfo)
     out
   }

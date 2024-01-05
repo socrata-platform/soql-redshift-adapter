@@ -26,7 +26,7 @@ final class DatabaseEntityMetaTypes(
 
   val provenanceMapper = new types.ProvenanceMapper[DatabaseEntityMetaTypes] {
     private val dtnMap = new scm.HashMap[Provenance, DatabaseTableName[DatabaseTableNameImpl]]
-    private val provMap = new scm.HashMap[(DatasetId, Long /* Dataset.systemId */ ), Provenance]
+    private val provMap = new scm.HashMap[(String, Long /* Dataset.internalName, CopyNumber */ ), Provenance]
 
     def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseEntityMetaTypes] = {
       dtnMap(prov)
@@ -34,12 +34,13 @@ final class DatabaseEntityMetaTypes(
 
     def toProvenance(dtn: types.DatabaseTableName[DatabaseEntityMetaTypes]): Provenance = {
       // TODO
-      provMap.get((???, ???)) match {
+      val provKey = (dtn.name.internalName, dtn.name.copyNumber)
+      provMap.get(provKey) match {
         case Some(existing) =>
           existing
         case None =>
           val prov = Provenance(dtnMap.size.toString)
-          provMap += (???, ???) -> prov
+          provMap += provKey -> prov
           dtnMap += prov -> dtn
           prov
       }

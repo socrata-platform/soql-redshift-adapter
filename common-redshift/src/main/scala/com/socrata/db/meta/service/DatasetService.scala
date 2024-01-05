@@ -10,6 +10,9 @@ import jakarta.enterprise.context.ApplicationScoped
 class DatasetService(
     private val datasetRepository: DatasetRepository
 ) {
+
+  val findByInternalNameAndPublishedState = (datasetRepository.findByInternalNameAndPublishedState _)
+
   def persist(dataset: Dataset): Exists.Exists[Dataset] = {
     datasetRepository.findByInternalNameAndCopyNumber(dataset.internalName, dataset.copyNumber) match {
       case Some(found) =>
