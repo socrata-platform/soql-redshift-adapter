@@ -2,7 +2,7 @@ package com.socrata.common.sqlizer
 
 import com.socrata.common.sqlizer.metatypes._
 
-import com.socrata.store._
+import com.socrata.common._
 import com.socrata.soql.types._
 
 import io.agroal.api.AgroalDataSource

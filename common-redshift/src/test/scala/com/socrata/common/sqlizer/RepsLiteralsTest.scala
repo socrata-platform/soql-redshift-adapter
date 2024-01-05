@@ -5,7 +5,7 @@ import org.joda.time.format.{DateTimeFormat}
 
 import com.socrata.common.sqlizer.metatypes._
 
-import com.socrata.store._
+import com.socrata.common._
 import com.vividsolutions.jts.geom.{
   LineString,
   LinearRing,
