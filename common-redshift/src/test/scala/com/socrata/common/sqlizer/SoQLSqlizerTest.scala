@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import com.socrata.common.sqlizer._
 import com.socrata.common.sqlizer.metatypes._
 
-object FunctionSqlizerTest {
+object SoQLSqlizerTest {
 
   object ProvenanceMapper extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
     def toProvenance(dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]): Provenance = {
@@ -69,7 +69,7 @@ object FunctionSqlizerTest {
 }
 
 @QuarkusTest
-class FunctionSqlizerTest {
+class SoQLSqlizerTest {
 
   val sqlizer = FunctionSqlizerTest.TestSqlizer
 

@@ -35,7 +35,7 @@ import com.socrata.common.sqlizer._
 import ZipExt._
 
 @QuarkusTest
-class RepsLiteralsTest extends TableCreationUtils {
+class SoqlRepRedshiftTest extends TableCreationUtils {
   @DataSource("store")
   @Inject
   var dataSource: AgroalDataSource = _
