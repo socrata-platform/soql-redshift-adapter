@@ -8,10 +8,17 @@ import scala.compat.java8.OptionConverters._
 
 @ApplicationScoped
 class DatasetColumnRepository extends PanacheRepository[DatasetColumn] {
+  def findByDatasetIdAndUserColumnId(datasetId: Long, userColumnId: String): Option[DatasetColumn] = {
+    find(
+      "datasetId = ?1 and user_columnId = ?2",
+      Seq(datasetId, userColumnId).map(_.asInstanceOf[Object]): _*
+    ).singleResultOptional().asScala
+  }
+
   def findByDatasetIdAndColumnId(datasetId: Long, columnId: Long): Option[DatasetColumn] = {
     find(
       "datasetId = ?1 and columnId = ?2",
-      Seq(datasetId, java.lang.Long.valueOf(columnId)).map(_.asInstanceOf[Object]): _*
+      Seq(datasetId, columnId).map(_.asInstanceOf[Object]): _*
     ).singleResultOptional().asScala
   }
 }

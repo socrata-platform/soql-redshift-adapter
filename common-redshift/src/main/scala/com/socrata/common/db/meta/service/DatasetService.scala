@@ -11,6 +11,10 @@ import jakarta.enterprise.context.ApplicationScoped
 class DatasetService(
     private val datasetRepository: DatasetRepository
 ) {
+
+  def findByInternalNameAndPublishedState(internalName: String, publishedState: String) =
+    datasetRepository.findByInternalNameAndPublishedState(internalName, publishedState == "published")
+
   val findByInternalNameAndPublishedState = (datasetRepository.findByInternalNameAndPublishedState _)
 
   def persist(dataset: Dataset): Exists[Dataset] = {

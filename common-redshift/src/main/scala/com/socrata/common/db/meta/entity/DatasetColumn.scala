@@ -20,6 +20,9 @@ class DatasetColumn extends PanacheEntityBase {
   @Column(name = "column_id")
   var columnId: Long = _
 
+  @Column(name = "user_column_id")
+  var userColumnId: String = _
+
   @Column(name = "column_name")
   var columnName: String = _
 
@@ -42,6 +45,7 @@ object DatasetColumn {
     val out = new DatasetColumn()
     out.datasetId = dataset.systemId
     out.columnId = columnInfo.systemId.underlying
+    out.userColumnId = columnInfo.id.underlying
     out.columnName = ColumnNames.from(columnInfo)
     out
   }
