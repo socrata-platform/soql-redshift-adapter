@@ -71,7 +71,7 @@ object SoQLSqlizerTest {
 @QuarkusTest
 class SoQLSqlizerTest {
 
-  val sqlizer = FunctionSqlizerTest.TestSqlizer
+  val sqlizer = SoQLSqlizerTest.TestSqlizer
 
   def extraContext = new SoQLExtraContext(
     Map.empty,
@@ -86,7 +86,7 @@ class SoQLSqlizerTest {
     new MockTableFinder[DatabaseNamesMetaTypes](items.toMap)
 
   val analyzer =
-    new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, FunctionSqlizerTest.ProvenanceMapper)
+    new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, SoQLSqlizerTest.ProvenanceMapper)
 
   def analyzeStatement(stmt: String) = analyze(stmt).sql.layoutSingleLine.toString
 
