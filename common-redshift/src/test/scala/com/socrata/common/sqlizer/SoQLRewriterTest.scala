@@ -25,8 +25,10 @@ object SoQLRewriterTest {
 }
 
 @QuarkusTest
-class SoQLRewriterest {
+class SoQLRewriterTest {
 
   @Test
-  def test(): Unit = {}
+  def test(): Unit = {
+    
+  }
 }
