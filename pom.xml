@@ -300,6 +300,12 @@
           </execution>
         </executions>
         <configuration>
+          <java>
+            <removeUnusedImports />
+            <formatAnnotations />
+            <eclipse />
+            <importOrder />
+          </java>
           <scala>
             <scalafmt>
               <version>3.4.3</version>

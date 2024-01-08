@@ -17,8 +17,6 @@ import com.vividsolutions.jts.geom.{
   Coordinate,
   PrecisionModel
 }
-import com.rojoma.json.v3.ast._
-import com.rojoma.json.v3.interpolation._
 
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._

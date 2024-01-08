@@ -1,5 +1,7 @@
 package com.socrata.common.sqlizer
 
+import scala.util.parsing.input._
+
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
@@ -82,7 +84,7 @@ class SoQLSqlizerTest {
   val sqlizer = SoQLSqlizerTest.TestSqlizer
 
   def extraContext = new SoQLExtraContext(
-    Map.empty,
+    Map("hello" -> "world"),
     _ => Some(obfuscation.CryptProvider.zeros),
     s => s"'$s'"
   )
@@ -128,7 +130,7 @@ class SoQLSqlizerTest {
         case Left(err) => fail("Bad query: " + err)
       }
 
-    sqlizer.apply(analysis, extraContext).getOrElse { fail("analysis failed") }
+    sqlizer.apply(analysis, extraContext)
   }
 
   def test(generated: String, expected: String) = {
@@ -1382,5 +1384,33 @@ class SoQLSqlizerTest {
       ),
       """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp without time zone AS i1 FROM table1 AS x1"""
     )
+  }
+
+  @Test
+  def `test get_context known literal`(): Unit = {
+    assertEquals(
+      analyzeStatement("SELECT get_context('hello')"),
+      """SELECT text 'world' AS i1 FROM table1 AS x1"""
+    )
+  }
+
+  @Test
+  def `test get_context unknown literal`(): Unit = {
+    assertEquals(
+      analyzeStatement("SELECT get_context('goodbye')"),
+      """SELECT null :: text AS i1 FROM table1 AS x1"""
+    )
+  }
+
+  @Test
+  def `test get_context non-literal`(): Unit = {
+    val position = new Position { val line = 1; val column = 8; lazy val lineContents = ??? }
+
+    analyzeStatementEither("SELECT get_context(text)") match {
+      case Left(RedshiftSqlizerError.NonLiteralContextParameter(None, p))
+          if ((p.line == position.line) && (p.column == position.column)) =>
+      case Left(err) => fail(err.toString())
+      case _ => fail()
+    }
   }
 }

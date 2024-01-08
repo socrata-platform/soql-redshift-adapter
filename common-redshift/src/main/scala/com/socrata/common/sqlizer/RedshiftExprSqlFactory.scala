@@ -12,6 +12,6 @@ final class RedshiftExprSqlFactory[MT <: MetaTypes with SoQLMetaTypesExt]
       case Some(_: NullLiteral) =>
         d"null :: super"
       case _ =>
-        rawSqls.funcall(d"soql_compress_compound") // change this
+        ???
     }
 }
