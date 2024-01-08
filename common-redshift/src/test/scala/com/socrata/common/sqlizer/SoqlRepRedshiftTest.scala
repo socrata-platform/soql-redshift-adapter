@@ -2,6 +2,8 @@ package com.socrata.common.sqlizer
 
 import org.joda.time.{DateTime, LocalDateTime, LocalDate, LocalTime}
 import org.joda.time.format.{DateTimeFormat}
+import com.rojoma.json.v3.interpolation._
+import com.rojoma.json.v3.ast._
 
 import com.socrata.common.sqlizer.metatypes._
 

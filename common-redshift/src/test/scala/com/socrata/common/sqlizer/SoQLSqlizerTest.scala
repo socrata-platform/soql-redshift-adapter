@@ -102,13 +102,16 @@ class SoQLSqlizerTest {
       SoQLSqlizerTest.ProvenanceMapper
     )
 
-  def analyzeStatement(stmt: String) = analyze(
+  def analyzeStatement(stmt: String) = analyzeStatementEither(
     stmt
-  ).sql.layoutSingleLine.toString
+  ).right.get.sql.layoutSingleLine.toString
 
-  def analyze(
+  def analyzeStatementEither(
       stmt: String
-  ): com.socrata.soql.sqlizer.Sqlizer.Result[DatabaseNamesMetaTypes] = {
+  ): Either[
+    com.socrata.common.sqlizer.RedshiftSqlizerError[Int],
+    com.socrata.soql.sqlizer.Sqlizer.Result[DatabaseNamesMetaTypes]
+  ] = {
     val tf = MockTableFinder[DatabaseNamesMetaTypes](
       (0, "table1") -> D(
         "text" -> SoQLText,
@@ -1409,8 +1412,8 @@ class SoQLSqlizerTest {
     }
 
     analyzeStatementEither("SELECT get_context(text)") match {
-      case Left(RedshiftSqlizerError.NonLiteralContextParameter(None, p))
-          if ((p.line == position.line) && (p.column == position.column)) =>
+      case Left(RedshiftSqlizerError.NonLiteralContextParameter(source))
+          if ((source.position.line == position.line) && (source.position.column == position.column)) =>
       case Left(err) => fail(err.toString())
       case _         => fail()
     }
