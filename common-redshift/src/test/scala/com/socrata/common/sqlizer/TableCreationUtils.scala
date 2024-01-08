@@ -54,7 +54,8 @@ trait TableCreationUtils {
       new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
         extraContext.cryptProviderProvider,
         sqlizer.namespace,
-        sqlizer.exprSqlFactory
+        sqlizer.exprSqlFactory,
+        sqlizer.toProvenance
       ) {
         override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
       }
@@ -69,7 +70,8 @@ trait TableCreationUtils {
   val TestRepProvider = new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
     extraContext.cryptProviderProvider,
     TestSqlizer.namespace,
-    TestSqlizer.exprSqlFactory
+    TestSqlizer.exprSqlFactory,
+    TestSqlizer.toProvenance
   ) {
     override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
   }

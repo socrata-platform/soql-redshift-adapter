@@ -33,7 +33,7 @@ case class ResyncImpl(tableCreator: TableCreator) extends Resync {
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
       data: Iterator[ColumnIdMap[SoQLValue]]): Option[Long] = {
 
-    tableCreator.create(SoQLSqlizer.repProvider(null, null))(
+    tableCreator.create(SoQLSqlizer.repProvider(null, null, null))(
       dataset,
       columns.map(column => column -> schema(new ColumnId(column.columnId))),
       ""

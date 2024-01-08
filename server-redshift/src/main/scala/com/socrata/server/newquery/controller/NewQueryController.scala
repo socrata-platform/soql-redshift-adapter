@@ -36,14 +36,15 @@ class NewQueryController(
 
     val rewrittenAnalysis = rewriter.rewrite(analysis)
 
-    Using.resource(storeDataSource.getConnection) { conn =>
+    val sql = Using.resource(storeDataSource.getConnection) { conn =>
       val cpp = CryptProviderProvider.empty
       val extraContext = new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
 
-      val sql = RedshiftSqlizer.apply(rewrittenAnalysis, extraContext).right.get.sql
+      RedshiftSqlizer.apply(rewrittenAnalysis, extraContext).right.get.sql
     }
 
     Response.ok(Map(
+      "sql" -> sql,
       "analysis" -> analysis.statement.debugStr,
       "context" -> context,
       "passes" -> passes,

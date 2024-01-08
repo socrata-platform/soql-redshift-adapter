@@ -10,7 +10,8 @@ import com.socrata.common.sqlizer.metatypes._
 @jakarta.enterprise.context.ApplicationScoped
 class SoQLRewriter(databaseEntityMetaTypes: DatabaseEntityMetaTypes) {
   def rewrite(analysis: SoQLAnalysis[InputMetaTypes]): SoQLAnalysis[DatabaseNamesMetaTypes] = {
-    val analysis2 = databaseEntityMetaTypes.rewriteFrom(analysis, InputMetaTypes.provenanceMapper)
-    DatabaseNamesMetaTypes.rewriteFrom(databaseEntityMetaTypes, analysis2)
+    DatabaseNamesMetaTypes.rewriteFrom(databaseEntityMetaTypes,
+      databaseEntityMetaTypes.rewriteFrom(analysis, InputMetaTypes.provenanceMapper)
+    )
   }
 }

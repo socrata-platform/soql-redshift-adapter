@@ -19,6 +19,7 @@ object RedshiftSqlizer
         SoQLSqlizer.repProvider(
           extraContext.cryptProviderProvider,
           extraContext.escapeString,
+          sqlizer.toProvenance,
           sqlizer.namespace,
           sqlizer.exprSqlFactory
         )
@@ -28,12 +29,14 @@ object SoQLSqlizer {
   def repProvider(
       cryptProviderProvider: CryptProviderProvider, // default
       escapeString: String => String, // default
+      toProvenance: types.ToProvenance[DatabaseNamesMetaTypes],
       namespace: SqlNamespaces[DatabaseNamesMetaTypes] = RedshiftNamespaces,
       exprSqlFactory: ExprSqlFactory[DatabaseNamesMetaTypes] = new RedshiftExprSqlFactory) =
     new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
       cryptProviderProvider,
       namespace,
-      exprSqlFactory
+      exprSqlFactory,
+      toProvenance
     ) {
       override def mkStringLiteral(text: String): Doc = {
         // By default, converting a String to Doc replaces the newlines
