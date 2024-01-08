@@ -31,8 +31,9 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
         .getTables(null, null, dataset.table, null)
         .next() match {
         case true =>
-          // Delete and recreate
-          Exists.Updated(dataset.table)
+          throw new IllegalStateException(
+            s"dataset ${dataset} already exists in redshift"
+          )
         case false => {
           val dbColumns
               : List[(TableCreator.ColumnName, TableCreator.ColumnType)] =
@@ -52,7 +53,7 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
           val dbColumnFragment =
             dbColumns.map({ case (name, typ) => s"$name $typ" }).mkString(", ")
 
-          val sql = s"""create table ${dataset.table} ($dbColumnFragment)"""
+          val sql = s"create table ${dataset.table} ($dbColumnFragment)"
           Using.resource(conn.createStatement()) { stmt =>
             stmt.executeUpdate(
               sql

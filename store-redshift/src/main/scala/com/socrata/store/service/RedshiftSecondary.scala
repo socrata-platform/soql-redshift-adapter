@@ -5,6 +5,7 @@ import com.rojoma.simplearm.v2.Managed
 import com.socrata.common.db.Exists
 import com.socrata.common.db.meta.entity.{Dataset, DatasetColumn}
 import com.socrata.common.db.meta.service.{DatasetColumnService, DatasetService}
+import com.socrata.db.datasets
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.truth.metadata.IndexDirective
@@ -15,6 +16,7 @@ import jakarta.transaction.Transactional
 
 @ApplicationScoped
 class RedshiftSecondary(
+    tableDeleter: datasets.TableDeleter,
     datasetService: DatasetService,
     datasetColumnService: DatasetColumnService,
     resyncHandler: Resync
@@ -58,8 +60,20 @@ class RedshiftSecondary(
 
     val (dataset, columns) =
       datasetService.persist(Dataset(datasetInfo, copyInfo)) match {
-        case Exists.Updated(_) => (???, ???)
-        // delete it and recreate it.
+        case Exists.Updated(dataset) =>
+          tableDeleter.delete(dataset)
+          return resync(
+            datasetInfo,
+            copyInfo,
+            schema,
+            cookie,
+            rows,
+            rollups,
+            indexDirectives,
+            indexes,
+            isLatestLivingCopy
+          )
+
         case Exists.Inserted(dataset) => {
           val columns: List[DatasetColumn] = schema.values
             .map(columnInfo =>
