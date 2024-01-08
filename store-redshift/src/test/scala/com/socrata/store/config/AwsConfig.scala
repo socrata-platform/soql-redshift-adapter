@@ -13,7 +13,8 @@ class AwsConfig {
   def awsS3(
       @ConfigProperty(name = "aws.region") region: String
   ): AmazonS3 = {
-    AmazonS3ClientBuilder.standard()
+    AmazonS3ClientBuilder
+      .standard()
       .withRegion(Regions.fromName(region))
       .build()
   }

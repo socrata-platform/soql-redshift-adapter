@@ -1,22 +1,21 @@
-package com.socrata.store.service
+package com.socrata.service
 
-import com.socrata.store.handlers._
 import com.rojoma.simplearm.v2.Managed
-import com.socrata.common.db.meta.entity.{Dataset, DatasetColumn}
-import com.socrata.common.db.meta.service.{DatasetColumnService, DatasetService}
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.truth.metadata.IndexDirective
 import com.socrata.datacoordinator.util.collection.ColumnIdMap
 import com.socrata.soql.types.{SoQLType, SoQLValue}
 import jakarta.enterprise.context.ApplicationScoped
-import jakarta.transaction.Transactional
 
 @ApplicationScoped
 class RedshiftSecondary(
-    datasetService: DatasetService,
-    datasetColumnService: DatasetColumnService,
-    resyncHandler: Resync
+    // This represents the meta datasource, our metadata is easy to fit into orm
+//                         metaService: MetaService,
+    // Possibly no orm? Unclear so far, lets just use a datasource for now.
+//                         @DataSource("store")
+//                         storeDatasource: AgroalDataSource,
+//                         config: RedshiftSecondaryConfig
 ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
@@ -33,16 +32,11 @@ class RedshiftSecondary(
       cookie: Cookie
   ): Long = ???
 
-  override def version(info: VersionInfo[SoQLType, SoQLValue]): Cookie = {
-    None
-  }
+  // ColumnCreatedHandler, where it makes a call to physicalColumnBaseBase, instead of passing in secColInfo.id.underlying pass in secColInfo.fieldName.underlying and it should all Just Work.
+  // https://teams.microsoft.com/l/message/19:f6588672e1684823bec41fceac1e55ba@thread.tacv2/1699997650096?tenantId=7cc5f0f9-ee5b-4106-a62d-1b9f7be46118&groupId=102da3ef-c928-4a59-afe5-f0d51e6443dd&parentMessageId=1699995352754&teamName=D%26I%20-%20Internal&channelName=siq_internal&createdTime=1699997650096&allowXTenantAccess=false
 
-  /*
+  override def version(info: VersionInfo[SoQLType, SoQLValue]): Cookie = ???
 
-   transactional continues to not work
-
-   */
-  @Transactional
   override def resync(
       datasetInfo: DatasetInfo,
       copyInfo: CopyInfo,
@@ -53,22 +47,7 @@ class RedshiftSecondary(
       indexDirectives: Seq[IndexDirective[SoQLType]],
       indexes: Seq[IndexInfo],
       isLatestLivingCopy: Boolean
-  ): Cookie = {
-
-    val dataset = datasetService.persist(Dataset(datasetInfo, copyInfo))
-    val columns: List[DatasetColumn] = schema.values
-      .map(columnInfo =>
-        datasetColumnService.persist(
-          DatasetColumn(dataset, columnInfo)
-        )
-      )
-      .toList
-
-    rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
-      resyncHandler.store(dataset, columns, schema, rows)
-    }
-    None
-  }
+  ): Cookie = ???
 
   override def dropCopy(
       datasetInfo: DatasetInfo,

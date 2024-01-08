@@ -4,8 +4,6 @@ import scala.util._
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 
-import java.sql.Connection
-import com.socrata.common.sqlizer.metatypes._
 import com.socrata.soql.analyzer2._
 import com.socrata.common.sqlizer.{metatypes, _}
 import com.socrata.server.newquery.api.NewQueryEndpoint
@@ -36,20 +34,26 @@ class NewQueryController(
 
     val rewrittenAnalysis = rewriter.rewrite(analysis)
 
-    Using.resource(storeDataSource.getConnection) { conn =>
+    val sql = Using.resource(storeDataSource.getConnection) { conn =>
       val cpp = CryptProviderProvider.empty
-      val extraContext = new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
+      val extraContext =
+        new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
 
-      val sql = RedshiftSqlizer.apply(rewrittenAnalysis, extraContext).right.get.sql
+      RedshiftSqlizer.apply(rewrittenAnalysis, extraContext).right.get.sql
     }
 
-    Response.ok(Map(
-      "analysis" -> analysis.statement.debugStr,
-      "context" -> context,
-      "passes" -> passes,
-      "debug" -> debug,
-      "queryTimeout" -> queryTimeout,
-      "locationSubColumns" -> locationSubcolumns
-    )).build()
+    Response
+      .ok(
+        Map(
+          "sql" -> sql,
+          "analysis" -> analysis.statement.debugStr,
+          "context" -> context,
+          "passes" -> passes,
+          "debug" -> debug,
+          "queryTimeout" -> queryTimeout,
+          "locationSubColumns" -> locationSubcolumns
+        )
+      )
+      .build()
   }
 }

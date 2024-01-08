@@ -18,9 +18,10 @@ object RedshiftNamespaces extends SqlNamespaces[DatabaseNamesMetaTypes] {
 
   override def gensymPrefix: String = "g"
 
-  protected override def idxPrefix: String = "idx" // will we even have indices?
+  protected override def idxPrefix: String = ???
 
-  protected override def autoTablePrefix: String = "x" // "t" is taken by physical tables
+  protected override def autoTablePrefix: String =
+    "x" // "t" is taken by physical tables
 
   protected override def autoColumnPrefix: String = "i"
 }

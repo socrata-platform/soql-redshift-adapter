@@ -1,6 +1,10 @@
 package com.socrata.config
 
-import com.socrata.common.config.{CommonObjectMapperCustomizer, JacksonProxyConfigBuilder, JacksonYamlConfigSource}
+import com.socrata.common.config.{
+  CommonObjectMapperCustomizer,
+  JacksonProxyConfigBuilder,
+  JacksonYamlConfigSource
+}
 import org.junit.jupiter.api.{DisplayName, Test}
 
 import java.io.File
@@ -105,9 +109,12 @@ class JacksonProxyConfigTest {
         .proxy(classOf[Recipe])
 
     val ingredients: List[Ingredient] = recipe.ingredients()
-    val tomato: Ingredient = ingredients.filter(_.name().long().equals("Tomato")).head
-    val cheese: Ingredient = ingredients.filter(_.name().long().equals("Cheese")).head
-    val bread: Ingredient = ingredients.filter(_.name().long().equals("Bread")).head
+    val tomato: Ingredient =
+      ingredients.filter(_.name().long().equals("Tomato")).head
+    val cheese: Ingredient =
+      ingredients.filter(_.name().long().equals("Cheese")).head
+    val bread: Ingredient =
+      ingredients.filter(_.name().long().equals("Bread")).head
     assert(3.equals(tomato.amount()))
     val tomatoName: Name = tomato.name()
     assert("Tomato".equals(tomatoName.long()))

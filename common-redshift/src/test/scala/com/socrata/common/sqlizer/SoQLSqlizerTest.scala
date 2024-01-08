@@ -1,5 +1,7 @@
 package com.socrata.common.sqlizer
 
+import scala.util.parsing.input._
+
 import com.socrata.prettyprint.prelude._
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
@@ -14,18 +16,22 @@ import io.quarkus.test.junit.QuarkusTest
 import org.junit.jupiter.api.{Test}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test;
-import com.socrata.common.sqlizer._
 import com.socrata.common.sqlizer.metatypes._
 
 object SoQLSqlizerTest {
 
-  object ProvenanceMapper extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
-    def toProvenance(dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]): Provenance = {
+  object ProvenanceMapper
+      extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
+    def toProvenance(
+        dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]
+    ): Provenance = {
       val DatabaseTableName(name) = dtn
       Provenance(name)
     }
 
-    def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseNamesMetaTypes] = {
+    def fromProvenance(
+        prov: Provenance
+    ): types.DatabaseTableName[DatabaseNamesMetaTypes] = {
       val Provenance(name) = prov
       DatabaseTableName(name)
     }
@@ -48,7 +54,8 @@ object SoQLSqlizerTest {
     protected override def autoColumnPrefix: String = "i"
   }
 
-  val TestFuncallSqlizer = new SoQLFunctionSqlizerRedshift[DatabaseNamesMetaTypes]
+  val TestFuncallSqlizer =
+    new SoQLFunctionSqlizerRedshift[DatabaseNamesMetaTypes]
 
   val TestSqlizer = new Sqlizer[DatabaseNamesMetaTypes](
     TestFuncallSqlizer,
@@ -61,9 +68,12 @@ object SoQLSqlizerTest {
       new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
         extraContext.cryptProviderProvider,
         sqlizer.namespace,
-        sqlizer.exprSqlFactory
+        sqlizer.exprSqlFactory,
+        sqlizer.toProvenance
       ) {
-        override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
+        override def mkStringLiteral(s: String) = Doc(
+          extraContext.escapeString(s)
+        )
       }
   )
 }
@@ -74,7 +84,7 @@ class SoQLSqlizerTest {
   val sqlizer = SoQLSqlizerTest.TestSqlizer
 
   def extraContext = new SoQLExtraContext(
-    Map.empty,
+    Map("hello" -> "world"),
     _ => Some(obfuscation.CryptProvider.zeros),
     s => s"'$s'"
   )
@@ -86,11 +96,22 @@ class SoQLSqlizerTest {
     new MockTableFinder[DatabaseNamesMetaTypes](items.toMap)
 
   val analyzer =
-    new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, SoQLSqlizerTest.ProvenanceMapper)
+    new SoQLAnalyzer[DatabaseNamesMetaTypes](
+      new SoQLTypeInfo2,
+      SoQLFunctionInfo,
+      SoQLSqlizerTest.ProvenanceMapper
+    )
 
-  def analyzeStatement(stmt: String) = analyze(stmt).sql.layoutSingleLine.toString
+  def analyzeStatement(stmt: String) = analyzeStatementEither(
+    stmt
+  ).right.get.sql.layoutSingleLine.toString
 
-  def analyze(stmt: String): com.socrata.soql.sqlizer.Sqlizer.Result[DatabaseNamesMetaTypes] = {
+  def analyzeStatementEither(
+      stmt: String
+  ): Either[
+    com.socrata.common.sqlizer.RedshiftSqlizerError[Int],
+    com.socrata.soql.sqlizer.Sqlizer.Result[DatabaseNamesMetaTypes]
+  ] = {
     val tf = MockTableFinder[DatabaseNamesMetaTypes](
       (0, "table1") -> D(
         "text" -> SoQLText,
@@ -112,7 +133,7 @@ class SoQLSqlizerTest {
         case Left(err) => fail("Bad query: " + err)
       }
 
-    sqlizer.apply(analysis, extraContext).getOrElse { fail("analysis failed") }
+    sqlizer.apply(analysis, extraContext)
   }
 
   def test(generated: String, expected: String) = {
@@ -171,7 +192,9 @@ class SoQLSqlizerTest {
   @Test
   def in_subset_works_case_insensitively: Unit = {
     test(
-      analyzeStatement("SELECT text, num WHERE caseless_one_of(text, 'one', 'two', 'three')"),
+      analyzeStatement(
+        "SELECT text, num WHERE caseless_one_of(text, 'one', 'two', 'three')"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2 FROM table1 AS x1 WHERE (upper(x1.text)) IN (upper(text 'one'), upper(text 'two'), upper(text 'three'))""")
     )
   }
@@ -187,7 +210,9 @@ class SoQLSqlizerTest {
   @Test
   def caseless_not_one_of_works: Unit = {
     test(
-      analyzeStatement("SELECT text, num WHERE caseless_not_one_of(text, 'one', 'two', 'three')"),
+      analyzeStatement(
+        "SELECT text, num WHERE caseless_not_one_of(text, 'one', 'two', 'three')"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2 FROM table1 AS x1 WHERE (upper(x1.text)) NOT IN (upper(text 'one'), upper(text 'two'), upper(text 'three'))""")
     )
   }
@@ -354,7 +379,10 @@ class SoQLSqlizerTest {
 
   @Test
   def `concat || works`: Unit = {
-    test(analyzeStatement("SELECT text || num"), ("""SELECT (x1.text) || (x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT text || num"),
+      ("""SELECT (x1.text) || (x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
@@ -391,7 +419,10 @@ class SoQLSqlizerTest {
 
   @Test
   def `trimming on both ends works`: Unit = {
-    test(analyzeStatement("SELECT trim('   abc   ')"), ("""SELECT trim(text '   abc   ') AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT trim('   abc   ')"),
+      ("""SELECT trim(text '   abc   ') AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
@@ -428,7 +459,10 @@ class SoQLSqlizerTest {
 
   @Test
   def `chr() works`: Unit = {
-    test(analyzeStatement("SELECT chr(50.2)"), ("SELECT chr((50.2 :: decimal(30, 7)) :: int) AS i1 FROM table1 AS x1"))
+    test(
+      analyzeStatement("SELECT chr(50.2)"),
+      ("SELECT chr((50.2 :: decimal(30, 7)) :: int) AS i1 FROM table1 AS x1")
+    )
   }
 
   @Test
@@ -457,12 +491,18 @@ class SoQLSqlizerTest {
 
   @Test
   def `uniary minus works`: Unit = {
-    test(analyzeStatement("SELECT text, - num"), ("""SELECT x1.text AS i1, -(x1.num) AS i2 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT text, - num"),
+      ("""SELECT x1.text AS i1, -(x1.num) AS i2 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `uniary plus works`: Unit = {
-    test(analyzeStatement("SELECT text, + num"), ("""SELECT x1.text AS i1, x1.num AS i2 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT text, + num"),
+      ("""SELECT x1.text AS i1, x1.num AS i2 FROM table1 AS x1""")
+    )
   }
 
   @Test
@@ -523,22 +563,34 @@ class SoQLSqlizerTest {
 
   @Test
   def `ln works`: Unit = {
-    test(analyzeStatement("SELECT ln(16)"), ("""SELECT ln(16 :: decimal(30, 7)) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT ln(16)"),
+      ("""SELECT ln(16 :: decimal(30, 7)) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `absolute works`: Unit = {
-    test(analyzeStatement("SELECT abs(-1.234)"), ("""SELECT abs(-1.234 :: decimal(30, 7)) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT abs(-1.234)"),
+      ("""SELECT abs(-1.234 :: decimal(30, 7)) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `ceil() works`: Unit = {
-    test(analyzeStatement("SELECT ceil(4.234)"), ("""SELECT ceil(4.234 :: decimal(30, 7)) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT ceil(4.234)"),
+      ("""SELECT ceil(4.234 :: decimal(30, 7)) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `floor works`: Unit = {
-    test(analyzeStatement("SELECT floor(9.89)"), ("""SELECT floor(9.89 :: decimal(30, 7)) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT floor(9.89)"),
+      ("""SELECT floor(9.89 :: decimal(30, 7)) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
@@ -584,7 +636,9 @@ class SoQLSqlizerTest {
   @Test
   def `ToFloatingTimestamp`: Unit = {
     test(
-      analyzeStatement("""select to_floating_timestamp("2022-12-31T23:59:59Z", "America/New_York")"""),
+      analyzeStatement(
+        """select to_floating_timestamp("2022-12-31T23:59:59Z", "America/New_York")"""
+      ),
       """SELECT (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York') AS i1 FROM table1 AS x1"""
     )
   }
@@ -640,7 +694,9 @@ class SoQLSqlizerTest {
   @Test
   def `FixedTimeStampTruncYmdAtTimeZone`: Unit = {
     test(
-      analyzeStatement("select date_trunc_ymd('2022-12-31T23:59:59Z', 'America/New_York')"),
+      analyzeStatement(
+        "select date_trunc_ymd('2022-12-31T23:59:59Z', 'America/New_York')"
+      ),
       ("""SELECT date_trunc('day', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')) AS i1 FROM table1 AS x1""")
     )
   }
@@ -648,7 +704,9 @@ class SoQLSqlizerTest {
   @Test
   def `FixedTimeStampTruncYmAtTimeZone`: Unit = {
     test(
-      analyzeStatement("select date_trunc_ym('2022-12-31T23:59:59Z', 'America/New_York')"),
+      analyzeStatement(
+        "select date_trunc_ym('2022-12-31T23:59:59Z', 'America/New_York')"
+      ),
       ("""SELECT date_trunc('month', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')) AS i1 FROM table1 AS x1""")
     )
   }
@@ -656,7 +714,9 @@ class SoQLSqlizerTest {
   @Test
   def `FixedTimeStampTruncYAtTimeZone`: Unit = {
     test(
-      analyzeStatement("select date_trunc_y('2022-12-31T23:59:59Z', 'America/New_York')"),
+      analyzeStatement(
+        "select date_trunc_y('2022-12-31T23:59:59Z', 'America/New_York')"
+      ),
       ("""SELECT date_trunc('year', (timestamp with time zone '2022-12-31T23:59:59.000Z') at time zone (text 'America/New_York')) AS i1 FROM table1 AS x1""")
     )
   }
@@ -744,7 +804,9 @@ class SoQLSqlizerTest {
   @Test
   def `TimeStampDiffD`: Unit = {
     test(
-      analyzeStatement("select date_diff_d('2022-12-31T23:59:59Z', '2022-01-01T00:00:00Z')"),
+      analyzeStatement(
+        "select date_diff_d('2022-12-31T23:59:59Z', '2022-01-01T00:00:00Z')"
+      ),
       ("""SELECT datediff(day, timestamp with time zone '2022-12-31T23:59:59.000Z' at time zone (text 'UTC'), timestamp with time zone '2022-01-01T00:00:00.000Z' at time zone (text 'UTC')) AS i1 FROM table1 AS x1""")
     )
   }
@@ -776,17 +838,26 @@ class SoQLSqlizerTest {
 //  tests for aggregate functions
   @Test
   def `max works`: Unit = {
-    test(analyzeStatement("SELECT max(num)"), ("""SELECT max(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT max(num)"),
+      ("""SELECT max(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `min works`: Unit = {
-    test(analyzeStatement("SELECT min(num)"), ("""SELECT min(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT min(num)"),
+      ("""SELECT min(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `count(*) works`: Unit = {
-    test(analyzeStatement("SELECT count(*)"), ("""SELECT (count(*)) :: decimal(30, 7) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT count(*)"),
+      ("""SELECT (count(*)) :: decimal(30, 7) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
@@ -815,27 +886,42 @@ class SoQLSqlizerTest {
 
   @Test
   def `sum works`: Unit = {
-    test(analyzeStatement("SELECT sum(num)"), ("""SELECT sum(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT sum(num)"),
+      ("""SELECT sum(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `avg works`: Unit = {
-    test(analyzeStatement("SELECT avg(num)"), ("""SELECT avg(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT avg(num)"),
+      ("""SELECT avg(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `median works`: Unit = {
-    test(analyzeStatement("SELECT median(num)"), ("""SELECT median(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT median(num)"),
+      ("""SELECT median(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `stddev_pop works`: Unit = {
-    test(analyzeStatement("SELECT stddev_pop(num)"), ("""SELECT stddev_pop(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT stddev_pop(num)"),
+      ("""SELECT stddev_pop(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
   @Test
   def `stddev_samp`: Unit = {
-    test(analyzeStatement("SELECT stddev_samp(num)"), ("""SELECT stddev_samp(x1.num) AS i1 FROM table1 AS x1"""))
+    test(
+      analyzeStatement("SELECT stddev_samp(num)"),
+      ("""SELECT stddev_samp(x1.num) AS i1 FROM table1 AS x1""")
+    )
   }
 
 //  tests for conditional functions
@@ -858,7 +944,9 @@ class SoQLSqlizerTest {
   @Test
   def `case works`: Unit = {
     test(
-      analyzeStatement("SELECT num, case(num > 1, 'large num', num <= 1, 'small num')"),
+      analyzeStatement(
+        "SELECT num, case(num > 1, 'large num', num <= 1, 'small num')"
+      ),
       ("""SELECT x1.num AS i1, CASE WHEN (x1.num) > (1 :: decimal(30, 7)) THEN text 'large num' WHEN (x1.num) <= (1 :: decimal(30, 7)) THEN text 'small num' END AS i2 FROM table1 AS x1""")
     )
   }
@@ -881,7 +969,8 @@ class SoQLSqlizerTest {
   }
 
   @Test
-  def `from line to multiline, from polygon to multipolygon and from line to multiline work`: Unit = {
+  def `from line to multiline, from polygon to multipolygon and from line to multiline work`
+      : Unit = {
     test(
       analyzeStatement("SELECT geo_multi(geom)"),
       ("""SELECT st_asbinary(st_multi(x1.geom)) AS i1 FROM table1 AS x1""")
@@ -1012,7 +1101,9 @@ class SoQLSqlizerTest {
   @Test
   def `row_number works`: Unit = {
     test(
-      analyzeStatement("SELECT text,num, row_number() over(partition by text order by num)"),
+      analyzeStatement(
+        "SELECT text,num, row_number() over(partition by text order by num)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, row_number() OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1020,7 +1111,9 @@ class SoQLSqlizerTest {
   @Test
   def `rank works`: Unit = {
     test(
-      analyzeStatement("SELECT text, rank() over(partition by text order by num)"),
+      analyzeStatement(
+        "SELECT text, rank() over(partition by text order by num)"
+      ),
       ("""SELECT x1.text AS i1, rank() OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST) AS i2 FROM table1 AS x1""")
     )
   }
@@ -1028,7 +1121,9 @@ class SoQLSqlizerTest {
   @Test
   def `dense_rank works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, dense_rank() over(partition by text order by num)"),
+      analyzeStatement(
+        "SELECT text, num, dense_rank() over(partition by text order by num)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, dense_rank() OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1036,7 +1131,9 @@ class SoQLSqlizerTest {
   @Test
   def `first_value works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, first_value(num) over(partition by text order by num rows between unbounded preceding and current row)"),
+      analyzeStatement(
+        "SELECT text, num, first_value(num) over(partition by text order by num rows between unbounded preceding and current row)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, first_value(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1044,7 +1141,9 @@ class SoQLSqlizerTest {
   @Test
   def `last_value works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, last_value(num) over(partition by text order by num rows between unbounded preceding and current row)"),
+      analyzeStatement(
+        "SELECT text, num, last_value(num) over(partition by text order by num rows between unbounded preceding and current row)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, last_value(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1052,7 +1151,9 @@ class SoQLSqlizerTest {
   @Test
   def `lead works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, lead(num) over(partition by text order by num)"),
+      analyzeStatement(
+        "SELECT text, num, lead(num) over(partition by text order by num)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, lead(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1060,7 +1161,9 @@ class SoQLSqlizerTest {
   @Test
   def `leadOffset works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, lead(num, 2) over(partition by text order by num)"),
+      analyzeStatement(
+        "SELECT text, num, lead(num, 2) over(partition by text order by num)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, lead(x1.num, (2 :: decimal(30, 7)) :: int) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1068,7 +1171,9 @@ class SoQLSqlizerTest {
   @Test
   def `lag works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, lag(num) over(partition by text order by num desc)"),
+      analyzeStatement(
+        "SELECT text, num, lag(num) over(partition by text order by num desc)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, lag(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num DESC NULLS FIRST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1076,7 +1181,9 @@ class SoQLSqlizerTest {
   @Test
   def `lagOffset works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, lag(num, 2) over(partition by text order by num desc)"),
+      analyzeStatement(
+        "SELECT text, num, lag(num, 2) over(partition by text order by num desc)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, lag(x1.num, (2 :: decimal(30, 7)) :: int) OVER (PARTITION BY x1.text ORDER BY x1.num DESC NULLS FIRST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1084,7 +1191,9 @@ class SoQLSqlizerTest {
   @Test
   def `ntile works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, ntile(4) over(partition by text order by num)"),
+      analyzeStatement(
+        "SELECT text, num, ntile(4) over(partition by text order by num)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, ntile((4 :: decimal(30, 7)) :: int) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1092,7 +1201,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) max works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, max(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, max(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, max(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1100,7 +1211,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) min works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, min(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, min(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, min(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1108,7 +1221,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) count(*) works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, count(*) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, count(*) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, (count(*) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)) :: decimal(30, 7) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1116,7 +1231,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) count() works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, count(text) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, count(text) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, (count(x1.text) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)) :: decimal(30, 7) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1124,7 +1241,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) sum works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, sum(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, sum(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, sum(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1132,7 +1251,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) avg works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, avg(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, avg(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, avg(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1148,7 +1269,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) stddev_pop works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, stddev_pop(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, stddev_pop(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, stddev_pop(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1156,7 +1279,9 @@ class SoQLSqlizerTest {
   @Test
   def `(window function) stddev_samp works`: Unit = {
     test(
-      analyzeStatement("SELECT text, num, stddev_samp(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"),
+      analyzeStatement(
+        "SELECT text, num, stddev_samp(num) over(partition by text order by num rows between unbounded preceding and unbounded following)"
+      ),
       ("""SELECT x1.text AS i1, x1.num AS i2, stddev_samp(x1.num) OVER (PARTITION BY x1.text ORDER BY x1.num ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS i3 FROM table1 AS x1""")
     )
   }
@@ -1173,7 +1298,9 @@ class SoQLSqlizerTest {
   @Test
   def `geo cast text to multipoint works`: Unit = {
     assertEquals(
-      analyzeStatement("SELECT ('MULTIPOINT' || '((0 0), (1 1))') :: multipoint"),
+      analyzeStatement(
+        "SELECT ('MULTIPOINT' || '((0 0), (1 1))') :: multipoint"
+      ),
       ("""SELECT st_asbinary(st_geomfromtext((text 'MULTIPOINT') || (text '((0 0), (1 1))'), 4326)) AS i1 FROM table1 AS x1""")
     )
   }
@@ -1189,7 +1316,9 @@ class SoQLSqlizerTest {
   @Test
   def `geo cast text to multiline works`: Unit = {
     assertEquals(
-      analyzeStatement("SELECT ('MULTILINESTRING' || '((0 0, 1 1), (2 2, 3 3))') :: multiline"),
+      analyzeStatement(
+        "SELECT ('MULTILINESTRING' || '((0 0, 1 1), (2 2, 3 3))') :: multiline"
+      ),
       ("""SELECT st_asbinary(st_geomfromtext((text 'MULTILINESTRING') || (text '((0 0, 1 1), (2 2, 3 3))'), 4326)) AS i1 FROM table1 AS x1""")
     )
   }
@@ -1197,7 +1326,9 @@ class SoQLSqlizerTest {
   @Test
   def `geo cast text to polygon works`: Unit = {
     assertEquals(
-      analyzeStatement("SELECT ('POLYGON' || '((0 0, 1 0, 1 1, 0 1, 0 0))') :: polygon"),
+      analyzeStatement(
+        "SELECT ('POLYGON' || '((0 0, 1 0, 1 1, 0 1, 0 0))') :: polygon"
+      ),
       ("""SELECT st_asbinary(st_geomfromtext((text 'POLYGON') || (text '((0 0, 1 0, 1 1, 0 1, 0 0))'), 4326)) AS i1 FROM table1 AS x1""")
     )
   }
@@ -1241,7 +1372,9 @@ class SoQLSqlizerTest {
   @Test
   def `text to fixed timestamp works`(): Unit = {
     assertEquals(
-      analyzeStatement("Select ('2022-12-31T' || '23:59:59Z') :: fixed_timestamp"),
+      analyzeStatement(
+        "Select ('2022-12-31T' || '23:59:59Z') :: fixed_timestamp"
+      ),
       """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp with time zone AS i1 FROM table1 AS x1"""
     )
   }
@@ -1249,8 +1382,40 @@ class SoQLSqlizerTest {
   @Test
   def `text to floating timestamp works`(): Unit = {
     assertEquals(
-      analyzeStatement("SELECT ('2022-12-31T' || '23:59:59Z') :: floating_timestamp"),
+      analyzeStatement(
+        "SELECT ('2022-12-31T' || '23:59:59Z') :: floating_timestamp"
+      ),
       """SELECT ((text '2022-12-31T') || (text '23:59:59Z')) :: timestamp without time zone AS i1 FROM table1 AS x1"""
     )
+  }
+
+  @Test
+  def `test get_context known literal`(): Unit = {
+    assertEquals(
+      analyzeStatement("SELECT get_context('hello')"),
+      """SELECT text 'world' AS i1 FROM table1 AS x1"""
+    )
+  }
+
+  @Test
+  def `test get_context unknown literal`(): Unit = {
+    assertEquals(
+      analyzeStatement("SELECT get_context('goodbye')"),
+      """SELECT null :: text AS i1 FROM table1 AS x1"""
+    )
+  }
+
+  @Test
+  def `test get_context non-literal`(): Unit = {
+    val position = new Position {
+      val line = 1; val column = 8; lazy val lineContents = ???
+    }
+
+    analyzeStatementEither("SELECT get_context(text)") match {
+      case Left(RedshiftSqlizerError.NonLiteralContextParameter(source))
+          if ((source.position.line == position.line) && (source.position.column == position.column)) =>
+      case Left(err) => fail(err.toString())
+      case _         => fail()
+    }
   }
 }

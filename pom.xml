@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter</artifactId>
@@ -27,11 +27,12 @@
     <redshift.jdbc.version>2.1.0.19</redshift.jdbc.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
     <scala.version>2.12.18</scala.version>
-    <secondarylib.version>4.2.18</secondarylib.version>
-    <skipITs>true</skipITs>
-    <skipTests>true</skipTests>
-    <soql.std.version>4.14.36</soql.std.version>
+    <soql.std.version>4.14.37</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
+    <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
+    <secondarylib.version>4.2.20</secondarylib.version>
+    <skipITs>false</skipITs>
+    <skipTests>false</skipTests>
     <quarkus.jib.base-jvm-image>socrata/runit-java-focal:17</quarkus.jib.base-jvm-image>
     <quarkus.jib.jvm-entrypoint>/sbin/my_init</quarkus.jib.jvm-entrypoint>
     <quarkus.jib.user>root</quarkus.jib.user>
@@ -276,6 +277,7 @@
             <arg>-deprecation</arg>
             <arg>-feature</arg>
             <arg>-explaintypes</arg>
+            <arg>-Xfatal-warnings</arg>
             <arg>-Ywarn-unused</arg>
           </args>
         </configuration>
@@ -306,10 +308,15 @@
           </execution>
         </executions>
         <configuration>
+          <java>
+            <removeUnusedImports />
+            <formatAnnotations />
+            <eclipse />
+            <importOrder />
+          </java>
           <scala>
             <scalafmt>
               <version>3.4.3</version>
-              <file>scalafmt.conf</file>
               <scalaMajorVersion>2.12</scalaMajorVersion>
             </scalafmt>
           </scala>

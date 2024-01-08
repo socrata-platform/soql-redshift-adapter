@@ -38,8 +38,6 @@ class DatasetColumn extends PanacheEntityBase {
 object DatasetColumn {
   def apply(
       dataset: Dataset,
-      datasetInfo: DatasetInfo,
-      copyInfo: CopyInfo,
       columnInfo: ColumnInfo[_]
   ): DatasetColumn = {
     val out = new DatasetColumn()
@@ -51,6 +49,7 @@ object DatasetColumn {
   }
 
   def update(updated: DatasetColumn, copyFrom: DatasetColumn) = {
+    updated.userColumnId = copyFrom.userColumnId
     updated.columnName = copyFrom.columnName
     updated
   }

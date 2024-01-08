@@ -1,6 +1,5 @@
 package com.socrata.common.names
 
-import jakarta.enterprise.context.ApplicationScoped
 import com.socrata.datacoordinator.secondary._
 
 object ColumnNames {

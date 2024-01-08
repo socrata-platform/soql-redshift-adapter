@@ -17,8 +17,11 @@ class Application(
 ) extends QuarkusApplication {
   override def run(args: String*): Int = {
     println(args)
-    val (dsInfo: DSInfo, reporter: MetricsReporter, curator: CuratorFramework) = secondaryBundle
-    SecondaryWatcherApp(dsInfo, reporter, curator)(secondaryWatcherAppConfig)(secondaryMap)
+    val (dsInfo: DSInfo, reporter: MetricsReporter, curator: CuratorFramework) =
+      secondaryBundle
+    SecondaryWatcherApp(dsInfo, reporter, curator)(secondaryWatcherAppConfig)(
+      secondaryMap
+    )
     0
   }
 }

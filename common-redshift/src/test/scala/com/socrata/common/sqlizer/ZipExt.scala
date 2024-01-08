@@ -7,7 +7,8 @@ object ZipExt {
     def zipExact[R](other: Seq[R]): Seq[(T, R)] = {
       if (seq.length == other.length) {
         seq.zip(other)
-      } else fail(s"""You cannot pass...${seq} and ${other} are different lengths
+      } else
+        fail(s"""You cannot pass...${seq} and ${other} are different lengths
 The dark fire will not avail you, flame of Udûn. """)
     }
   }

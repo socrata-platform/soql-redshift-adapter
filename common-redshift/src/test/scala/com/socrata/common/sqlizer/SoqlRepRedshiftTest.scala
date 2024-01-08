@@ -2,6 +2,8 @@ package com.socrata.common.sqlizer
 
 import org.joda.time.{DateTime, LocalDateTime, LocalDate, LocalTime}
 import org.joda.time.format.{DateTimeFormat}
+import com.rojoma.json.v3.interpolation._
+import com.rojoma.json.v3.ast._
 
 import com.socrata.common.sqlizer.metatypes._
 
@@ -17,8 +19,6 @@ import com.vividsolutions.jts.geom.{
   Coordinate,
   PrecisionModel
 }
-import com.rojoma.json.v3.ast._
-import com.rojoma.json.v3.interpolation._
 
 import com.socrata.soql.types._
 import com.socrata.soql.analyzer2._
@@ -30,7 +30,6 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.{Test}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test;
-import com.socrata.common.sqlizer._
 
 import ZipExt._
 
@@ -44,12 +43,19 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
   val schema = SchemaImpl(repProvider)
   val rows = RowsImpl(repProvider)
 
-  def testFails[T <: Throwable](literal: DatabaseNamesMetaTypes#ColumnValue)(expectedType: Class[T]) = {
+  def testFails[T <: Throwable](
+      literal: DatabaseNamesMetaTypes#ColumnValue
+  )(expectedType: Class[T]) = {
     assertThrows(
       expectedType,
       () =>
         repProvider
-          .reps(literal.typ).literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.Synthetic))
+          .reps(literal.typ)
+          .literal(
+            LiteralValue[DatabaseNamesMetaTypes](literal)(
+              AtomicPositionInfo.Synthetic
+            )
+          )
     )
   }
 
@@ -57,15 +63,27 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
     val rep = repProvider
       .reps(literal.typ)
 
-    rep.literal(LiteralValue[DatabaseNamesMetaTypes](literal)(AtomicPositionInfo.Synthetic)).sqls.map(_.toString)
+    rep
+      .literal(
+        LiteralValue[DatabaseNamesMetaTypes](literal)(
+          AtomicPositionInfo.Synthetic
+        )
+      )
+      .sqls
+      .map(_.toString)
       .zipExact(expected.toList)
       .foreach {
         case (received, expected) => {
           assertEquals(expected, received)
           println(s"$expected == $received")
-          Utils.withTable(dataSource, "repsLiteral")("foo", "int") { (conn, tableName) =>
-            schema.update(tableName, "testcol")(literal.typ).foreach(thing => thing.execute(conn))
-            rows.update(tableName, "testcol")(literal).foreach(thing => thing.execute(conn))
+          Utils.withTable(dataSource, "repsLiteral")("foo", "int") {
+            (conn, tableName) =>
+              schema
+                .update(tableName, "testcol")(literal.typ)
+                .foreach(thing => thing.execute(conn))
+              rows
+                .update(tableName, "testcol")(literal)
+                .foreach(thing => thing.execute(conn))
           }
         }
       }
@@ -93,13 +111,17 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
   @Test
   def fixedTimestamp(): Unit = {
     val dateTime: DateTime = formatter.parseDateTime(dateStr)
-    test(SoQLFixedTimestamp(dateTime))("timestamp with time zone '2021-06-13T23:14:23.000Z'")
+    test(SoQLFixedTimestamp(dateTime))(
+      "timestamp with time zone '2021-06-13T23:14:23.000Z'"
+    )
   }
 
   @Test
   def floatingTimestamp(): Unit = {
     val dateTime: LocalDateTime = formatter.parseLocalDateTime(dateStr)
-    test(SoQLFloatingTimestamp(dateTime))("timestamp without time zone '2021-06-13T18:14:23.000'")
+    test(SoQLFloatingTimestamp(dateTime))(
+      "timestamp without time zone '2021-06-13T18:14:23.000'"
+    )
   }
 
   @Test
@@ -120,7 +142,9 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
     test(SoQLJson(JNumber(BigDecimal(2.18))))("JSON_PARSE(2.18)")
     test(SoQLJson(j"""{"foo": 22}"""))("""JSON_PARSE('{"foo":22}')""")
     test(SoQLJson(JNull))("JSON_PARSE(null)")
-    test(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))("""JSON_PARSE('[2,"foo"]')""")
+    test(SoQLJson(JArray(Seq(JNumber(2), JString("foo")))))(
+      """JSON_PARSE('[2,"foo"]')"""
+    )
   }
 
   @Test
@@ -141,7 +165,11 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
 
   @Test
   def multipoint(): Unit = {
-    test(SoQLMultiPoint(new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)))(
+    test(
+      SoQLMultiPoint(
+        new MultiPoint(Array(pt, pt, pt), precisionModel, Geo.defaultSRID)
+      )
+    )(
       """ST_GeomFromWKB(
   '00000000040000000300000000014059000000000000408f38000000000000000000014059000000000000408f38000000000000000000014059000000000000408f380000000000',
   4326
@@ -149,7 +177,11 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
     )
   }
 
-  val lineString = new LineString(Array(coordinate, coordinate), precisionModel, Geo.defaultSRID)
+  val lineString = new LineString(
+    Array(coordinate, coordinate),
+    precisionModel,
+    Geo.defaultSRID
+  )
 
   @Test
   def line(): Unit = {
@@ -163,7 +195,15 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
 
   @Test
   def multiline(): Unit = {
-    test(SoQLMultiLine(new MultiLineString(Array(lineString, lineString), precisionModel, Geo.defaultSRID)))(
+    test(
+      SoQLMultiLine(
+        new MultiLineString(
+          Array(lineString, lineString),
+          precisionModel,
+          Geo.defaultSRID
+        )
+      )
+    )(
       """ST_GeomFromWKB(
   '0000000005000000020000000002000000024059000000000000408f3800000000004059000000000000408f3800000000000000000002000000024059000000000000408f3800000000004059000000000000408f380000000000',
   4326
@@ -172,7 +212,11 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
   }
 
   val poly = new Polygon(
-    new LinearRing(Array(coordinate, coordinate, coordinate, coordinate), precisionModel, Geo.defaultSRID),
+    new LinearRing(
+      Array(coordinate, coordinate, coordinate, coordinate),
+      precisionModel,
+      Geo.defaultSRID
+    ),
     precisionModel,
     Geo.defaultSRID
   )
@@ -189,7 +233,15 @@ class SoqlRepRedshiftTest extends TableCreationUtils {
 
   @Test
   def multipolygon(): Unit = {
-    test(SoQLMultiPolygon(new MultiPolygon(Array(poly, poly, poly), precisionModel, Geo.defaultSRID)))(
+    test(
+      SoQLMultiPolygon(
+        new MultiPolygon(
+          Array(poly, poly, poly),
+          precisionModel,
+          Geo.defaultSRID
+        )
+      )
+    )(
       """ST_GeomFromWKB(
   '000000000600000003000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000000000000300000001000000044059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f3800000000004059000000000000408f380000000000',
   4326

@@ -3,7 +3,11 @@ package com
 import com.socrata.common.db.meta.entity.Dataset
 import com.socrata.common.db.meta.repository.DatasetRepository
 import com.socrata.datacoordinator.id.CopyId
-import com.socrata.datacoordinator.secondary.{CopyInfo, DatasetInfo, LifecycleStage}
+import com.socrata.datacoordinator.secondary.{
+  CopyInfo,
+  DatasetInfo,
+  LifecycleStage
+}
 import io.quarkus.logging.Log
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
@@ -22,8 +26,16 @@ class TransactionTest {
   def successfulPersist(): Unit = {
     val internalName: String = "alpha50"
     val copyNumber: Long = 20L
-    val datasetInfo: DatasetInfo = DatasetInfo(internalName, "en", Array.empty, Some("aaaa-aaaa"))
-    val copyInfo: CopyInfo = CopyInfo(new CopyId(10), copyNumber, LifecycleStage.Published, 1L, 1L, DateTime.now())
+    val datasetInfo: DatasetInfo =
+      DatasetInfo(internalName, "en", Array.empty, Some("aaaa-aaaa"))
+    val copyInfo: CopyInfo = CopyInfo(
+      new CopyId(10),
+      copyNumber,
+      LifecycleStage.Published,
+      1L,
+      1L,
+      DateTime.now()
+    )
     val dataset: Dataset = Dataset(datasetInfo, copyInfo)
     persist(dataset)
 
@@ -32,24 +44,34 @@ class TransactionTest {
         Log.info("dataset persisted, now deleting")
         delete(persistedDataset)
       }
-      case None => assume(false, "expected dataset to be persisted successfully")
+      case None =>
+        assume(false, "expected dataset to be persisted successfully")
     }
   }
   @Test
   def persistInterruptedByException(): Unit = {
     val internalName: String = "alpha50"
     val copyNumber: Long = 20L
-    val datasetInfo: DatasetInfo = DatasetInfo(internalName, "en", Array.empty, Some("aaaa-aaaa"))
-    val copyInfo: CopyInfo = CopyInfo(new CopyId(10), copyNumber, LifecycleStage.Published, 1L, 1L, DateTime.now())
+    val datasetInfo: DatasetInfo =
+      DatasetInfo(internalName, "en", Array.empty, Some("aaaa-aaaa"))
+    val copyInfo: CopyInfo = CopyInfo(
+      new CopyId(10),
+      copyNumber,
+      LifecycleStage.Published,
+      1L,
+      1L,
+      DateTime.now()
+    )
     val dataset: Dataset = Dataset(datasetInfo, copyInfo)
     Try(persistWithException(dataset)) match {
-      case Failure(exception) => {
+      case Failure(_) => {
         assert(
           !findViaInteralNameAndCopyNumber(internalName, copyNumber).isDefined,
           "dataset should not have been persisted"
         )
       }
-      case Success(_) => assume(false, "this was supposed to fail due to an exception")
+      case Success(_) =>
+        assume(false, "this was supposed to fail due to an exception")
     }
 
   }
@@ -60,7 +82,10 @@ class TransactionTest {
   }
 
   @Transactional
-  def findViaInteralNameAndCopyNumber(internalName: String, copyNumber: Long): Option[Dataset] = {
+  def findViaInteralNameAndCopyNumber(
+      internalName: String,
+      copyNumber: Long
+  ): Option[Dataset] = {
     datasetRepository.findByInternalNameAndCopyNumber(internalName, copyNumber)
   }
 

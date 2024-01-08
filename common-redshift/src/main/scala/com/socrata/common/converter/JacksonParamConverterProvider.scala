@@ -8,11 +8,13 @@ import java.lang.reflect.Type
 
 //This makes jackson handle parameter marshalling, but there are complications. We don't need this now/yet.
 //@ApplicationScoped
-class JacksonParamConverterProvider(objectMapper: ObjectMapper) extends ParamConverterProvider {
+class JacksonParamConverterProvider(objectMapper: ObjectMapper)
+    extends ParamConverterProvider {
   override def getConverter[T](
       rawType: Class[T],
       genericType: Type,
-      annotations: Array[Annotation]): ParamConverter[T] = {
+      annotations: Array[Annotation]
+  ): ParamConverter[T] = {
     jacksonMarshall(rawType)
   }
 
