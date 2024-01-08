@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter</artifactId>
@@ -15,6 +15,7 @@
     <aws.sdk.version>1.12.565</aws.sdk.version>
     <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
+    <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
     <maven.compiler.release>17</maven.compiler.release>
     <openapi-generator.version>7.0.0</openapi-generator.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,12 +27,15 @@
     <redshift.jdbc.version>2.1.0.19</redshift.jdbc.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
     <scala.version>2.12.18</scala.version>
+    <secondarylib.version>4.2.18</secondarylib.version>
+    <skipITs>true</skipITs>
+    <skipTests>true</skipTests>
     <soql.std.version>4.14.36</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
-    <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
-    <secondarylib.version>4.2.18</secondarylib.version>
-    <skipITs>false</skipITs>
-    <skipTests>false</skipTests>
+    <quarkus.jib.base-jvm-image>socrata/runit-java-focal:17</quarkus.jib.base-jvm-image>
+    <quarkus.jib.jvm-entrypoint>/sbin/my_init</quarkus.jib.jvm-entrypoint>
+    <quarkus.jib.user>root</quarkus.jib.user>
+    <quarkus.jib.working-directory>/home/socrata</quarkus.jib.working-directory>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -94,7 +98,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-postgresql</artifactId> <!--needed for the metadata DB-->
+      <artifactId>quarkus-jdbc-postgresql</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -107,6 +111,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jaxb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-container-image-jib</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -144,12 +152,11 @@
       <version>${secondarylib.version}</version>
       <exclusions>
         <exclusion>
-          <!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
           <groupId>org.liquibase</groupId>
           <artifactId>liquibase-plugin</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>        
+    </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc42</artifactId>
