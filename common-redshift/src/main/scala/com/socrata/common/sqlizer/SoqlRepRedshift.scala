@@ -46,7 +46,7 @@ abstract class SoQLRepProviderRedshift[
       ctor: T => CV
   ) extends SingleColumnRep(t, d"geometry") {
     override def ingressRep(
-        tableName: DatabaseTableName,
+        @annotation.unused tableName: DatabaseTableName,
         columnName: ColumnLabel
     ) = {
       new IngressRep[MT] {

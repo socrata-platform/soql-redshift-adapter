@@ -238,10 +238,11 @@ class SoQLFunctionSqlizerRedshift[
       case NullLiteral(_) =>
         nullLiteral
       case _ =>
-        ctx.abortSqlization(RedshiftSqlizerError.NonLiteralContextParameter(
-          f.position.logicalSource,
-          f.position.logicalPosition
-        ))
+        ctx.abortSqlization(
+          RedshiftSqlizerError.NonLiteralContextParameter(
+            f.position.source
+          )
+        )
     }
   }
 

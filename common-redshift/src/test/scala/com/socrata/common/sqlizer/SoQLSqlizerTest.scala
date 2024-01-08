@@ -1404,13 +1404,15 @@ class SoQLSqlizerTest {
 
   @Test
   def `test get_context non-literal`(): Unit = {
-    val position = new Position { val line = 1; val column = 8; lazy val lineContents = ??? }
+    val position = new Position {
+      val line = 1; val column = 8; lazy val lineContents = ???
+    }
 
     analyzeStatementEither("SELECT get_context(text)") match {
       case Left(RedshiftSqlizerError.NonLiteralContextParameter(None, p))
           if ((p.line == position.line) && (p.column == position.column)) =>
       case Left(err) => fail(err.toString())
-      case _ => fail()
+      case _         => fail()
     }
   }
 }
