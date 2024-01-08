@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter</artifactId>
@@ -15,6 +15,7 @@
     <aws.sdk.version>1.12.565</aws.sdk.version>
     <build-helper-plugin.version>3.4.0</build-helper-plugin.version>
     <compiler-plugin.version>3.11.0</compiler-plugin.version>
+    <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
     <maven.compiler.release>17</maven.compiler.release>
     <openapi-generator.version>7.0.0</openapi-generator.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,12 +27,16 @@
     <redshift.jdbc.version>2.1.0.19</redshift.jdbc.version>
     <scala-maven-plugin.version>4.8.1</scala-maven-plugin.version>
     <scala.version>2.12.18</scala.version>
-    <skipITs>true</skipITs>
-    <skipTests>true</skipTests>
-    <soql.std.version>4.14.30</soql.std.version>
+    <soql.std.version>4.14.37</soql.std.version>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
     <jackson-module-scala.version>2.15.2</jackson-module-scala.version>
-    <secondarylib.version>4.2.18</secondarylib.version>
+    <secondarylib.version>4.2.20</secondarylib.version>
+    <skipITs>false</skipITs>
+    <skipTests>false</skipTests>
+    <quarkus.jib.base-jvm-image>socrata/runit-java-focal:17</quarkus.jib.base-jvm-image>
+    <quarkus.jib.jvm-entrypoint>/sbin/my_init</quarkus.jib.jvm-entrypoint>
+    <quarkus.jib.user>root</quarkus.jib.user>
+    <quarkus.jib.working-directory>/home/socrata</quarkus.jib.working-directory>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -45,28 +50,21 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-sqlizer_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-stdlib_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-utils_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.socrata</groupId>
-        <artifactId>soql-sqlizer_2.12</artifactId>
-        <version>${soql.std.version}</version>
-      </dependency>
-
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-sqlizer_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-stdlib_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.socrata</groupId>
+      <artifactId>soql-utils_2.12</artifactId>
+      <version>${soql.std.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-reactive</artifactId>
@@ -101,7 +99,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-postgresql</artifactId> <!--needed for the metadata DB-->
+      <artifactId>quarkus-jdbc-postgresql</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -114,6 +112,10 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-jaxb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-container-image-jib</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -136,22 +138,26 @@
       <version>${scala.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.scala-lang.modules</groupId>
+      <artifactId>scala-java8-compat_2.12</artifactId>
+      <version>1.0.2</version>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-scala_2.12</artifactId>
       <version>${jackson-module-scala.version}</version>
     </dependency>
     <dependency>
-            <groupId>com.socrata</groupId>
-            <artifactId>secondarylib_2.12</artifactId>
-            <version>${secondarylib.version}</version>
-            <exclusions>
-                <exclusion>
-<!--                    This breaks quarkus junit testing, exclude, something something maven plugin version-->
-                    <groupId>org.liquibase</groupId>
-                    <artifactId>liquibase-plugin</artifactId>
-                </exclusion>
-            </exclusions>
-    </dependency>        
+      <groupId>com.socrata</groupId>
+      <artifactId>secondarylib_2.12</artifactId>
+      <version>${secondarylib.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-plugin</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>com.amazon.redshift</groupId>
       <artifactId>redshift-jdbc42</artifactId>
@@ -161,28 +167,34 @@
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
       <version>${aws.sdk.version}</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-redshift</artifactId>
       <version>${aws.sdk.version}</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sts</artifactId>
+      <artifactId>aws-java-sdk-s3</artifactId>
       <version>${aws.sdk.version}</version>
-      <scope>runtime</scope>
-      <optional>true</optional>
     </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
@@ -265,10 +277,23 @@
             <arg>-deprecation</arg>
             <arg>-feature</arg>
             <arg>-explaintypes</arg>
-            <arg>-Ywarn-unused</arg>
             <arg>-Xfatal-warnings</arg>
+            <arg>-Ywarn-unused</arg>
           </args>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>io.smallrye</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <version>3.1.6</version>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals>
+              <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
@@ -292,7 +317,7 @@
           <scala>
             <scalafmt>
               <version>3.4.3</version>
-              <file>scalafmt.conf</file>
+              <scalaMajorVersion>2.12</scalaMajorVersion>
             </scalafmt>
           </scala>
         </configuration>
@@ -308,7 +333,7 @@
         </property>
       </activation>
       <properties>
-        <skipITs>false</skipITs>
+        <skipITs>${skipITs}</skipITs>
         <quarkus.package.type>native</quarkus.package.type>
       </properties>
     </profile>

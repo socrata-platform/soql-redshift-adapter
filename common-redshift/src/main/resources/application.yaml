@@ -51,5 +51,5 @@ quarkus:
         url: ${REDSHIFT_JDBC_URL} # Must be power of 2. Max rewrite insert size. We will flush buffer manually long before this.
 
   container-image:
-    build: true
+    build: false
     push: false
