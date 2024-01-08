@@ -49,6 +49,7 @@ object DatasetColumn {
   }
 
   def update(updated: DatasetColumn, copyFrom: DatasetColumn) = {
+    updated.userColumnId = copyFrom.userColumnId
     updated.columnName = copyFrom.columnName
     updated
   }

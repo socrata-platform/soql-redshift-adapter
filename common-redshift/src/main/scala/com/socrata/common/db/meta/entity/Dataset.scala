@@ -57,6 +57,7 @@ object Dataset {
 
   def update(updated: Dataset, copyFrom: Dataset) = {
     updated.obfuscationKey = copyFrom.obfuscationKey
+    updated.published = copyFrom.published
     updated.table = copyFrom.table
     updated
   }
