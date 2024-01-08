@@ -9,8 +9,6 @@ import com.socrata.soql.sqlizer._
 
 import com.socrata.soql.environment.Provenance
 
-import com.socrata.common.sqlizer._
-
 trait TableCreationUtils {
   object ProvenanceMapper
       extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {

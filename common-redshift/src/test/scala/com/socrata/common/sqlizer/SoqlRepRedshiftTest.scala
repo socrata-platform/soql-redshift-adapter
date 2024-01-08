@@ -30,7 +30,6 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.{Test}
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test;
-import com.socrata.common.sqlizer._
 
 import ZipExt._
 
