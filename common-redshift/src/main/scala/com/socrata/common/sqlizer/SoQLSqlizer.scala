@@ -31,7 +31,9 @@ object SoQLSqlizer {
       escapeString: String => String, // default
       toProvenance: types.ToProvenance[DatabaseNamesMetaTypes],
       namespace: SqlNamespaces[DatabaseNamesMetaTypes] = RedshiftNamespaces,
-      exprSqlFactory: ExprSqlFactory[DatabaseNamesMetaTypes] = new RedshiftExprSqlFactory) =
+      exprSqlFactory: ExprSqlFactory[DatabaseNamesMetaTypes] =
+        new RedshiftExprSqlFactory
+  ) =
     new SoQLRepProviderRedshift[DatabaseNamesMetaTypes](
       cryptProviderProvider,
       namespace,

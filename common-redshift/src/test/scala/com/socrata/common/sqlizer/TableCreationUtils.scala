@@ -12,13 +12,18 @@ import com.socrata.soql.environment.Provenance
 import com.socrata.common.sqlizer._
 
 trait TableCreationUtils {
-  object ProvenanceMapper extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
-    def toProvenance(dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]): Provenance = {
+  object ProvenanceMapper
+      extends types.ProvenanceMapper[DatabaseNamesMetaTypes] {
+    def toProvenance(
+        dtn: types.DatabaseTableName[DatabaseNamesMetaTypes]
+    ): Provenance = {
       val DatabaseTableName(name) = dtn
       Provenance(name)
     }
 
-    def fromProvenance(prov: Provenance): types.DatabaseTableName[DatabaseNamesMetaTypes] = {
+    def fromProvenance(
+        prov: Provenance
+    ): types.DatabaseTableName[DatabaseNamesMetaTypes] = {
       val Provenance(name) = prov
       DatabaseTableName(name)
     }
@@ -41,7 +46,8 @@ trait TableCreationUtils {
     protected override def autoColumnPrefix: String = "i"
   }
 
-  val TestFuncallSqlizer = new SoQLFunctionSqlizerRedshift[DatabaseNamesMetaTypes]
+  val TestFuncallSqlizer =
+    new SoQLFunctionSqlizerRedshift[DatabaseNamesMetaTypes]
 
   val TestSqlizer = new Sqlizer[DatabaseNamesMetaTypes](
     TestFuncallSqlizer,
@@ -57,7 +63,9 @@ trait TableCreationUtils {
         sqlizer.exprSqlFactory,
         sqlizer.toProvenance
       ) {
-        override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
+        override def mkStringLiteral(s: String) = Doc(
+          extraContext.escapeString(s)
+        )
       }
   )
 
@@ -76,9 +84,17 @@ trait TableCreationUtils {
     override def mkStringLiteral(s: String) = Doc(extraContext.escapeString(s))
   }
 
-  implicit val hasType: HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType] =
-    new HasType[DatabaseNamesMetaTypes#ColumnValue, DatabaseNamesMetaTypes#ColumnType] {
-      def typeOf(cv: DatabaseNamesMetaTypes#ColumnValue): DatabaseNamesMetaTypes#ColumnType = cv.typ
+  implicit val hasType: HasType[
+    DatabaseNamesMetaTypes#ColumnValue,
+    DatabaseNamesMetaTypes#ColumnType
+  ] =
+    new HasType[
+      DatabaseNamesMetaTypes#ColumnValue,
+      DatabaseNamesMetaTypes#ColumnType
+    ] {
+      def typeOf(
+          cv: DatabaseNamesMetaTypes#ColumnValue
+      ): DatabaseNamesMetaTypes#ColumnType = cv.typ
     }
 }
 

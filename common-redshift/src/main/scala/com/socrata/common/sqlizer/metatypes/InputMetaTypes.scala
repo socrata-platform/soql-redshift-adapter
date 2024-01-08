@@ -20,14 +20,20 @@ final class InputMetaTypes extends MetaTypes {
 
 object InputMetaTypes {
   val provenanceMapper = new types.ProvenanceMapper[InputMetaTypes] {
-    def fromProvenance(prov: Provenance): types.DatabaseTableName[InputMetaTypes] = {
-      JsonUtil.parseJson[types.DatabaseTableName[InputMetaTypes]](prov.value) match {
+    def fromProvenance(
+        prov: Provenance
+    ): types.DatabaseTableName[InputMetaTypes] = {
+      JsonUtil.parseJson[types.DatabaseTableName[InputMetaTypes]](
+        prov.value
+      ) match {
         case Right(result) => result
-        case Left(e) => throw new Exception(e.english)
+        case Left(e)       => throw new Exception(e.english)
       }
     }
 
-    def toProvenance(dtn: types.DatabaseTableName[InputMetaTypes]): Provenance = {
+    def toProvenance(
+        dtn: types.DatabaseTableName[InputMetaTypes]
+    ): Provenance = {
       Provenance(JsonUtil.renderJson(dtn, pretty = false))
     }
   }
@@ -35,7 +41,8 @@ object InputMetaTypes {
   object DeserializeImplicits {
     implicit object dinDeserialize extends Readable[DatasetInternalName] {
       def readFrom(buffer: ReadBuffer) =
-        DatasetInternalName(buffer.read[String]()).getOrElse(fail("invalid dataset internal name"))
+        DatasetInternalName(buffer.read[String]())
+          .getOrElse(fail("invalid dataset internal name"))
     }
 
     implicit object ucidDeserialize extends Readable[UserColumnId] {
@@ -48,7 +55,8 @@ object InputMetaTypes {
     }
 
     implicit val hasType = com.socrata.soql.functions.SoQLTypeInfo.hasType
-    implicit val mfDeserialize = MonomorphicFunction.deserialize(SoQLFunctionInfo)
+    implicit val mfDeserialize =
+      MonomorphicFunction.deserialize(SoQLFunctionInfo)
   }
 
   object DebugHelper extends SoQLValueDebugHelper { // Various implicits to make things printable

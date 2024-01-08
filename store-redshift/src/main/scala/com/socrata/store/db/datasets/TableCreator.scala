@@ -20,26 +20,39 @@ object TableCreator {
 
 @jakarta.enterprise.context.ApplicationScoped
 case class TableCreator(@DataSource("store") store: AgroalDataSource) {
-  def create(repProvider: SoQLRepProviderRedshift[metatypes.DatabaseNamesMetaTypes])(
+  def create(
+      repProvider: SoQLRepProviderRedshift[metatypes.DatabaseNamesMetaTypes]
+  )(
       dataset: Dataset,
       columns: List[(DatasetColumn, ColumnInfo[SoQLType])],
-      blobUrl: String): Exists.Exists[String] =
+      blobUrl: String
+  ): Exists.Exists[String] =
     Using.resource(store.getConnection) { conn =>
-      conn.getMetaData().getTables(null, null, dataset.table, null).next() match {
+      conn
+        .getMetaData()
+        .getTables(null, null, dataset.table, null)
+        .next() match {
         case true =>
           // Delete and recreate
           Exists.Updated(dataset.table)
         case false => {
-          val dbColumns: List[(TableCreator.ColumnName, TableCreator.ColumnType)] = columns.flatMap {
-            case (dbColumn, column) => {
-              val rep = repProvider.reps(column.typ)
-              rep.physicalDatabaseColumns(DatabaseColumnName(dbColumn.columnName))
-                .map(_.toString)
-                .zip(rep.physicalDatabaseTypes.map(_.toString)).toList
+          val dbColumns
+              : List[(TableCreator.ColumnName, TableCreator.ColumnType)] =
+            columns.flatMap {
+              case (dbColumn, column) => {
+                val rep = repProvider.reps(column.typ)
+                rep
+                  .physicalDatabaseColumns(
+                    DatabaseColumnName(dbColumn.columnName)
+                  )
+                  .map(_.toString)
+                  .zip(rep.physicalDatabaseTypes.map(_.toString))
+                  .toList
+              }
             }
-          }
 
-          val dbColumnFragment = dbColumns.map({ case (name, typ) => s"$name $typ" }).mkString(", ")
+          val dbColumnFragment =
+            dbColumns.map({ case (name, typ) => s"$name $typ" }).mkString(", ")
 
           val sql = s"""create table ${dataset.table} ($dbColumnFragment)"""
           Using.resource(conn.createStatement()) { stmt =>

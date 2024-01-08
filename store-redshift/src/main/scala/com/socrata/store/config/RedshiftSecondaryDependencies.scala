@@ -63,7 +63,8 @@ class RedshiftSecondaryDependencies {
   @Produces
   def redshiftSecondaryConfig(
       configProvider: ConfigProvider
-  ): RedshiftSecondaryConfig = configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
+  ): RedshiftSecondaryConfig =
+    configProvider.proxy("redshift", classOf[RedshiftSecondaryConfig])
 
   @Produces
   def dsInfo(
@@ -88,12 +89,19 @@ class RedshiftSecondaryDependencies {
   ) = new MetricsReporter(metricsOptions, metricRegistry)
 
   @Produces
-  def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map("redshift" -> (secondary, 1))
+  def secondaries(secondary: RedshiftSecondary): SecondaryMap = Map(
+    "redshift" -> (secondary, 1)
+  )
 
   // TODO: Map keys will need to be dynamic
 
-  object RedshiftCopyIn extends ((Connection, String, OutputStream => Unit) => Long) {
-    def apply(conn: Connection, sql: String, output: OutputStream => Unit): Long =
+  object RedshiftCopyIn
+      extends ((Connection, String, OutputStream => Unit) => Long) {
+    def apply(
+        conn: Connection,
+        sql: String,
+        output: OutputStream => Unit
+    ): Long =
       ???
   }
 

@@ -9,12 +9,18 @@ import com.socrata.soql.sqlizer._
 // delete this too
 
 trait Schema[MT <: MetaTypes] {
-  def update(table: MT#DatabaseTableNameImpl, column: MT#DatabaseColumnNameImpl)(ct: MT#ColumnType): Seq[UpdateCommand]
+  def update(
+      table: MT#DatabaseTableNameImpl,
+      column: MT#DatabaseColumnNameImpl
+  )(ct: MT#ColumnType): Seq[UpdateCommand]
 }
 
-case class SchemaImpl(repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes])
-    extends Schema[metatypes.DatabaseNamesMetaTypes] {
-  def update(table: String, column: String)(ct: SoQLType): Seq[UpdateCommand] = {
+case class SchemaImpl(
+    repProvider: Rep.Provider[metatypes.DatabaseNamesMetaTypes]
+) extends Schema[metatypes.DatabaseNamesMetaTypes] {
+  def update(table: String, column: String)(
+      ct: SoQLType
+  ): Seq[UpdateCommand] = {
     val rep = repProvider(ct)
     val physicalTypes = rep.physicalDatabaseTypes
     val names = rep.physicalDatabaseColumns(DatabaseColumnName(column))

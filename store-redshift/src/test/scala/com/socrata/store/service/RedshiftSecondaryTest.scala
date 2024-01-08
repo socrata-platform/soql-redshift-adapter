@@ -16,8 +16,14 @@ import com.socrata.store.service.RedshiftSecondary
 @QuarkusTest class RedshiftSecondaryTest() {
   @Inject var secondary: RedshiftSecondary = _
 
-  val datasetInfo = DatasetInfo("dataset_info", "locale_name", Array.empty, Some("resource_name"))
-  val copyInfo = CopyInfo(new CopyId(0), 0, LifecycleStage.Published, 18, 18, DateTime.now())
+  val datasetInfo = DatasetInfo(
+    "dataset_info",
+    "locale_name",
+    Array.empty,
+    Some("resource_name")
+  )
+  val copyInfo =
+    CopyInfo(new CopyId(0), 0, LifecycleStage.Published, 18, 18, DateTime.now())
 
   val schema = Map[ColumnId, ColumnInfo[SoQLType]](
     new ColumnId(14) ->
@@ -44,12 +50,16 @@ import com.socrata.store.service.RedshiftSecondary
       )
   )
 
-  val rows = ManagedUtils.construct(Iterator(
-    ColumnIdMap.apply(Map(
-      new ColumnId(33) -> SoQLBoolean(false),
-      new ColumnId(14) -> SoQLText("hey there")
-    ))
-  ))
+  val rows = ManagedUtils.construct(
+    Iterator(
+      ColumnIdMap.apply(
+        Map(
+          new ColumnId(33) -> SoQLBoolean(false),
+          new ColumnId(14) -> SoQLText("hey there")
+        )
+      )
+    )
+  )
 
   @Test def resync(): Unit = {
     secondary.resync(

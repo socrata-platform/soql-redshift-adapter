@@ -22,7 +22,8 @@ trait Resync {
       dataset: Dataset,
       columns: List[DatasetColumn],
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
-      data: Iterator[ColumnIdMap[SoQLValue]]): Option[Long]
+      data: Iterator[ColumnIdMap[SoQLValue]]
+  ): Option[Long]
 }
 
 @ApplicationScoped
@@ -31,7 +32,8 @@ case class ResyncImpl(tableCreator: TableCreator) extends Resync {
       dataset: Dataset,
       columns: List[DatasetColumn],
       schema: ColumnIdMap[ColumnInfo[SoQLType]],
-      data: Iterator[ColumnIdMap[SoQLValue]]): Option[Long] = {
+      data: Iterator[ColumnIdMap[SoQLValue]]
+  ): Option[Long] = {
 
     tableCreator.create(SoQLSqlizer.repProvider(null, null, null))(
       dataset,

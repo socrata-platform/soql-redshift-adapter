@@ -20,7 +20,11 @@ import com.socrata.common.sqlizer.metatypes._
 object SoQLRewriterTest {
 
   val analyzer =
-    new SoQLAnalyzer[DatabaseNamesMetaTypes](new SoQLTypeInfo2, SoQLFunctionInfo, SoQLSqlizerTest.ProvenanceMapper)
+    new SoQLAnalyzer[DatabaseNamesMetaTypes](
+      new SoQLTypeInfo2,
+      SoQLFunctionInfo,
+      SoQLSqlizerTest.ProvenanceMapper
+    )
 
 }
 
@@ -28,7 +32,5 @@ object SoQLRewriterTest {
 class SoQLRewriterTest {
 
   @Test
-  def test(): Unit = {
-    
-  }
+  def test(): Unit = {}
 }

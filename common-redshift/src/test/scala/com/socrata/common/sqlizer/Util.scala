@@ -8,7 +8,8 @@ object Utils {
 
   def withTable(dataSource: AgroalDataSource, tableName: String)(
       columnName: String,
-      columnType: String)(fn: (java.sql.Connection, String) => Unit) =
+      columnType: String
+  )(fn: (java.sql.Connection, String) => Unit) =
     Using.resource(dataSource.getConnection) { conn =>
       try {
         Using.resource(conn.createStatement()) { stmt =>

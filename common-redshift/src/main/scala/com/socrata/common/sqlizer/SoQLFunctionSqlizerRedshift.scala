@@ -11,9 +11,11 @@ import com.socrata.soql.functions.Function
 import com.socrata.soql.sqlizer._
 import SoQLFunctionSqlizerRedshift._
 
-class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
-  type ColumnType = SoQLType; type ColumnValue = SoQLValue
-})] extends FuncallSqlizer[MT] {
+class SoQLFunctionSqlizerRedshift[
+    MT <: MetaTypes with metatypes.SoQLMetaTypesExt with ({
+      type ColumnType = SoQLType; type ColumnValue = SoQLValue
+    })
+] extends FuncallSqlizer[MT] {
   import com.socrata.soql.functions.SoQLTypeInfo.hasType
 
   override val exprSqlFactory = new RedshiftExprSqlFactory[MT]
@@ -34,21 +36,37 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
         val renderedArgs = args.map {
           case IndexArg(idx) => runtimeArgs(idx).compressed.sql
-          case SqlArg(sql) => sql
+          case SqlArg(sql)   => sql
         }
 
         val sql =
-          (Doc(sc.parts.head) +: (renderedArgs, sc.parts.tail).zipped.map { (arg, part) => arg ++ Doc(part) }).hcat
+          (Doc(sc.parts.head) +: (renderedArgs, sc.parts.tail).zipped.map {
+            (arg, part) => arg ++ Doc(part)
+          }).hcat
         exprSqlFactory(sql, f)
       }
   }
 
-  def wrap(e: Expr, exprSql: ExprSql, wrapper: String, additionalWrapperArgs: Doc*) =
-    exprSqlFactory((exprSql.compressed.sql +: additionalWrapperArgs).funcall(Doc(wrapper)), e)
+  def wrap(
+      e: Expr,
+      exprSql: ExprSql,
+      wrapper: String,
+      additionalWrapperArgs: Doc*
+  ) =
+    exprSqlFactory(
+      (exprSql.compressed.sql +: additionalWrapperArgs).funcall(Doc(wrapper)),
+      e
+    )
 
-  def comment(sqlizer: OrdinaryFunctionSqlizer, comment: String) = ofs { (f, args, ctx) =>
-    val e = sqlizer(f, args, ctx)
-    exprSqlFactory((d"/*" +#+ Doc(comment) +#+ Doc("*/") +#+ e.compressed.sql).parenthesized, f)
+  def comment(sqlizer: OrdinaryFunctionSqlizer, comment: String) = ofs {
+    (f, args, ctx) =>
+      val e = sqlizer(f, args, ctx)
+      exprSqlFactory(
+        (d"/*" +#+ Doc(comment) +#+ Doc(
+          "*/"
+        ) +#+ e.compressed.sql).parenthesized,
+        f
+      )
   }
 
   def numericize(sqlizer: OrdinaryFunctionSqlizer) = ofs { (f, args, ctx) =>
@@ -58,16 +76,18 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
   }
 
   // need to change this
-  def numericize(sqlizer: AggregateFunctionSqlizer) = afs { (f, args, filter, ctx) =>
-    val e = sqlizer(f, args, filter, ctx)
-    assert(e.typ == SoQLNumber)
-    exprSqlFactory(e.compressed.sql.parenthesized +#+ d":: $numericType", f)
+  def numericize(sqlizer: AggregateFunctionSqlizer) = afs {
+    (f, args, filter, ctx) =>
+      val e = sqlizer(f, args, filter, ctx)
+      assert(e.typ == SoQLNumber)
+      exprSqlFactory(e.compressed.sql.parenthesized +#+ d":: $numericType", f)
   }
 
-  def numericize(sqlizer: WindowedFunctionSqlizer) = wfs { (f, args, filter, partitionBy, orderBy, ctx) =>
-    val e = sqlizer(f, args, filter, partitionBy, orderBy, ctx)
-    assert(e.typ == SoQLNumber)
-    exprSqlFactory(e.compressed.sql.parenthesized +#+ d":: $numericType", f)
+  def numericize(sqlizer: WindowedFunctionSqlizer) = wfs {
+    (f, args, filter, partitionBy, orderBy, ctx) =>
+      val e = sqlizer(f, args, filter, partitionBy, orderBy, ctx)
+      assert(e.typ == SoQLNumber)
+      exprSqlFactory(e.compressed.sql.parenthesized +#+ d":: $numericType", f)
   }
 
   def extractDatePart(datePart: String) = ofs { (e, args, _) =>
@@ -80,7 +100,9 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
   def dateDiffIn(datePart: String, timeZone: String) = ofs { (e, args, _) =>
     assert(args.length == 2)
     val extractFunc = d"datediff"
-    val preparedArgs = d"$datePart" +: args.take(2).map(_.compressed.sql +#+ d"at time zone (text '$timeZone')")
+    val preparedArgs = d"$datePart" +: args
+      .take(2)
+      .map(_.compressed.sql +#+ d"at time zone (text '$timeZone')")
     exprSqlFactory(preparedArgs.funcall(extractFunc).group, e)
   }
 
@@ -103,19 +125,28 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     }
   }
 
-  def sqlizeNormalOrdinaryWithWrapper(name: String, wrapper: String) = ofs { (f, args, ctx) =>
-    val exprSql = sqlizeNormalOrdinaryFuncall(name)(f, args, ctx)
-    wrap(f, exprSql, wrapper)
+  def sqlizeNormalOrdinaryWithWrapper(name: String, wrapper: String) = ofs {
+    (f, args, ctx) =>
+      val exprSql = sqlizeNormalOrdinaryFuncall(name)(f, args, ctx)
+      wrap(f, exprSql, wrapper)
   }
 
-  def sqlizeNormalAggregateWithWrapper(name: String, wrapper: String) = afs { (f, args, filter, ctx) =>
-    val exprSql = sqlizeNormalAggregateFuncall(name)(f, args, filter, ctx)
-    wrap(f, exprSql, wrapper)
+  def sqlizeNormalAggregateWithWrapper(name: String, wrapper: String) = afs {
+    (f, args, filter, ctx) =>
+      val exprSql = sqlizeNormalAggregateFuncall(name)(f, args, filter, ctx)
+      wrap(f, exprSql, wrapper)
   }
 
   def sqlizeNormalWindowedWithWrapper(name: String, wrapper: String) =
     wfs { (f, args, filter, partitionBy, orderBy, ctx) =>
-      val exprSql = sqlizeNormalWindowedFuncall(name)(f, args, filter, partitionBy, orderBy, ctx)
+      val exprSql = sqlizeNormalWindowedFuncall(name)(
+        f,
+        args,
+        filter,
+        partitionBy,
+        orderBy,
+        ctx
+      )
       wrap(f, exprSql, wrapper)
     }
 
@@ -136,7 +167,8 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     assert(f.function.minArity == 1 && !f.function.isVariadic)
     assert(f.function.allParameters == args.map(_.typ))
 
-    val sql = (args.map(_.compressed.sql) :+ Geo.defaultSRIDLiteral).funcall(Doc(sqlFunctionName))
+    val sql = (args.map(_.compressed.sql) :+ Geo.defaultSRIDLiteral)
+      .funcall(Doc(sqlFunctionName))
 
     exprSqlFactory(sql.group, f)
   }
@@ -158,12 +190,18 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
         case LiteralValue(SoQLBoolean(true)) if args.length > 2 =>
           val initialCases = args.dropRight(2)
           val otherwise = lastCase(1)
-          Right(new CaseBuilder(
-            NonEmptySeq.fromSeq(initialCases.grouped(2).map(sqlizeCondition).toSeq).getOrElse {
-              throw new Exception("NonEmptySeq failed but I've checked that there are enough cases")
-            },
-            Some(new ElseClause(otherwise.compressed.sql))
-          ))
+          Right(
+            new CaseBuilder(
+              NonEmptySeq
+                .fromSeq(initialCases.grouped(2).map(sqlizeCondition).toSeq)
+                .getOrElse {
+                  throw new Exception(
+                    "NonEmptySeq failed but I've checked that there are enough cases"
+                  )
+                },
+              Some(new ElseClause(otherwise.compressed.sql))
+            )
+          )
         case LiteralValue(SoQLBoolean(true)) if args.length == 2 =>
           // We just have a single clause and the guard on it is a
           // constant true, so just return the clause's consequent.
@@ -172,12 +210,18 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
           // force "something" to be compressed.
           Left(args(1).compressed)
         case _ =>
-          Right(new CaseBuilder(
-            NonEmptySeq.fromSeq(args.grouped(2).map(sqlizeCondition).toSeq).getOrElse {
-              throw new Exception("NonEmptySeq failed but I've checked that there are enough cases")
-            },
-            None
-          ))
+          Right(
+            new CaseBuilder(
+              NonEmptySeq
+                .fromSeq(args.grouped(2).map(sqlizeCondition).toSeq)
+                .getOrElse {
+                  throw new Exception(
+                    "NonEmptySeq failed but I've checked that there are enough cases"
+                  )
+                },
+              None
+            )
+          )
       }
 
     caseBuilder match {
@@ -192,7 +236,8 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     assert(f.function.function eq Iif)
     assert(args.length == 3)
 
-    val sql = caseBuilder(args(0).compressed.sql -> args(1).compressed.sql).withElse(args(2).compressed.sql)
+    val sql = caseBuilder(args(0).compressed.sql -> args(1).compressed.sql)
+      .withElse(args(2).compressed.sql)
 
     exprSqlFactory(sql.sql, f)
   }
@@ -206,14 +251,18 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     assert(f.typ == SoQLText)
 
     def nullLiteral =
-      ctx.repFor(SoQLText).nullLiteral(NullLiteral[MT](SoQLText)(f.position.asAtomic))
+      ctx
+        .repFor(SoQLText)
+        .nullLiteral(NullLiteral[MT](SoQLText)(f.position.asAtomic))
         .withExpr(f)
 
     f.args(0) match {
       case LiteralValue(SoQLText(key)) =>
         ctx.extraContext.systemContext.get(key) match {
           case Some(value) =>
-            ctx.repFor(SoQLText).literal(LiteralValue[MT](SoQLText(value))(f.position.asAtomic))
+            ctx
+              .repFor(SoQLText)
+              .literal(LiteralValue[MT](SoQLText(value))(f.position.asAtomic))
               .withExpr(f)
           case None =>
             nullLiteral
@@ -234,7 +283,8 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
   def sqlizeLocationPointOrdinaryFunction(
       sqlFunctionName: String,
       prefixArgs: Seq[Doc] = Nil,
-      suffixArgs: Seq[Doc] = Nil) = {
+      suffixArgs: Seq[Doc] = Nil
+  ) = {
     val funcName = Doc(sqlFunctionName)
     ofs { (f, args, ctx) =>
       assert(args.length >= f.function.minArity)
@@ -242,11 +292,13 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
       val pointExtractedArgs = args.map { e =>
         e.typ match {
-          case SoQLLocation => ctx.repFor(SoQLLocation).subcolInfo("point").extractor(e)
+          case SoQLLocation =>
+            ctx.repFor(SoQLLocation).subcolInfo("point").extractor(e)
           case _ => e.compressed.sql
         }
       }
-      val sql = (prefixArgs ++ pointExtractedArgs ++ suffixArgs).funcall(funcName)
+      val sql =
+        (prefixArgs ++ pointExtractedArgs ++ suffixArgs).funcall(funcName)
 
       exprSqlFactory(sql.group, f)
     }
@@ -293,9 +345,14 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     assert(args.length == 0)
 
     ctx.extraContext.nowUsed = true
-    ctx.repFor(f.typ).literal(
-      LiteralValue[MT](SoQLFixedTimestamp(ctx.extraContext.now))(AtomicPositionInfo.Synthetic)
-    ).withExpr(f)
+    ctx
+      .repFor(f.typ)
+      .literal(
+        LiteralValue[MT](SoQLFixedTimestamp(ctx.extraContext.now))(
+          AtomicPositionInfo.Synthetic
+        )
+      )
+      .withExpr(f)
   }
 
   def sqlizeIsEmpty = ofs { (f, args, _) =>
@@ -328,10 +385,17 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       args(0).expr match {
         case LiteralValue(SoQLNumber(n)) =>
           // move the negation into the literal
-          ctx.repFor(SoQLNumber).literal(LiteralValue[MT](SoQLNumber(n.negate))(new AtomicPositionInfo(
-            f.position.source,
-            f.position.functionNameSource
-          ))).withExpr(f)
+          ctx
+            .repFor(SoQLNumber)
+            .literal(
+              LiteralValue[MT](SoQLNumber(n.negate))(
+                new AtomicPositionInfo(
+                  f.position.source,
+                  f.position.functionNameSource
+                )
+              )
+            )
+            .withExpr(f)
         case _ =>
           base(f, args, ctx)
       }
@@ -351,7 +415,8 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     assert(f.typ == SoQLNumber)
 
     // EXTRACT returns numeric; there's no need to cast to keep soqlnumber's representation correct
-    val sql = Seq(field +#+ d"from" +#+ args(0).compressed.sql.parenthesized).funcall(d"extract")
+    val sql = Seq(field +#+ d"from" +#+ args(0).compressed.sql.parenthesized)
+      .funcall(d"extract")
     exprSqlFactory(sql, f)
   }
 
@@ -364,7 +429,10 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
   def uncased(expr: ExprSql): ExprSql =
     expr.typ match {
       case SoQLText =>
-        exprSqlFactory(Seq(expr.compressed.sql).funcall(Doc("upper")).group, expr.expr)
+        exprSqlFactory(
+          Seq(expr.compressed.sql).funcall(Doc("upper")).group,
+          expr.expr
+        )
       case _ =>
         expr
     }
@@ -375,7 +443,11 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
   def preserveMulti(sqlizer: OrdinaryFunctionSqlizer): OrdinaryFunctionSqlizer =
     ofs { (f, args, ctx) =>
       val exprSql = sqlizer(f, args, ctx)
-      if (args.exists { arg => arg.typ == SoQLMultiPolygon || arg.typ == SoQLMultiLine || arg.typ == SoQLMultiPoint }) {
+      if (
+        args.exists { arg =>
+          arg.typ == SoQLMultiPolygon || arg.typ == SoQLMultiLine || arg.typ == SoQLMultiPoint
+        }
+      ) {
         exprSqlFactory(Seq(exprSql.compressed.sql).funcall(d"st_multi"), f)
       } else {
         exprSql
@@ -417,10 +489,20 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       Trim -> sqlizeNormalOrdinaryFuncall("trim"),
       TrimLeading -> sqlizeNormalOrdinaryFuncall("ltrim"),
       TrimTrailing -> sqlizeNormalOrdinaryFuncall("rtrim"),
-      StartsWith -> comment(expr"${1} = left(${0}, length(${1}))", comment = "start_with"),
-      CaselessStartsWith -> uncased(comment(expr"${1} = left(${0}, length(${1}))", comment = "start_with")),
-      Contains -> comment(expr"position(${1} in ${0}) <> 0", comment = "soql_contains"),
-      CaselessContains -> uncased(comment(expr"position(${1} in ${0}) <> 0", comment = "soql_contains")),
+      StartsWith -> comment(
+        expr"${1} = left(${0}, length(${1}))",
+        comment = "start_with"
+      ),
+      CaselessStartsWith -> uncased(
+        comment(expr"${1} = left(${0}, length(${1}))", comment = "start_with")
+      ),
+      Contains -> comment(
+        expr"position(${1} in ${0}) <> 0",
+        comment = "soql_contains"
+      ),
+      CaselessContains -> uncased(
+        comment(expr"position(${1} in ${0}) <> 0", comment = "soql_contains")
+      ),
       LeftPad -> sqlizeNormalOrdinaryFuncall(
         "lpad",
         castType = idx =>
@@ -492,10 +574,16 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       Absolute -> sqlizeNormalOrdinaryFuncall("abs"),
       Ceiling -> sqlizeNormalOrdinaryFuncall("ceil"),
       Floor -> sqlizeNormalOrdinaryFuncall("floor"),
-      Round -> comment(expr"round(${0}, ${1} :: int) :: decimal(30, 7)", comment = "soql_round"),
+      Round -> comment(
+        expr"round(${0}, ${1} :: int) :: decimal(30, 7)",
+        comment = "soql_round"
+      ),
       WidthBucket -> numericize(sqlizeNormalOrdinaryFuncall("width_bucket")),
       SignedMagnitude10 -> numericize(
-        comment(expr"(sign(${0}) * length(floor(abs(${0})) :: text))", comment = "soql_signed_magnitude_10")
+        comment(
+          expr"(sign(${0}) * length(floor(abs(${0})) :: text))",
+          comment = "soql_signed_magnitude_10"
+        )
       ),
       SignedMagnitudeLinear -> numericize(
         comment(
@@ -506,12 +594,30 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
       // Timestamps
       ToFloatingTimestamp -> sqlizeBinaryOp("at time zone"),
-      FloatingTimeStampTruncYmd -> sqlizeNormalOrdinaryFuncall("date_trunc", prefixArgs = Seq(d"'day'")),
-      FloatingTimeStampTruncYm -> sqlizeNormalOrdinaryFuncall("date_trunc", prefixArgs = Seq(d"'month'")),
-      FloatingTimeStampTruncY -> sqlizeNormalOrdinaryFuncall("date_trunc", prefixArgs = Seq(d"'year'")),
-      FixedTimeStampZTruncYmd -> sqlizeNormalOrdinaryFuncall("date_trunc", prefixArgs = Seq(d"'day'")),
-      FixedTimeStampZTruncYm -> sqlizeNormalOrdinaryFuncall("date_trunc", prefixArgs = Seq(d"'month'")),
-      FixedTimeStampZTruncY -> sqlizeNormalOrdinaryFuncall("date_trunc", prefixArgs = Seq(d"'year'")),
+      FloatingTimeStampTruncYmd -> sqlizeNormalOrdinaryFuncall(
+        "date_trunc",
+        prefixArgs = Seq(d"'day'")
+      ),
+      FloatingTimeStampTruncYm -> sqlizeNormalOrdinaryFuncall(
+        "date_trunc",
+        prefixArgs = Seq(d"'month'")
+      ),
+      FloatingTimeStampTruncY -> sqlizeNormalOrdinaryFuncall(
+        "date_trunc",
+        prefixArgs = Seq(d"'year'")
+      ),
+      FixedTimeStampZTruncYmd -> sqlizeNormalOrdinaryFuncall(
+        "date_trunc",
+        prefixArgs = Seq(d"'day'")
+      ),
+      FixedTimeStampZTruncYm -> sqlizeNormalOrdinaryFuncall(
+        "date_trunc",
+        prefixArgs = Seq(d"'month'")
+      ),
+      FixedTimeStampZTruncY -> sqlizeNormalOrdinaryFuncall(
+        "date_trunc",
+        prefixArgs = Seq(d"'year'")
+      ),
       FixedTimeStampTruncYmdAtTimeZone -> binaryOpCallFunctionPrefix(
         "at time zone",
         "date_trunc",
@@ -545,19 +651,42 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
       // Geo-casts
       //      st_geomfromtext is the only function in redshift for text to geom conversion - geom subtypes are not verified through that function
-      TextToPoint -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
-      TextToMultiPoint -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
-      TextToLine -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
-      TextToMultiLine -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
-      TextToPolygon -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
-      TextToMultiPolygon -> sqlizeNormalOrdinaryFuncall("st_geomfromtext", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
+      TextToPoint -> sqlizeNormalOrdinaryFuncall(
+        "st_geomfromtext",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
+      TextToMultiPoint -> sqlizeNormalOrdinaryFuncall(
+        "st_geomfromtext",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
+      TextToLine -> sqlizeNormalOrdinaryFuncall(
+        "st_geomfromtext",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
+      TextToMultiLine -> sqlizeNormalOrdinaryFuncall(
+        "st_geomfromtext",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
+      TextToPolygon -> sqlizeNormalOrdinaryFuncall(
+        "st_geomfromtext",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
+      TextToMultiPolygon -> sqlizeNormalOrdinaryFuncall(
+        "st_geomfromtext",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
       //    TODO implement TextToLocation
-      TextToLocation -> sqlizeNormalOrdinaryFuncall("soql_text_to_location", suffixArgs = Seq(Geo.defaultSRIDLiteral)),
+      TextToLocation -> sqlizeNormalOrdinaryFuncall(
+        "soql_text_to_location",
+        suffixArgs = Seq(Geo.defaultSRIDLiteral)
+      ),
 
       // Geo
       Union2Pt -> sqlizeNormalOrdinaryWithWrapper("st_union", "st_multi"),
       Union2Poly -> sqlizeNormalOrdinaryWithWrapper("st_union", "st_multi"),
-      GeoMultiPolygonFromMultiPolygon -> sqlizeNormalOrdinaryFuncall("st_multi"),
+      GeoMultiPolygonFromMultiPolygon -> sqlizeNormalOrdinaryFuncall(
+        "st_multi"
+      ),
       GeoMultiLineFromMultiLine -> sqlizeNormalOrdinaryFuncall("st_multi"),
       GeoMultiPointFromMultiPoint -> sqlizeNormalOrdinaryFuncall("st_multi"),
       GeoMultiPolygonFromPolygon -> sqlizeNormalOrdinaryFuncall("st_multi"),
@@ -578,7 +707,10 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       ),
       IsEmpty -> sqlizeIsEmpty,
       Simplify -> preserveMulti(sqlizeNormalOrdinaryFuncall("st_simplify")),
-      Area -> comment(expr"st_area(${0} :: geography) :: decimal(30, 7)", comment = "soql_area"),
+      Area -> comment(
+        expr"st_area(${0} :: geography) :: decimal(30, 7)",
+        comment = "soql_area"
+      ),
       // DinstanceInMeters only works for points; for other geography or geometry datatypes it would produce an error
       DistanceInMeters -> comment(
         expr"st_distance(${0} :: geography, ${1} :: geography) :: decimal(30, 7)",
@@ -597,8 +729,12 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       ),
 
       // Fake location
-      LocationToLatitude -> numericize(sqlizeLocationPointOrdinaryFunction("st_y")),
-      LocationToLongitude -> numericize(sqlizeLocationPointOrdinaryFunction("st_x")),
+      LocationToLatitude -> numericize(
+        sqlizeLocationPointOrdinaryFunction("st_y")
+      ),
+      LocationToLongitude -> numericize(
+        sqlizeLocationPointOrdinaryFunction("st_x")
+      ),
       LocationToAddress -> sqlizeLocationHumanAddress,
       LocationToPoint -> sqlizeSubcol(SoQLLocation, "point"),
       Location -> sqlizeLocation,
@@ -612,7 +748,9 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
         "soql_within_box",
         suffixArgs = Seq(Geo.defaultSRIDLiteral)
       ),
-      LocationDistanceInMeters -> sqlizeLocationPointOrdinaryFunction("soql_distance_in_meters"),
+      LocationDistanceInMeters -> sqlizeLocationPointOrdinaryFunction(
+        "soql_distance_in_meters"
+      ),
 
       // URL
       UrlToUrl -> sqlizeSubcol(SoQLUrl, "url"),
@@ -625,9 +763,17 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       Phone -> sqlizeSimpleCompoundColumn(SoQLPhone),
 
       // Document
-      DocumentToFilename -> sqlizeJsonSubcol(SoQLDocument, "'filename'", SoQLText),
+      DocumentToFilename -> sqlizeJsonSubcol(
+        SoQLDocument,
+        "'filename'",
+        SoQLText
+      ),
       DocumentToFileId -> sqlizeJsonSubcol(SoQLDocument, "'file_id'", SoQLText),
-      DocumentToContentType -> sqlizeJsonSubcol(SoQLDocument, "'content_type'", SoQLText),
+      DocumentToContentType -> sqlizeJsonSubcol(
+        SoQLDocument,
+        "'content_type'",
+        SoQLText
+      ),
 
       // json
       JsonProp -> sqlizeBinaryOp("->"),
@@ -643,12 +789,21 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
 
       // magical
       GetContext -> sqlizeGetContext,
-      SoQLRewriteSearch.ToTsVector -> sqlizeNormalOrdinaryFuncall("to_tsvector", prefixArgs = Seq(d"'english'")),
-      SoQLRewriteSearch.PlainToTsQuery -> sqlizeNormalOrdinaryFuncall("plainto_tsquery", prefixArgs = Seq(d"'english'")),
+      SoQLRewriteSearch.ToTsVector -> sqlizeNormalOrdinaryFuncall(
+        "to_tsvector",
+        prefixArgs = Seq(d"'english'")
+      ),
+      SoQLRewriteSearch.PlainToTsQuery -> sqlizeNormalOrdinaryFuncall(
+        "plainto_tsquery",
+        prefixArgs = Seq(d"'english'")
+      ),
       SoQLRewriteSearch.TsSearch -> sqlizeBinaryOp("@@"),
 
       // simple casts
-      TextToBool -> comment(expr"(case when lower(${0}) = 'true' then true else false end)", comment = "TextToBool"),
+      TextToBool -> comment(
+        expr"(case when lower(${0}) = 'true' then true else false end)",
+        comment = "TextToBool"
+      ),
 //      BoolToText -> sqlizeCast("text"),
       TextToNumber -> sqlizeCast("decimal(30, 7)"),
       NumberToText -> sqlizeCast("text"),
@@ -668,8 +823,14 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
       e: AggregateFunctionCall,
       args: Seq[ExprSql],
       filter: Option[ExprSql],
-      ctx: DynamicContext) = {
-    sqlizeNormalAggregateFuncall("count")(e.copy(distinct = true)(e.position), args, filter, ctx)
+      ctx: DynamicContext
+  ) = {
+    sqlizeNormalAggregateFuncall("count")(
+      e.copy(distinct = true)(e.position),
+      args,
+      filter,
+      ctx
+    )
   }
 
   def sqlizeMedianAgg(aggFunc: String, percentileFunc: String) = {
@@ -680,7 +841,9 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
         aggFuncSqlizer(f, args, filter, ctx)
       } else { // this is faster but there's no way to specify "distinct" with it
         val baseSql =
-          (percentileFuncName ++ d"(.50) within group (" ++ Doc.lineCat ++ d"order by" +#+ args(0).compressed.sql).nest(
+          (percentileFuncName ++ d"(.50) within group (" ++ Doc.lineCat ++ d"order by" +#+ args(
+            0
+          ).compressed.sql).nest(
             2
           ) ++ Doc.lineCat ++ d")"
         exprSqlFactory(baseSql ++ sqlizeFilter(filter), f)
@@ -820,7 +983,14 @@ class SoQLFunctionSqlizerRedshift[MT <: MetaTypes with metatypes.SoQLMetaTypesEx
     // either the function is a window function or it's an aggregate
     // function being used in a windowed way.
     assert(e.function.needsWindow || e.function.isAggregate)
-    windowedFunctionMap(e.function.function.identity)(e, args, filter, partitionBy, orderBy, ctx)
+    windowedFunctionMap(e.function.function.identity)(
+      e,
+      args,
+      filter,
+      partitionBy,
+      orderBy,
+      ctx
+    )
   }
 }
 

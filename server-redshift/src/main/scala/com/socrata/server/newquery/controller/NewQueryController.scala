@@ -38,19 +38,24 @@ class NewQueryController(
 
     val sql = Using.resource(storeDataSource.getConnection) { conn =>
       val cpp = CryptProviderProvider.empty
-      val extraContext = new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
+      val extraContext =
+        new SoQLExtraContext(context, cpp, RedshiftSqlUtils.escapeString(conn))
 
       RedshiftSqlizer.apply(rewrittenAnalysis, extraContext).right.get.sql
     }
 
-    Response.ok(Map(
-      "sql" -> sql,
-      "analysis" -> analysis.statement.debugStr,
-      "context" -> context,
-      "passes" -> passes,
-      "debug" -> debug,
-      "queryTimeout" -> queryTimeout,
-      "locationSubColumns" -> locationSubcolumns
-    )).build()
+    Response
+      .ok(
+        Map(
+          "sql" -> sql,
+          "analysis" -> analysis.statement.debugStr,
+          "context" -> context,
+          "passes" -> passes,
+          "debug" -> debug,
+          "queryTimeout" -> queryTimeout,
+          "locationSubColumns" -> locationSubcolumns
+        )
+      )
+      .build()
   }
 }

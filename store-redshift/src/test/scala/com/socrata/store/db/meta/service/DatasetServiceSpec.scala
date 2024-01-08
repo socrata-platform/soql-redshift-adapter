@@ -34,50 +34,117 @@ import com.socrata.soql.environment.ColumnName
   @Test def test: Unit = {
     val dataset: Dataset = Dataset(
       DatasetInfo("alpha50", "en", Array.empty, Some("aaaa-aaaa")),
-      CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
+      CopyInfo(
+        new CopyId(10),
+        20L,
+        LifecycleStage.Published,
+        1L,
+        1L,
+        DateTime.now()
+      )
     )
-    println("================================================================", svc.persist(dataset))
+    println(
+      "================================================================",
+      svc.persist(dataset)
+    )
     val newDataset = Dataset(
       DatasetInfo("alpha50", "en", Array.empty, Some("aaaa-aaaa")),
-      CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
+      CopyInfo(
+        new CopyId(10),
+        20L,
+        LifecycleStage.Published,
+        1L,
+        1L,
+        DateTime.now()
+      )
     )
     newDataset.table = "foobarbaz"
-    println("================================================================", svc.persist(newDataset))
+    println(
+      "================================================================",
+      svc.persist(newDataset)
+    )
 
     val dataset2: Dataset = Dataset(
       DatasetInfo("alpha51", "en", Array.empty, Some("aaaa-aaaa")),
-      CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
+      CopyInfo(
+        new CopyId(10),
+        20L,
+        LifecycleStage.Published,
+        1L,
+        1L,
+        DateTime.now()
+      )
     )
-    println("================================================================", svc.persist(dataset2))
+    println(
+      "================================================================",
+      svc.persist(dataset2)
+    )
     val newDataset2 = Dataset(
       DatasetInfo("alpha51", "en", Array.empty, Some("aaaa-aaaa")),
-      CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
+      CopyInfo(
+        new CopyId(10),
+        20L,
+        LifecycleStage.Published,
+        1L,
+        1L,
+        DateTime.now()
+      )
     )
     newDataset2.table = "foobarbaz"
-    println("================================================================", svc.persist(newDataset2))
-
     println(
       "================================================================",
-      svc.persist(Dataset(
-        DatasetInfo("alpha12", "en", Array.empty, Some("aaaa-aaaa")),
-        CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
-      ))
+      svc.persist(newDataset2)
     )
 
     println(
       "================================================================",
-      svc.persist(Dataset(
-        DatasetInfo("alpha12", "en", Array.empty, Some("aaaa-aaaa")),
-        CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
-      ))
+      svc.persist(
+        Dataset(
+          DatasetInfo("alpha12", "en", Array.empty, Some("aaaa-aaaa")),
+          CopyInfo(
+            new CopyId(10),
+            20L,
+            LifecycleStage.Published,
+            1L,
+            1L,
+            DateTime.now()
+          )
+        )
+      )
     )
 
     println(
       "================================================================",
-      svc.persist(Dataset(
-        DatasetInfo("alpha13", "en", Array.empty, Some("aaaa-aaaa")),
-        CopyInfo(new CopyId(10), 20L, LifecycleStage.Published, 1L, 1L, DateTime.now())
-      ))
+      svc.persist(
+        Dataset(
+          DatasetInfo("alpha12", "en", Array.empty, Some("aaaa-aaaa")),
+          CopyInfo(
+            new CopyId(10),
+            20L,
+            LifecycleStage.Published,
+            1L,
+            1L,
+            DateTime.now()
+          )
+        )
+      )
+    )
+
+    println(
+      "================================================================",
+      svc.persist(
+        Dataset(
+          DatasetInfo("alpha13", "en", Array.empty, Some("aaaa-aaaa")),
+          CopyInfo(
+            new CopyId(10),
+            20L,
+            LifecycleStage.Published,
+            1L,
+            1L,
+            DateTime.now()
+          )
+        )
+      )
     )
 
   }

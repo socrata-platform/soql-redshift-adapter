@@ -6,5 +6,8 @@ import scala.io.Source
 
 case class JacksonYamlConfigSource(resource: String) extends ConfigSource {
   override def read(): JsonNode =
-    CommonObjectMapperCustomizer.Yaml.readValue(Source.fromResource(resource).mkString, classOf[JsonNode])
+    CommonObjectMapperCustomizer.Yaml.readValue(
+      Source.fromResource(resource).mkString,
+      classOf[JsonNode]
+    )
 }

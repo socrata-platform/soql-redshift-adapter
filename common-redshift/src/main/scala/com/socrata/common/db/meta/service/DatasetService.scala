@@ -12,13 +12,23 @@ class DatasetService(
     private val datasetRepository: DatasetRepository
 ) {
 
-  def findByInternalNameAndPublishedState(internalName: String, publishedState: String) =
-    datasetRepository.findByInternalNameAndPublishedState(internalName, publishedState == "published")
+  def findByInternalNameAndPublishedState(
+      internalName: String,
+      publishedState: String
+  ) =
+    datasetRepository.findByInternalNameAndPublishedState(
+      internalName,
+      publishedState == "published"
+    )
 
-  val findByInternalNameAndPublishedState = (datasetRepository.findByInternalNameAndPublishedState _)
+  val findByInternalNameAndPublishedState =
+    (datasetRepository.findByInternalNameAndPublishedState _)
 
   def persist(dataset: Dataset): Exists[Dataset] = {
-    datasetRepository.findByInternalNameAndCopyNumber(dataset.internalName, dataset.copyNumber) match {
+    datasetRepository.findByInternalNameAndCopyNumber(
+      dataset.internalName,
+      dataset.copyNumber
+    ) match {
       case Some(found) =>
         Dataset.update(found, dataset)
         datasetRepository.persist(found)

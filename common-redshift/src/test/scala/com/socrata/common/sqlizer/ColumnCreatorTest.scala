@@ -27,24 +27,32 @@ class ColumnCreatorTest extends TableCreationUtils {
 
   def test(`type`: DatabaseNamesMetaTypes#ColumnType)(expected: String*) =
     repProvider
-      .reps(`type`).physicalDatabaseTypes.map(_.toString)
+      .reps(`type`)
+      .physicalDatabaseTypes
+      .map(_.toString)
       .zipExact(expected.toList)
       .foreach {
         case (received, expected) => {
           assertEquals(expected, received)
           println(s"$expected == $received")
-          Utils.withTable(dataSource, "columnCreator")("foo", "int") { (conn, tableName) =>
-            schema.update(tableName, "testcol")(`type`).foreach(_.execute(conn))
+          Utils.withTable(dataSource, "columnCreator")("foo", "int") {
+            (conn, tableName) =>
+              schema
+                .update(tableName, "testcol")(`type`)
+                .foreach(_.execute(conn))
           }
         }
       }
 
-  def testFails[T <: Throwable](`type`: DatabaseNamesMetaTypes#ColumnType)(expectedType: Class[T]) = {
+  def testFails[T <: Throwable](
+      `type`: DatabaseNamesMetaTypes#ColumnType
+  )(expectedType: Class[T]) = {
     assertThrows(
       expectedType,
       () =>
         repProvider
-          .reps(`type`).physicalDatabaseTypes
+          .reps(`type`)
+          .physicalDatabaseTypes
     )
   }
 

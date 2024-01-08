@@ -9,7 +9,11 @@ object StreamUtil {
 
   def normalize(input: InputStream): ByteArrayInputStream = {
     // TODO Why do we do this?
-    new ByteArrayInputStream(IOUtils.toString(input, StandardCharsets.UTF_8.name).getBytes(StandardCharsets.ISO_8859_1))
+    new ByteArrayInputStream(
+      IOUtils
+        .toString(input, StandardCharsets.UTF_8.name)
+        .getBytes(StandardCharsets.ISO_8859_1)
+    )
   }
 
 }

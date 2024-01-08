@@ -21,11 +21,18 @@ class RedshiftSecondary(
 ) extends Secondary[SoQLType, SoQLValue] {
   override def shutdown(): Unit = ???
 
-  override def dropDataset(datasetInternalName: String, cookie: Cookie): Unit = ???
+  override def dropDataset(datasetInternalName: String, cookie: Cookie): Unit =
+    ???
 
-  override def currentVersion(datasetInternalName: String, cookie: Cookie): Long = ???
+  override def currentVersion(
+      datasetInternalName: String,
+      cookie: Cookie
+  ): Long = ???
 
-  override def currentCopyNumber(datasetInternalName: String, cookie: Cookie): Long = ???
+  override def currentCopyNumber(
+      datasetInternalName: String,
+      cookie: Cookie
+  ): Long = ???
 
   override def version(info: VersionInfo[SoQLType, SoQLValue]): Cookie = {
     None
@@ -46,20 +53,27 @@ class RedshiftSecondary(
       rollups: Seq[RollupInfo],
       indexDirectives: Seq[IndexDirective[SoQLType]],
       indexes: Seq[IndexInfo],
-      isLatestLivingCopy: Boolean): Cookie = {
+      isLatestLivingCopy: Boolean
+  ): Cookie = {
 
     val (dataset, columns) =
       datasetService.persist(Dataset(datasetInfo, copyInfo)) match {
         case Exists.Updated(dataset) => (???, ???)
         // delete it and recreate it.
         case Exists.Inserted(dataset) => {
-          val columns: List[DatasetColumn] = schema.values.map(columnInfo =>
-            datasetColumnService.persist(DatasetColumn(dataset, datasetInfo, copyInfo, columnInfo)) match {
-              case Exists.Updated(column) =>
-                throw new IllegalStateException(s"column $column existed on a dataset that did not exist.")
-              case Exists.Inserted(column) => column
-            }
-          ).toList
+          val columns: List[DatasetColumn] = schema.values
+            .map(columnInfo =>
+              datasetColumnService.persist(
+                DatasetColumn(dataset, datasetInfo, copyInfo, columnInfo)
+              ) match {
+                case Exists.Updated(column) =>
+                  throw new IllegalStateException(
+                    s"column $column existed on a dataset that did not exist."
+                  )
+                case Exists.Inserted(column) => column
+              }
+            )
+            .toList
           (dataset, columns)
         }
       }
@@ -70,7 +84,12 @@ class RedshiftSecondary(
     None
   }
 
-  override def dropCopy(datasetInfo: DatasetInfo, copyInfo: CopyInfo, cookie: Cookie, isLatestCopy: Boolean): Cookie =
+  override def dropCopy(
+      datasetInfo: DatasetInfo,
+      copyInfo: CopyInfo,
+      cookie: Cookie,
+      isLatestCopy: Boolean
+  ): Cookie =
     ???
 }
 

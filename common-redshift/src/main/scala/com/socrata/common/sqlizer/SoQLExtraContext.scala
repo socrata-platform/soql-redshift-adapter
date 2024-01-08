@@ -24,7 +24,12 @@ class SoQLExtraContext(
 }
 
 object SoQLExtraContext extends StatementUniverse[DatabaseNamesMetaTypes] {
-  type LocationSubcolumns = Map[DatabaseTableName, Map[DatabaseColumnName, Seq[Option[DatabaseColumnName]]]]
+  type LocationSubcolumns = Map[DatabaseTableName, Map[DatabaseColumnName, Seq[
+    Option[DatabaseColumnName]
+  ]]]
 
-  case class Result(nonliteralSystemContextLookupFound: Boolean, now: Option[DateTime])
+  case class Result(
+      nonliteralSystemContextLookupFound: Boolean,
+      now: Option[DateTime]
+  )
 }
