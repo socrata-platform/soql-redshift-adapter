@@ -11,7 +11,7 @@
   <groupId>com.socrata</groupId>
   <artifactId>soql-redshift-adapter-store</artifactId>
   <properties>
-    <guava.version>19.0</guava.version>
+    <guava.version>33.0.0-jre</guava.version>
   </properties>
   <dependencies>
     <dependency>
