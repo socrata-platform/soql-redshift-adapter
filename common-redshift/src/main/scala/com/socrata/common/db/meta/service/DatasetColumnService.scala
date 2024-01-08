@@ -1,6 +1,5 @@
 package com.socrata.common.db.meta.service
 
-import com.socrata.common.db.Exists
 import com.socrata.common.db.meta.entity.DatasetColumn
 import com.socrata.common.db.meta.repository.DatasetColumnRepository
 import jakarta.enterprise.context.ApplicationScoped
@@ -13,7 +12,7 @@ class DatasetColumnService(
   val findByDatasetIdAndUserColumnId =
     (datasetColumnRepository.findByDatasetIdAndUserColumnId _)
 
-  def persist(datasetColumn: DatasetColumn): Exists.Exists[DatasetColumn] = {
+  def persist(datasetColumn: DatasetColumn): DatasetColumn = {
     datasetColumnRepository.findByDatasetIdAndColumnId(
       datasetColumn.datasetId,
       datasetColumn.columnId
@@ -21,10 +20,10 @@ class DatasetColumnService(
       case Some(found) =>
         DatasetColumn.update(found, datasetColumn)
         datasetColumnRepository.persist(found)
-        Exists.Updated(found)
+        found
       case None =>
         datasetColumnRepository.persist(datasetColumn)
-        Exists.Inserted(datasetColumn)
+        datasetColumn
     }
   }
 }

@@ -2,7 +2,6 @@ package com.socrata.service
 
 import com.socrata.soql.environment.ColumnName
 import com.socrata.common.utils.managed.ManagedUtils
-import com.rojoma.simplearm.v2.Managed
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.id._
 import io.quarkus.test.junit.QuarkusTest

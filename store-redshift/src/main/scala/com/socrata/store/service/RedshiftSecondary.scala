@@ -2,10 +2,8 @@ package com.socrata.store.service
 
 import com.socrata.store.handlers._
 import com.rojoma.simplearm.v2.Managed
-import com.socrata.common.db.Exists
 import com.socrata.common.db.meta.entity.{Dataset, DatasetColumn}
 import com.socrata.common.db.meta.service.{DatasetColumnService, DatasetService}
-import com.socrata.db.datasets
 import com.socrata.datacoordinator.secondary.Secondary.Cookie
 import com.socrata.datacoordinator.secondary._
 import com.socrata.datacoordinator.truth.metadata.IndexDirective
@@ -16,7 +14,6 @@ import jakarta.transaction.Transactional
 
 @ApplicationScoped
 class RedshiftSecondary(
-    tableDeleter: datasets.TableDeleter,
     datasetService: DatasetService,
     datasetColumnService: DatasetColumnService,
     resyncHandler: Resync
@@ -58,39 +55,14 @@ class RedshiftSecondary(
       isLatestLivingCopy: Boolean
   ): Cookie = {
 
-    val (dataset, columns) =
-      datasetService.persist(Dataset(datasetInfo, copyInfo)) match {
-        case Exists.Updated(dataset) =>
-          tableDeleter.delete(dataset)
-          return resync(
-            datasetInfo,
-            copyInfo,
-            schema,
-            cookie,
-            rows,
-            rollups,
-            indexDirectives,
-            indexes,
-            isLatestLivingCopy
-          )
-
-        case Exists.Inserted(dataset) => {
-          val columns: List[DatasetColumn] = schema.values
-            .map(columnInfo =>
-              datasetColumnService.persist(
-                DatasetColumn(dataset, columnInfo)
-              ) match {
-                case Exists.Updated(column) =>
-                  throw new IllegalStateException(
-                    s"column $column existed on a dataset that did not exist."
-                  )
-                case Exists.Inserted(column) => column
-              }
-            )
-            .toList
-          (dataset, columns)
-        }
-      }
+    val dataset = datasetService.persist(Dataset(datasetInfo, copyInfo))
+    val columns: List[DatasetColumn] = schema.values
+      .map(columnInfo =>
+        datasetColumnService.persist(
+          DatasetColumn(dataset, columnInfo)
+        )
+      )
+      .toList
 
     rows.foreach { rows: Iterator[ColumnIdMap[SoQLValue]] =>
       resyncHandler.store(dataset, columns, schema, rows)

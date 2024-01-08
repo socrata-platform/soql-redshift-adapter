@@ -26,41 +26,44 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
       columns: List[(DatasetColumn, ColumnInfo[SoQLType])]
   ): Exists.Exists[String] =
     Using.resource(store.getConnection) { conn =>
-      conn
-        .getMetaData()
-        .getTables(null, null, dataset.table, null)
-        .next() match {
-        case true =>
-          throw new IllegalStateException(
-            s"dataset ${dataset} already exists in redshift"
-          )
-        case false => {
-          val dbColumns
-              : List[(TableCreator.ColumnName, TableCreator.ColumnType)] =
-            columns.flatMap {
-              case (dbColumn, column) => {
-                val rep = repProvider.reps(column.typ)
-                rep
-                  .physicalDatabaseColumns(
-                    DatabaseColumnName(dbColumn.columnName)
-                  )
-                  .map(_.toString)
-                  .zip(rep.physicalDatabaseTypes.map(_.toString))
-                  .toList
-              }
-            }
+      {
+        val alreadyExists = conn
+          .getMetaData()
+          .getTables(null, null, dataset.table, null)
+          .next()
 
-          val dbColumnFragment =
-            dbColumns.map({ case (name, typ) => s"$name $typ" }).mkString(", ")
-
-          val sql = s"create table ${dataset.table} ($dbColumnFragment)"
+        if (alreadyExists)
           Using.resource(conn.createStatement()) { stmt =>
             stmt.executeUpdate(
-              sql
+              s"drop table ${dataset.table}"
             )
           }
-          Exists.Inserted(dataset.table)
+
+        val dbColumns
+            : List[(TableCreator.ColumnName, TableCreator.ColumnType)] =
+          columns.flatMap {
+            case (dbColumn, column) => {
+              val rep = repProvider.reps(column.typ)
+              rep
+                .physicalDatabaseColumns(
+                  DatabaseColumnName(dbColumn.columnName)
+                )
+                .map(_.toString)
+                .zip(rep.physicalDatabaseTypes.map(_.toString))
+                .toList
+            }
+          }
+
+        val dbColumnFragment =
+          dbColumns.map({ case (name, typ) => s"$name $typ" }).mkString(", ")
+
+        val sql = s"create table ${dataset.table} ($dbColumnFragment)"
+        Using.resource(conn.createStatement()) { stmt =>
+          stmt.executeUpdate(
+            sql
+          )
         }
+        Exists.Inserted(dataset.table)
       }
     }
 }
