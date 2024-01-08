@@ -1,6 +1,5 @@
 package com.socrata.common.sqlizer
 
-import java.io.Writer
 import java.sql.{ResultSet, PreparedStatement, Types}
 
 import com.rojoma.json.v3.ast._
@@ -112,24 +111,6 @@ abstract class SoQLRepProviderRedshift[
   private def badType(expected: String, value: CV): Nothing =
     throw new Exception(s"Bad type; expected $expected, got $value")
 
-  private def writeCSV(
-      out: Writer,
-      firstValue: Option[String],
-      moreValues: Option[String]*
-  ): Unit = {
-    def writeCell(cell: Option[String]): Unit =
-      for (v <- cell) {
-        out.write('"')
-        out.write(v.replaceAll("\"", "\"\""))
-        out.write('"')
-      }
-    writeCell(firstValue)
-    for (value <- moreValues) {
-      out.write(',')
-      writeCell(value)
-    }
-  }
-
   val reps = Map[SoQLType, Rep](
     SoQLID -> new ProvenancedRep(SoQLID, d"bigint") {
       override def ingressRep(
@@ -160,9 +141,9 @@ abstract class SoQLRepProviderRedshift[
             start + 2
           } else {
             cv match {
-              case SoQLNull           => stmt.setNull(start, Types.BIGINT)
-              case id @ SoQLID(value) => stmt.setLong(start, value)
-              case other              => badType("id", other)
+              case SoQLNull      => stmt.setNull(start, Types.BIGINT)
+              case SoQLID(value) => stmt.setLong(start, value)
+              case other         => badType("id", other)
             }
             start + 1
           }
@@ -182,7 +163,7 @@ abstract class SoQLRepProviderRedshift[
             cv match {
               case SoQLNull =>
                 Seq(None)
-              case id @ SoQLID(value) =>
+              case SoQLID(value) =>
                 Seq(Some(value.toString))
               case other =>
                 badType("id", other)
@@ -309,9 +290,9 @@ abstract class SoQLRepProviderRedshift[
             start + 2
           } else {
             cv match {
-              case SoQLNull                => stmt.setNull(start, Types.BIGINT)
-              case id @ SoQLVersion(value) => stmt.setLong(start, value)
-              case other                   => badType("version", other)
+              case SoQLNull           => stmt.setNull(start, Types.BIGINT)
+              case SoQLVersion(value) => stmt.setLong(start, value)
+              case other              => badType("version", other)
             }
             start + 1
           }
@@ -331,7 +312,7 @@ abstract class SoQLRepProviderRedshift[
             cv match {
               case SoQLNull =>
                 Seq(None)
-              case id @ SoQLVersion(value) =>
+              case SoQLVersion(value) =>
                 Seq(Some(value.toString))
               case other =>
                 badType("version", other)

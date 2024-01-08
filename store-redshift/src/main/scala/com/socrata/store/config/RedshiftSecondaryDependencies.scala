@@ -21,7 +21,6 @@ import com.socrata.thirdparty.metrics.{Metrics, MetricsOptions, MetricsReporter}
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 import io.quarkus.arc.All
-import io.quarkus.jackson.ObjectMapperCustomizer
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Produces
 import org.apache.curator.framework.CuratorFramework

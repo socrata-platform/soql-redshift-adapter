@@ -4,8 +4,6 @@ import scala.util._
 import io.agroal.api.AgroalDataSource
 import io.quarkus.agroal.DataSource
 
-import java.sql.Connection
-import com.socrata.common.sqlizer.metatypes._
 import com.socrata.soql.analyzer2._
 import com.socrata.common.sqlizer.{metatypes, _}
 import com.socrata.server.newquery.api.NewQueryEndpoint

@@ -4,7 +4,6 @@ import com.socrata.common.db.Exists
 import com.socrata.common.db.meta.entity.{Dataset, DatasetColumn}
 
 import scala.util._
-import com.socrata.soql.sqlizer._
 import com.socrata.common.sqlizer._
 
 import io.agroal.api.AgroalDataSource
@@ -24,8 +23,7 @@ case class TableCreator(@DataSource("store") store: AgroalDataSource) {
       repProvider: SoQLRepProviderRedshift[metatypes.DatabaseNamesMetaTypes]
   )(
       dataset: Dataset,
-      columns: List[(DatasetColumn, ColumnInfo[SoQLType])],
-      blobUrl: String
+      columns: List[(DatasetColumn, ColumnInfo[SoQLType])]
   ): Exists.Exists[String] =
     Using.resource(store.getConnection) { conn =>
       conn
