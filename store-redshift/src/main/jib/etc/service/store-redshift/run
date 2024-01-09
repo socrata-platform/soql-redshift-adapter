@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Turn verbose output OFF so we don't echo the output of the secrets file
+set +ev
+
+# Turn verbose output back ON for troubleshooting
+set -ev
+
+exec /sbin/setuser socrata java -agentlib:jdwp='transport=dt_socket,server=y,suspend=n,address=*:5005' -Dquarkus.profile=docker -Djava.util.logging.manager=org.jboss.logmanager.LogManager -jar /home/socrata/quarkus-run.jar
