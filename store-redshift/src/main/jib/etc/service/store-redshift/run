@@ -3,6 +3,12 @@
 # Turn verbose output OFF so we don't echo the output of the secrets file
 set +ev
 
+if [ -f /dev/shm/redshift-secondary-env ]; then
+  source /dev/shm/redshift-secondary-env
+else
+echo "/dev/shm/redshift-secondary-env not found. Check your Clortho config."
+fi
+
 # Turn verbose output back ON for troubleshooting
 set -ev
 
